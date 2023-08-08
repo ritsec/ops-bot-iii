@@ -1,0 +1,45 @@
+app_id: 
+guild_id:  
+logging:
+    audit_channel: 
+    critical_channel: 
+    debug_channel: 
+    debug_low_channel: 
+    error_channel: 
+    info_channel: 
+    level: Debug # DebugLow < Debug < Info < Warning < Error < Critical < Audit
+    warning_channel: 
+    log_file:
+google:
+    credentials: 
+    token: 
+    username:
+    sheet_id: 
+    sheet_name: 
+web:
+    hostname: 
+    port: 
+token: 
+commands:
+    angry_react:
+        emoji_id:
+    message:
+        channel_id: 
+    good_food:
+        channel_id: 
+        role_id: 
+    heartbeat:
+        url: 
+    feedback:
+        channel_id: 
+    kudos:
+        channel_id: 
+        approval_channel_id: 
+    member:
+        channel_id: 
+        member_role_id: 
+        external_role_id: 
+        prospective_role_id: 
+        staff_role_id: 
+        alumni_role_id: 
+    

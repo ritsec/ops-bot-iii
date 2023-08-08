@@ -1,0 +1,13 @@
+[Unit]
+Description=Ops Bot III
+After=multi-user.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/ops-bot-iii/
+Restart=always
+RestartSec=30
+ExecStart=/root/ops-bot-iii/OBIII
+
+[Install]
+WantedBy=multi-user.target
