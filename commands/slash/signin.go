@@ -39,8 +39,8 @@ func Signin() *structs.SlashCommand {
 							Value: "Contagion",
 						},
 						{
-							Name:  "Incident Response",
-							Value: "Incident Response",
+							Name:  "DFIR",
+							Value: "DFIR",
 						},
 						{
 							Name:  "Ops",
@@ -65,6 +65,10 @@ func Signin() *structs.SlashCommand {
 						{
 							Name:  "Physical",
 							Value: "Physical",
+						},
+						{
+							Name:  "Vulnerability Research",
+							Value: "Vulnerability Research",
 						},
 						{
 							Name:  "Wireless",
@@ -115,8 +119,8 @@ func Signin() *structs.SlashCommand {
 					entSigninType = signin.TypeGeneralMeeting
 				case "Contagion":
 					entSigninType = signin.TypeContagion
-				case "Incident Response":
-					entSigninType = signin.TypeIncidentResponse
+				case "DFIR":
+					entSigninType = signin.TypeDFIR
 				case "Ops":
 					entSigninType = signin.TypeOps
 				case "Ops IG":
@@ -133,6 +137,8 @@ func Signin() *structs.SlashCommand {
 					entSigninType = signin.TypeWireless
 				case "WiCyS":
 					entSigninType = signin.TypeWiCyS
+				case "Vulnerability Research":
+					entSigninType = signin.TypeVulnerabilityResearch
 				case "Other":
 					entSigninType = signin.TypeOther
 				}
