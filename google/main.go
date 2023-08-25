@@ -2,9 +2,9 @@ package google
 
 import (
 	"context"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
 	"golang.org/x/oauth2/google"
@@ -14,9 +14,6 @@ import (
 )
 
 var (
-	// Ctx is the context for the google package
-	ctx context.Context = context.Background()
-
 	// SheetsSrv is the sheets service
 	sheetsSrv *sheets.Service
 
@@ -26,7 +23,7 @@ var (
 
 func init() {
 	// Read the JSON key file
-	keyBytes, err := ioutil.ReadFile(config.Google.KeyFile)
+	keyBytes, err := os.ReadFile(config.Google.KeyFile)
 	if err != nil {
 		log.Fatalf("Failed to read the JSON key file: %v", err)
 	}

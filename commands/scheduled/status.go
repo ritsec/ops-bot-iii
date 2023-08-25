@@ -31,7 +31,7 @@ func updateStatus(s *discordgo.Session, ctx ddtrace.SpanContext) {
 	weekday := now.Weekday()
 	hour := now.Hour()
 
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	if weekday == time.Friday && hour >= 12 && hour < 16 {
 		err := s.UpdateStatusComplex(discordgo.UpdateStatusData{
@@ -49,7 +49,7 @@ func updateStatus(s *discordgo.Session, ctx ddtrace.SpanContext) {
 	} else {
 		err := s.UpdateStatusComplex(discordgo.UpdateStatusData{
 			Activities: []*discordgo.Activity{
-				&activities[rand.Intn(len(activities))],
+				&activities[r.Intn(len(activities))],
 			},
 		})
 		if err != nil {

@@ -206,7 +206,10 @@ func Signin() *structs.SlashCommand {
 
 			time.Sleep(3 * time.Hour)
 
-			s.InteractionResponseDelete(i.Interaction)
+			err = s.InteractionResponseDelete(i.Interaction)
+			if err != nil {
+				logging.Error(s, "Error encounted while deleting interaction response", i.Member.User, span, logrus.Fields{"error": err})
+			}
 		},
 	}
 }
