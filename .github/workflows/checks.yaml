@@ -1,4 +1,4 @@
-name: Go Lint
+name: Run Code Checks
 
 on: [push, pull_request]
 
@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   golangci:
-    name: lint
+    name: Code Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
           cache: false
       - name: Compile
         run: go build main.go
-      - name: Test
+      - name: Unit Tests
         run: go test -v ./...
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
