@@ -104,7 +104,10 @@ func mailgun() structs.MailGunConfig {
 // SetLoggingLevel sets the logging level
 func SetLoggingLevel(level string) {
 	viper.Set("logging.level", level)
-	viper.WriteConfig()
+	err := viper.WriteConfig()
+	if err != nil {
+		panic(err)
+	}
 
 	Logging.Level = level
 }

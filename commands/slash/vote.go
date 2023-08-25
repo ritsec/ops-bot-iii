@@ -276,7 +276,10 @@ func Vote() *structs.SlashCommand {
 				return
 			}
 
-			data.Vote.DeleteAll(voteSlug, span.Context())
+			_, err = data.Vote.DeleteAll(voteSlug, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), nil, span, logrus.Fields{"error": err})
+			}
 		},
 	}
 }

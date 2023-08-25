@@ -32,13 +32,16 @@ func Usage() *structs.SlashCommand {
 
 			logging.Debug(s, "Usage command received", i.Member.User, span)
 
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Calculating...",
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 
 			memory, err := memory.Get()
 			if err != nil {
@@ -58,7 +61,7 @@ func Usage() *structs.SlashCommand {
 
 			empty := ""
 
-			s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content: &empty,
 				Embeds: &[]*discordgo.MessageEmbed{
 					{
@@ -88,6 +91,9 @@ func Usage() *structs.SlashCommand {
 					},
 				},
 			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 		},
 	}
 }

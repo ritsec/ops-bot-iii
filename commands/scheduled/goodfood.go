@@ -69,23 +69,29 @@ func GoodFood() *structs.ScheduledEvent {
 
 			c := cron.NewWithLocation(est)
 
+			must := func(err error) {
+				if err != nil {
+					logging.Error(s, err.Error(), nil, span)
+				}
+			}
+
 			// 11:00 AM
-			c.AddFunc("0 0 11 * * MON", func() {})                                                    // Monday
-			c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) }) // Tuesday
-			c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) }) // Wednesday
-			c.AddFunc("0 0 11 * * THU", func() {})                                                    // Thursday
-			c.AddFunc("0 0 11 * * FRI", func() {})                                                    // Friday
-			c.AddFunc("0 0 11 * * SAT", func() {})                                                    // Saturday
-			c.AddFunc("0 0 11 * * SUN", func() {})                                                    // Sunday
+			must(c.AddFunc("0 0 11 * * MON", func() {}))                                                    // Monday
+			must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Tuesday
+			must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Wednesday
+			must(c.AddFunc("0 0 11 * * THU", func() {}))                                                    // Thursday
+			must(c.AddFunc("0 0 11 * * FRI", func() {}))                                                    // Friday
+			must(c.AddFunc("0 0 11 * * SAT", func() {}))                                                    // Saturday
+			must(c.AddFunc("0 0 11 * * SUN", func() {}))                                                    // Sunday
 
 			// 4:00 PM
-			c.AddFunc("0 0 16 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) })       // Monday
-			c.AddFunc("0 0 16 * * TUE", func() {})                                                    // Tuesday
-			c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) })       // Wednesday
-			c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) }) // Thursday
-			c.AddFunc("0 0 16 * * FRI", func() {})                                                    // Friday
-			c.AddFunc("0 0 16 * * SAT", func() {})                                                    // Saturday
-			c.AddFunc("0 0 16 * * SUN", func() {})                                                    // Sunday
+			must(c.AddFunc("0 0 16 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Monday
+			must(c.AddFunc("0 0 16 * * TUE", func() {}))                                                    // Tuesday
+			must(c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Wednesday
+			must(c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Thursday
+			must(c.AddFunc("0 0 16 * * FRI", func() {}))                                                    // Friday
+			must(c.AddFunc("0 0 16 * * SAT", func() {}))                                                    // Saturday
+			must(c.AddFunc("0 0 16 * * SUN", func() {}))                                                    // Sunday
 
 			c.Start()
 			<-quit

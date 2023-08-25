@@ -53,12 +53,12 @@ func IsNotEmpty[T any](slice []T) bool {
 
 // Choose returns a random item from a slice
 func Choose[T any](slice []T) T {
-	if slice == nil || len(slice) == 0 {
+	if len(slice) == 0 {
 		panic("Cannot choose from empty slice")
 	}
 
-	rand.Seed(time.Now().UnixNano())
-	return slice[rand.Intn(len(slice))]
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return slice[r.Intn(len(slice))]
 }
 
 // EmliminationPool returns the options with the lowest count in a round

@@ -115,14 +115,20 @@ func Member() *structs.SlashCommand {
 				// check if userEmail is valid
 				if !validRITEmail(userEmail, span.Context()) {
 					logging.Debug(s, fmt.Sprintf("User has invalid RIT email: `%v`", userEmail), originalInteraction.Member.User, span)
-					invalidRITEmail(s, i, userEmail, attempts, span.Context())
+					err := invalidRITEmail(s, i, userEmail, attempts, span.Context())
+					if err != nil {
+						logging.Error(s, "", originalInteraction.Member.User, span, logrus.Fields{"error": err})
+					}
 					return
 				}
 
 				// check if email is already in use
 				if data.User.EmailExists(originalInteraction.Member.User.ID, userEmail, span.Context()) {
 					logging.Debug(s, fmt.Sprintf("User has already used email: `%v`", userEmail), originalInteraction.Member.User, span)
-					emailInUse(s, i, userEmail, attempts, span.Context())
+					err := emailInUse(s, i, userEmail, attempts, span.Context())
+					if err != nil {
+						logging.Error(s, err.Error(), originalInteraction.Member.User, span, logrus.Fields{"error": err})
+					}
 					return
 				}
 
@@ -156,7 +162,10 @@ func Member() *structs.SlashCommand {
 					// check code
 					if strings.TrimSpace(code) != strings.TrimSpace(verificationCode) {
 						logging.Debug(s, "User provided invalid verification code", originalInteraction.Member.User, span)
-						invalidCode(s, i, verificationCode, attempts, span.Context())
+						err := invalidCode(s, i, verificationCode, attempts, span.Context())
+						if err != nil {
+							logging.Error(s, err.Error(), originalInteraction.Member.User, span, logrus.Fields{"error": err})
+						}
 						return
 					}
 
@@ -962,7 +971,11 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 
 	switch memberType {
 	case "member":
-		addMemberRole(s, i, userEmail, attempts, false, span.Context())
+		err = addMemberRole(s, i, userEmail, attempts, false, span.Context())
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
 	case "external":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, externalRole)
 		if err != nil {
@@ -1013,5 +1026,9 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		}
 	}
 
-	s.ChannelMessageDelete(memberApprovalChannel, m.ID)
+	err = s.ChannelMessageDelete(memberApprovalChannel, m.ID)
+	if err != nil {
+		logging.Error(s, "Error encounted while deleting channel message", user, span, logrus.Fields{"error": err})
+		return
+	}
 }
