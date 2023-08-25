@@ -2,6 +2,7 @@ package slash
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/sirupsen/logrus"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/slash/permission"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
@@ -61,25 +62,31 @@ func Log() *structs.SlashCommand {
 			logging.Debug(s, "Log command received", i.Member.User, span)
 
 			if len(i.ApplicationCommandData().Options) == 0 {
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Current logging level: " + logging.LevelNameMap[logging.LogLevel()],
 						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
+				if err != nil {
+					logging.Error(s, "Error sending current log level", i.Member.User, span, logrus.Fields{"error": err})
+				}
 			} else {
 				config.SetLoggingLevel(i.ApplicationCommandData().Options[0].StringValue())
 
 				logging.Critical(s, "Logging level changed to "+i.ApplicationCommandData().Options[0].StringValue(), i.Member.User, span)
 
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Logging level changed to " + i.ApplicationCommandData().Options[0].StringValue(),
 						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
+				if err != nil {
+					logging.Error(s, "Error sending confirmation of change of log level", i.Member.User, span, logrus.Fields{"error": err})
+				}
 			}
 		},
 	}

@@ -34,7 +34,7 @@ func updateStatus(s *discordgo.Session, ctx ddtrace.SpanContext) {
 	rand.Seed(time.Now().UnixNano())
 
 	if weekday == time.Friday && hour >= 12 && hour < 16 {
-		s.UpdateStatusComplex(discordgo.UpdateStatusData{
+		err := s.UpdateStatusComplex(discordgo.UpdateStatusData{
 			Activities: []*discordgo.Activity{
 				{
 					Name: "RITSEC General Meeting",
@@ -43,12 +43,18 @@ func updateStatus(s *discordgo.Session, ctx ddtrace.SpanContext) {
 				},
 			},
 		})
+		if err != nil {
+			logging.Error(s, err.Error(), nil, span)
+		}
 	} else {
-		s.UpdateStatusComplex(discordgo.UpdateStatusData{
+		err := s.UpdateStatusComplex(discordgo.UpdateStatusData{
 			Activities: []*discordgo.Activity{
 				&activities[rand.Intn(len(activities))],
 			},
 		})
+		if err != nil {
+			logging.Error(s, err.Error(), nil, span)
+		}
 	}
 }
 

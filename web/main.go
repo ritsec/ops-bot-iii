@@ -2,7 +2,9 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
+	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
@@ -16,7 +18,10 @@ func init() {
 	gin.SetMode(gin.ReleaseMode)
 	Router = gin.Default()
 
-	Router.SetTrustedProxies(nil)
+	err := Router.SetTrustedProxies(nil)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Start starts the web server
@@ -29,7 +34,10 @@ func Start(ctx ddtrace.SpanContext) {
 	defer span.Finish()
 
 	loadRoutes(span.Context())
-	Router.Run(config.Web.Hostname + ":" + config.Web.Port)
+	err := Router.Run(config.Web.Hostname + ":" + config.Web.Port)
+	if err != nil {
+		logging.CriticalDD("Error running web server", span, logrus.Fields{"error": err})
+	}
 }
 
 // loadRoutes loads the routes
