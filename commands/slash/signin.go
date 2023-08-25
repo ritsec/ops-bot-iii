@@ -163,7 +163,7 @@ func Signin() *structs.SlashCommand {
 					return
 				}
 
-				err = google.SheetsAppendSignin(i.Member.User.ID, i.Member.User.Username+"#"+i.Member.User.Discriminator, signinType, span.Context())
+				err = google.SheetsAppendSignin(i.Member.User.ID, i.Member.User.Username, signinType, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
