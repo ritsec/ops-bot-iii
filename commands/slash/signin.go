@@ -143,7 +143,13 @@ func Signin() *structs.SlashCommand {
 					entSigninType = signin.TypeOther
 				}
 
-				if data.Signin.RecentSignin(i.Member.User.ID, entSigninType, span.Context()) {
+				recentSignin, err := data.Signin.RecentSignin(i.Member.User.ID, entSigninType, span.Context())
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
+					return
+				}
+
+				if recentSignin {
 					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
@@ -157,7 +163,7 @@ func Signin() *structs.SlashCommand {
 					return
 				}
 
-				_, err := data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
+				_, err = data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
