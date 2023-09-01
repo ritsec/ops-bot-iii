@@ -65,7 +65,7 @@ func (*signin_s) GetSigninsByType(id string, signinType signin.Type, ctx ddtrace
 }
 
 // RecentSignin checks if a user has signed in recently
-func (*signin_s) RecentSignin(userID string, signinType signin.Type, ctx ddtrace.SpanContext) bool {
+func (*signin_s) RecentSignin(userID string, signinType signin.Type, ctx ddtrace.SpanContext) (bool, error) {
 	span := tracer.StartSpan(
 		"data.signin:RecentSignin",
 		tracer.ResourceName("Data.Signin.RecentSignin"),
@@ -81,7 +81,7 @@ func (*signin_s) RecentSignin(userID string, signinType signin.Type, ctx ddtrace
 		).
 		Exist(Ctx)
 	if err != nil {
-		return false
+		return false, err
 	}
-	return ok
+	return ok, nil
 }
