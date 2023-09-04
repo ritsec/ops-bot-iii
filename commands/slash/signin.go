@@ -214,6 +214,9 @@ func Signin() *structs.SlashCommand {
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 
 			time.Sleep(2 * time.Hour)
 
