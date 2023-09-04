@@ -189,18 +189,15 @@ func Signin() *structs.SlashCommand {
 			}
 			defer delete(*ComponentHandlers, signinSlug)
 
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(2*time.Hour).Format("3:04PM") + "**!",
-					Components: []discordgo.MessageComponent{
-						discordgo.ActionsRow{
-							Components: []discordgo.MessageComponent{
-								discordgo.Button{
-									Label:    "Signin",
-									Style:    discordgo.SuccessButton,
-									CustomID: signinSlug,
-								},
+			message, err := s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+				Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(2*time.Hour).Format("3:04PM") + "**!",
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.Button{
+								Label:    "Signin",
+								Style:    discordgo.SuccessButton,
+								CustomID: signinSlug,
 							},
 						},
 					},
@@ -210,11 +207,19 @@ func Signin() *structs.SlashCommand {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Signin Message Created, it will close in 2 hours!",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+
 			time.Sleep(2 * time.Hour)
 
-			err = s.InteractionResponseDelete(i.Interaction)
+			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
 			if err != nil {
-				logging.Error(s, "Error encounted while deleting interaction response\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 		},
 	}
