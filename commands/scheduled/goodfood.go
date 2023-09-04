@@ -16,10 +16,10 @@ import (
 
 var (
 	// GoodFoodRoleID is the ID of the Good Food role
-	GoodFoodRoleID string = config.GetString("commands.goodfood.role_id")
+	GoodFoodRoleID string = config.GetString("commands.good_food.role_id")
 
 	// GoodFoodChannelID is the ID of the Good Food channel
-	GoodFoodChannelID string = config.GetString("commands.goodfood.channel_id")
+	GoodFoodChannelID string = config.GetString("commands.good_food.channel_id")
 )
 
 // sendGoodFoodPing sends a ping to the Good Food channel
