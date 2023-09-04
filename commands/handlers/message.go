@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/kylelemons/godebug/diff"
 	"github.com/sirupsen/logrus"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
@@ -36,6 +37,14 @@ func MessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 	)
 	defer span.Finish()
 
+	message := m.BeforeDelete.Content
+
+	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
+	// 1024 characters is the max length of a field value
+	if len(message) > 1024 {
+		message = message[:1021] + "..."
+	}
+
 	_, err := s.ChannelMessageSendComplex(
 		messageModificationChannelID,
 		&discordgo.MessageSend{
@@ -50,7 +59,7 @@ func MessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 						},
 						{
 							Name:  "Message",
-							Value: m.BeforeDelete.Content,
+							Value: message,
 						},
 					},
 				},
@@ -85,6 +94,24 @@ func MessageEdit(s *discordgo.Session, m *discordgo.MessageUpdate) {
 	)
 	defer span.Finish()
 
+	messageBefore := m.BeforeUpdate.Content
+	messageAfter := m.Content
+	difference := diff.Diff(messageBefore, messageAfter)
+
+	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
+	// 1024 characters is the max length of a field value
+	if len(messageBefore) > 1024 {
+		messageBefore = messageBefore[:1021] + "..."
+	}
+
+	if len(messageAfter) > 1024 {
+		messageAfter = messageAfter[:1021] + "..."
+	}
+
+	if len(difference) > 1024 {
+		difference = difference[:1021] + "..."
+	}
+
 	_, err := s.ChannelMessageSendComplex(
 		messageModificationChannelID,
 		&discordgo.MessageSend{
@@ -99,11 +126,15 @@ func MessageEdit(s *discordgo.Session, m *discordgo.MessageUpdate) {
 						},
 						{
 							Name:  "Editted Message",
-							Value: m.Content,
+							Value: messageAfter,
 						},
 						{
 							Name:  "Old Message",
-							Value: m.BeforeUpdate.Content,
+							Value: messageBefore,
+						},
+						{
+							Name:  "Difference",
+							Value: difference,
 						},
 					},
 				},
