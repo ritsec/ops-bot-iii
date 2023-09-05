@@ -58,14 +58,14 @@ func UpdateMainBranch() (bool, error) {
 }
 
 func BuildOBIII() error {
-	buildCmd := exec.Command("go", "build", "-o", "OBIII", "main.go")
+	buildCmd := exec.Command("/usr/local/go/bin/go", "build", "-o", "OBIII", "main.go")
 
 	stderr := &bytes.Buffer{}
 	buildCmd.Stderr = stderr
 
 	err := buildCmd.Run()
 	if err != nil {
-		return fmt.Errorf("error building obiii: %s", stderr.String())
+		return fmt.Errorf("error building obiii:\n%s\n%s", err.Error(), stderr.String())
 	}
 
 	return nil

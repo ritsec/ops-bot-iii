@@ -4,6 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=simple
+User=root
 WorkingDirectory=/root/ops-bot-iii/
 Restart=always
 RestartSec=30
