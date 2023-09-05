@@ -6,6 +6,7 @@ import (
 	"os/exec"
 )
 
+// UpdateMainBranch switches to the main branch, fetches from origin, pulls from origin, and returns true if an update was pulled
 func UpdateMainBranch() (bool, error) {
 	switchCmd := exec.Command("git", "switch", "main")
 
@@ -57,6 +58,7 @@ func UpdateMainBranch() (bool, error) {
 	return true, nil
 }
 
+// BuildOBIII builds the OBIII binary
 func BuildOBIII() error {
 	buildCmd := exec.Command("/usr/local/go/bin/go", "build", "-o", "OBIII", "main.go")
 
@@ -71,6 +73,7 @@ func BuildOBIII() error {
 	return nil
 }
 
+// Exit restarts the OBIII service
 func Exit() error {
 	exitCmd := exec.Command("systemctl", "restart", "OBIII")
 
