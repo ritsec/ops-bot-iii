@@ -28,6 +28,7 @@ func populateSlashCommands(ctx ddtrace.SpanContext) {
 	SlashCommands["signin"] = slash.Signin()
 	SlashCommands["vote"] = slash.Vote()
 	SlashCommands["feedback"] = slash.Feedback()
+	SlashCommands["update"] = slash.Update()
 }
 
 // populateHandlers populates the Handlers map with all of the handlers
