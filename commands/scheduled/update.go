@@ -55,7 +55,7 @@ func Update() *structs.ScheduledEvent {
 			c := cron.New()
 
 			// every day at 2am
-			err := c.AddFunc("0 0 2 * * *", func() { updateStatus(s, span.Context()) })
+			err := c.AddFunc("0 0 2 * * *", func() { updateOBIII(s, span.Context()) })
 			if err != nil {
 				return err
 			}
