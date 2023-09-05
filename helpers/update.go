@@ -7,20 +7,30 @@ import (
 )
 
 func UpdateMainBranch() (bool, error) {
-	err := exec.Command("git", "switch", "main").Run()
+	switchCmd := exec.Command("git", "switch", "main")
+
+	stderr := &bytes.Buffer{}
+	switchCmd.Stderr = stderr
+
+	err := switchCmd.Run()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error switching to main branch: %s", stderr.String())
 	}
 
-	err = exec.Command("git", "fetch", "origin", "main").Run()
+	fetchCmd := exec.Command("git", "fetch", "origin", "main")
+
+	stderr = &bytes.Buffer{}
+	fetchCmd.Stderr = stderr
+
+	err = fetchCmd.Run()
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error fetching from origin: %s", stderr.String())
 	}
 
 	commitCount := exec.Command("git", "rev-list", "--count", "HEAD...origin/main")
 
 	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
+	stderr = &bytes.Buffer{}
 
 	commitCount.Stdout = stdout
 	commitCount.Stderr = stderr

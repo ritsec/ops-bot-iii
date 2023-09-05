@@ -34,9 +34,12 @@ func Update() *structs.SlashCommand {
 			)
 			defer span.Finish()
 
-			force := i.ApplicationCommandData().Options[0].BoolValue()
-
 			logging.Debug(s, "Update command received", i.Member.User, span)
+
+			force := false
+			if len(i.ApplicationCommandData().Options) != 0 {
+				force = i.ApplicationCommandData().Options[0].BoolValue()
+			}
 
 			update, err := helpers.UpdateMainBranch()
 			if err != nil {
@@ -45,11 +48,9 @@ func Update() *structs.SlashCommand {
 			}
 
 			if !update {
-				logging.Info(s, "No update available", i.Member.User, span)
+				logging.Debug(s, "No update available", i.Member.User, span)
 
 				if !force {
-					logging.Info(s, "Forcing update", i.Member.User, span)
-
 					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
@@ -61,7 +62,11 @@ func Update() *structs.SlashCommand {
 						logging.Error(s, "Error responding to interaction", i.Member.User, span, logrus.Fields{"err": err.Error()})
 						return
 					}
+
+					return
 				} else {
+					logging.Debug(s, "Forcing update", i.Member.User, span)
+
 					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
@@ -97,6 +102,8 @@ func Update() *structs.SlashCommand {
 						logging.Error(s, "Error exiting", i.Member.User, span, logrus.Fields{"err": err.Error()})
 						return
 					}
+
+					return
 				}
 			}
 
