@@ -62,7 +62,7 @@ func BuildOBIII() error {
 }
 
 func Exit() error {
-	exitCmd := exec.Command("systemctl", "restart", "obiii")
+	exitCmd := exec.Command("systemctl", "restart", "OBIII")
 
 	stderr := &bytes.Buffer{}
 	exitCmd.Stderr = stderr
