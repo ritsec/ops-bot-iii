@@ -15,8 +15,8 @@ import (
 func Update() *structs.SlashCommand {
 	return &structs.SlashCommand{
 		Command: &discordgo.ApplicationCommand{
-			Name:                     "reboot",
-			Description:              "Reboot the bot",
+			Name:                     "update",
+			Description:              "Update the bot",
 			DefaultMemberPermissions: &permission.Admin,
 			Options: []*discordgo.ApplicationCommandOption{
 				{
