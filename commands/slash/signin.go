@@ -63,6 +63,10 @@ func Signin() *structs.SlashCommand {
 							Value: "Reversing",
 						},
 						{
+							Name:  "RVAPT",
+							Value: "RVAPT",
+						},
+						{
 							Name:  "Physical",
 							Value: "Physical",
 						},
@@ -105,7 +109,7 @@ func Signin() *structs.SlashCommand {
 
 			signinSlug := uuid.New().String()
 
-			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, j *discordgo.InteractionCreate) {
 				span_signinSlug := tracer.StartSpan(
 					"commands.slash.signin:Signin:signinSlug",
 					tracer.ResourceName("/signin:signinSlug"),
@@ -129,6 +133,8 @@ func Signin() *structs.SlashCommand {
 					entSigninType = signin.TypeRedTeam
 				case "Red Team Recruiting":
 					entSigninType = signin.TypeRedTeamRecruiting
+				case "RVAPT":
+					entSigninType = signin.TypeRVAPT
 				case "Reversing":
 					entSigninType = signin.TypeReversing
 				case "Physical":
@@ -143,14 +149,14 @@ func Signin() *structs.SlashCommand {
 					entSigninType = signin.TypeOther
 				}
 
-				recentSignin, err := data.Signin.RecentSignin(i.Member.User.ID, entSigninType, span.Context())
+				recentSignin, err := data.Signin.RecentSignin(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
+					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
 				}
 
 				if recentSignin {
-					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
 							Content: "You have already signed in for **" + signinType + "**!",
@@ -158,49 +164,46 @@ func Signin() *structs.SlashCommand {
 						},
 					})
 					if err != nil {
-						logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
+						logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					}
 					return
 				}
 
-				_, err = data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
+				_, err = data.Signin.Create(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
+					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
 				}
 
-				err = google.SheetsAppendSignin(i.Member.User.ID, i.Member.User.Username, signinType, span.Context())
+				err = google.SheetsAppendSignin(j.Member.User.ID, j.Member.User.Username, signinType, span.Context())
 				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
+					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
 				}
 
-				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
-						Content: signinMessage(i.Member.User.ID, entSigninType, span_signinSlug.Context()),
+						Content: signinMessage(j.Member.User.ID, entSigninType, span_signinSlug.Context()),
 						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
 				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span_signinSlug, logrus.Fields{"error": err})
+					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
 				}
 			}
 			defer delete(*ComponentHandlers, signinSlug)
 
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(2*time.Hour).Format("3:04PM") + "**!",
-					Components: []discordgo.MessageComponent{
-						discordgo.ActionsRow{
-							Components: []discordgo.MessageComponent{
-								discordgo.Button{
-									Label:    "Signin",
-									Style:    discordgo.SuccessButton,
-									CustomID: signinSlug,
-								},
+			message, err := s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+				Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(2*time.Hour).Format("3:04PM") + "**!",
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.Button{
+								Label:    "Signin",
+								Style:    discordgo.SuccessButton,
+								CustomID: signinSlug,
 							},
 						},
 					},
@@ -210,11 +213,22 @@ func Signin() *structs.SlashCommand {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			time.Sleep(3 * time.Hour)
-
-			err = s.InteractionResponseDelete(i.Interaction)
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Signin Message Created, it will close in 2 hours!",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
 			if err != nil {
-				logging.Error(s, "Error encounted while deleting interaction response", i.Member.User, span, logrus.Fields{"error": err})
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
+
+			time.Sleep(2 * time.Hour)
+
+			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
+			if err != nil {
+				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 		},
 	}
