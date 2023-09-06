@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=simple
-User=root
+EnvironmentFile=/root/ops-bot-iii/OBIII.env
 WorkingDirectory=/root/ops-bot-iii/
 Restart=always
 RestartSec=30
