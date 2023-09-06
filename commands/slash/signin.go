@@ -63,6 +63,10 @@ func Signin() *structs.SlashCommand {
 							Value: "Reversing",
 						},
 						{
+							Name:  "RVAPT",
+							Value: "RVAPT",
+						},
+						{
 							Name:  "Physical",
 							Value: "Physical",
 						},
@@ -129,6 +133,8 @@ func Signin() *structs.SlashCommand {
 					entSigninType = signin.TypeRedTeam
 				case "Red Team Recruiting":
 					entSigninType = signin.TypeRedTeamRecruiting
+				case "RVAPT":
+					entSigninType = signin.TypeRVAPT
 				case "Reversing":
 					entSigninType = signin.TypeReversing
 				case "Physical":

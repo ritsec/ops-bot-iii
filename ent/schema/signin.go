@@ -26,6 +26,7 @@ func (Signin) Fields() []ent.Field {
 				"Red Team",
 				"Red Team Recruiting",
 				"Reversing",
+				"RVAPT",
 				"Contagion",
 				"Physical",
 				"Wireless",
