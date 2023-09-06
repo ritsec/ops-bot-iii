@@ -1,6 +1,8 @@
 package scheduled
 
 import (
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/robfig/cron"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/helpers"
@@ -56,10 +58,16 @@ func Update() *structs.ScheduledEvent {
 			)
 			defer span.Finish()
 
-			c := cron.New()
+			est, err := time.LoadLocation("America/New_York")
+			if err != nil {
+				logging.Error(s, err.Error(), nil, span)
+				return err
+			}
+
+			c := cron.NewWithLocation(est)
 
 			// every day at 2am
-			err := c.AddFunc("0 0 2 * * *", func() { updateOBIII(s, span.Context()) })
+			err = c.AddFunc("0 0 2 * * *", func() { updateOBIII(s, span.Context()) })
 			if err != nil {
 				return err
 			}
