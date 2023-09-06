@@ -19,6 +19,8 @@ func updateOBIII(s *discordgo.Session, ctx ddtrace.SpanContext) {
 	)
 	defer span.Finish()
 
+	logging.Debug(s, "Checking for update", nil, span)
+
 	update, err := helpers.UpdateMainBranch()
 	if err != nil {
 		logging.Error(s, err.Error(), nil, span)
@@ -39,6 +41,8 @@ func updateOBIII(s *discordgo.Session, ctx ddtrace.SpanContext) {
 			logging.Error(s, err.Error(), nil, span)
 			return
 		}
+	} else {
+		logging.Debug(s, "No update available", nil, span)
 	}
 }
 

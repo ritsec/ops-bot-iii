@@ -110,7 +110,7 @@ func Update() *structs.SlashCommand {
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "No update available; forcing update\nBot will be up temporarily once done updating",
+					Content: "Update available; restarting now\nBot will be up temporarily once done updating",
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
