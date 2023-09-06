@@ -2,3 +2,4 @@ config.yml
 private/
 data.sqlite
 OBIII
+OBIII.env
