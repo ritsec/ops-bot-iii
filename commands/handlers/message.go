@@ -87,11 +87,12 @@ func MessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 	defer span.Finish()
 
 	message := m.BeforeDelete.Content
+	message = strings.ReplaceAll(message, "```", "\\`\\`\\`")
 
 	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 	// 1024 characters is the max length of a field value
 	if len(message) > 1024 {
-		message = message[:1021] + "..."
+		message = "```\n" + message[:1013] + "\n...```"
 	}
 
 	_, err := s.ChannelMessageSendComplex(
@@ -144,21 +145,26 @@ func MessageEdit(s *discordgo.Session, m *discordgo.MessageUpdate) {
 	defer span.Finish()
 
 	messageBefore := m.BeforeUpdate.Content
+	messageBefore = strings.ReplaceAll(messageBefore, "```", "\\`\\`\\`")
+
 	messageAfter := m.Content
+	messageAfter = strings.ReplaceAll(messageAfter, "```", "\\`\\`\\`")
+
 	difference := diff(messageBefore, messageAfter)
+	difference = strings.ReplaceAll(difference, "```", "\\`\\`\\`")
 
 	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 	// 1024 characters is the max length of a field value
 	if len(messageBefore) > 1024 {
-		messageBefore = messageBefore[:1021] + "..."
+		messageBefore = "```\n" + messageBefore[:1013] + "\n...```"
 	}
 
 	if len(messageAfter) > 1024 {
-		messageAfter = messageAfter[:1021] + "..."
+		messageAfter = "```\n" + messageAfter[:1013] + "\n...```"
 	}
 
 	if len(difference) > 1024 {
-		difference = difference[:1021] + "..."
+		difference = "```\n" + difference[:1021] + "\n...```"
 	}
 
 	_, err := s.ChannelMessageSendComplex(
