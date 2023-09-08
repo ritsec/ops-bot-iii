@@ -91,10 +91,14 @@ func MessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 
 	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 	// 1024 characters is the max length of a field value
-	if len(message) > 1013 {
+
+	// Math:
+	// "```\n" + "\n```" = 8 characters => 1024 - 8 = 1016 characters or less does not need to be truncated
+	// "```\n" + "...\n```" = 11 characters => 1024 - 8 = 1013 max characters if needs truncated
+	if len(message) > 1016 {
 		message = "```\n" + message[:1013] + "\n...```"
 	} else {
-		message = "```\n" + message + "\n...```"
+		message = "```\n" + message + "\n```"
 	}
 
 	_, err := s.ChannelMessageSendComplex(
@@ -157,22 +161,26 @@ func MessageEdit(s *discordgo.Session, m *discordgo.MessageUpdate) {
 
 	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 	// 1024 characters is the max length of a field value
-	if len(messageBefore) > 1024 {
+
+	// Math:
+	// "```\n" + "\n```" = 8 characters => 1024 - 8 = 1016 characters or less does not need to be truncated
+	// "```\n" + "...\n```" = 11 characters => 1024 - 8 = 1013 max characters if needs truncated
+	if len(messageBefore) > 1016 {
 		messageBefore = "```\n" + messageBefore[:1013] + "\n...```"
 	} else {
-		messageBefore = "```\n" + messageBefore + "\n...```"
+		messageBefore = "```\n" + messageBefore + "\n```"
 	}
 
-	if len(messageAfter) > 1024 {
+	if len(messageAfter) > 1016 {
 		messageAfter = "```\n" + messageAfter[:1013] + "\n...```"
 	} else {
-		messageAfter = "```\n" + messageAfter + "\n...```"
+		messageAfter = "```\n" + messageAfter + "\n```"
 	}
 
-	if len(difference) > 1013 {
+	if len(difference) > 1016 {
 		difference = "```\n" + difference[:1013] + "\n...```"
 	} else {
-		difference = "```\n" + difference + "\n...```"
+		difference = "```\n" + difference + "\n```"
 	}
 
 	_, err := s.ChannelMessageSendComplex(
