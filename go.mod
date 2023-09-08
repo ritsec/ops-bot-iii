@@ -8,7 +8,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.3.0
-	github.com/kylelemons/godebug v0.0.0-20170820004349-d65d576e9348
 	github.com/mackerelio/go-osstat v0.2.4
 	github.com/mailgun/mailgun-go v2.0.0+incompatible
 	github.com/mattn/go-sqlite3 v1.14.16

@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
-	"github.com/kylelemons/godebug/diff"
 	"github.com/sirupsen/logrus"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
@@ -13,6 +15,53 @@ var (
 	// messageModificationChannelID is the channel ID of the channel to send message modification events to
 	messageModificationChannelID string = config.GetString("commands.message.channel_id")
 )
+
+func diff(a, b string) string {
+	linesA := strings.Split(a, "\n")
+	linesB := strings.Split(b, "\n")
+
+	// Generate the LCS matrix
+	lcs := make([][]int, len(linesA)+1)
+	for i := range lcs {
+		lcs[i] = make([]int, len(linesB)+1)
+	}
+
+	for i := 1; i <= len(linesA); i++ {
+		for j := 1; j <= len(linesB); j++ {
+			if linesA[i-1] == linesB[j-1] {
+				lcs[i][j] = lcs[i-1][j-1] + 1
+			} else if lcs[i-1][j] > lcs[i][j-1] {
+				lcs[i][j] = lcs[i-1][j]
+			} else {
+				lcs[i][j] = lcs[i][j-1]
+			}
+		}
+	}
+
+	// Reconstruct the diff
+	i, j := len(linesA), len(linesB)
+	var result []string
+
+	for i > 0 || j > 0 {
+		if i > 0 && j > 0 && linesA[i-1] == linesB[j-1] {
+			i--
+			j--
+		} else if j > 0 && (i == 0 || lcs[i][j-1] >= lcs[i-1][j]) {
+			result = append(result, fmt.Sprintf("+ %d: %s", j, linesB[j-1]))
+			j--
+		} else if i > 0 && (j == 0 || lcs[i][j-1] < lcs[i-1][j]) {
+			result = append(result, fmt.Sprintf("- %d: %s", i, linesA[i-1]))
+			i--
+		}
+	}
+
+	// Reverse the result for a top-to-bottom view
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		result[i], result[j] = result[j], result[i]
+	}
+
+	return strings.Join(result, "\n")
+}
 
 // MessageDelete is a handler that sends a message to the messageModificationChannelID channel when a message is deleted
 func MessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
@@ -96,7 +145,7 @@ func MessageEdit(s *discordgo.Session, m *discordgo.MessageUpdate) {
 
 	messageBefore := m.BeforeUpdate.Content
 	messageAfter := m.Content
-	difference := diff.Diff(messageBefore, messageAfter)
+	difference := diff(messageBefore, messageAfter)
 
 	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 	// 1024 characters is the max length of a field value
