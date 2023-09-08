@@ -195,8 +195,15 @@ func Signin() *structs.SlashCommand {
 			}
 			defer delete(*ComponentHandlers, signinSlug)
 
+			var delay int
+			if signinType == "General Meeting" {
+				delay = 4
+			} else {
+				delay = 2
+			}
+
 			message, err := s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
-				Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(2*time.Hour).Format("3:04PM") + "**!",
+				Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(time.Duration(delay)*time.Hour).Format("3:04PM") + "**!",
 				Components: []discordgo.MessageComponent{
 					discordgo.ActionsRow{
 						Components: []discordgo.MessageComponent{
@@ -216,7 +223,7 @@ func Signin() *structs.SlashCommand {
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "Signin Message Created, it will close in 2 hours!",
+					Content: fmt.Sprintf("Signin Message Created, it will close in %d hours!", delay),
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
@@ -224,7 +231,7 @@ func Signin() *structs.SlashCommand {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			time.Sleep(2 * time.Hour)
+			time.Sleep(time.Duration(delay) * time.Hour)
 
 			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
 			if err != nil {
