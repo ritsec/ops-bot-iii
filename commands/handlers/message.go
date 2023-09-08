@@ -91,8 +91,10 @@ func MessageDelete(s *discordgo.Session, m *discordgo.MessageDelete) {
 
 	// https://discord.com/developers/docs/resources/channel#embed-object-embed-limits
 	// 1024 characters is the max length of a field value
-	if len(message) > 1024 {
+	if len(message) > 1013 {
 		message = "```\n" + message[:1013] + "\n...```"
+	} else {
+		message = "```\n" + message + "\n...```"
 	}
 
 	_, err := s.ChannelMessageSendComplex(
@@ -157,14 +159,20 @@ func MessageEdit(s *discordgo.Session, m *discordgo.MessageUpdate) {
 	// 1024 characters is the max length of a field value
 	if len(messageBefore) > 1024 {
 		messageBefore = "```\n" + messageBefore[:1013] + "\n...```"
+	} else {
+		messageBefore = "```\n" + messageBefore + "\n...```"
 	}
 
 	if len(messageAfter) > 1024 {
 		messageAfter = "```\n" + messageAfter[:1013] + "\n...```"
+	} else {
+		messageAfter = "```\n" + messageAfter + "\n...```"
 	}
 
-	if len(difference) > 1024 {
-		difference = "```\n" + difference[:1021] + "\n...```"
+	if len(difference) > 1013 {
+		difference = "```\n" + difference[:1013] + "\n...```"
+	} else {
+		difference = "```\n" + difference + "\n...```"
 	}
 
 	_, err := s.ChannelMessageSendComplex(
