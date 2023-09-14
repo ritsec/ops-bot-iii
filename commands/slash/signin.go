@@ -2,6 +2,7 @@ package slash
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -253,7 +254,9 @@ func Signin() *structs.SlashCommand {
 			if len(msg) > 2000 {
 				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, msg, msg, span.Context())
 			} else {
-				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, fmt.Sprintf("Signins for `%s`; %d users signed in\n", signinType, len(userPairs)), msg, span.Context())
+				trimmedMsg := msg[:2000]
+				trimmedMsg = trimmedMsg[:strings.LastIndex(trimmedMsg, "\n")]
+				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, trimmedMsg, msg, span.Context())
 			}
 			if err != nil {
 				logging.Error(

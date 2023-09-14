@@ -198,6 +198,7 @@ func Query() *structs.SlashCommand {
 			for _, signin := range signins {
 				message += fmt.Sprintf("[%d] %s\n", signin.Value, helpers.AtUser(signin.Key))
 			}
+
 			if len(message) <= 2000 {
 				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -214,9 +215,12 @@ func Query() *structs.SlashCommand {
 					},
 				})
 			} else {
+				trimmedMessage := message[:2000]
+				trimmedMessage = trimmedMessage[:strings.LastIndex(trimmedMessage, "\n")]
 				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
+						Content: trimmedMessage,
 						Files: []*discordgo.File{
 							{
 								Name:        "query.txt",
