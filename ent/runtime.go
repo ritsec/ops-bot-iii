@@ -21,7 +21,7 @@ func init() {
 	// signinDescTimestamp is the schema descriptor for timestamp field.
 	signinDescTimestamp := signinFields[0].Descriptor()
 	// signin.DefaultTimestamp holds the default value on creation for the timestamp field.
-	signin.DefaultTimestamp = signinDescTimestamp.Default.(time.Time)
+	signin.DefaultTimestamp = signinDescTimestamp.Default.(func() time.Time)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescEmail is the schema descriptor for email field.

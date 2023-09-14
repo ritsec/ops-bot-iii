@@ -18,7 +18,7 @@ func (Signin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("timestamp").
 			Comment("Time of signin").
-			Default(time.Now()),
+			Default(time.Now),
 		field.Enum("type").
 			Comment("Type of signin").
 			Values(

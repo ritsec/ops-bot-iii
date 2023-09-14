@@ -62,7 +62,7 @@ func ValidColumn(column string) bool {
 
 var (
 	// DefaultTimestamp holds the default value on creation for the "timestamp" field.
-	DefaultTimestamp time.Time
+	DefaultTimestamp func() time.Time
 )
 
 // Type defines the type for the "type" enum field.
