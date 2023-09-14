@@ -11,6 +11,7 @@ import (
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/data"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/google"
+	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/helpers"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
@@ -109,6 +110,38 @@ func Signin() *structs.SlashCommand {
 
 			signinSlug := uuid.New().String()
 
+			var entSigninType signin.Type
+			switch signinType {
+			case "General Meeting":
+				entSigninType = signin.TypeGeneralMeeting
+			case "Contagion":
+				entSigninType = signin.TypeContagion
+			case "DFIR":
+				entSigninType = signin.TypeDFIR
+			case "Ops":
+				entSigninType = signin.TypeOps
+			case "Ops IG":
+				entSigninType = signin.TypeOpsIG
+			case "Red Team":
+				entSigninType = signin.TypeRedTeam
+			case "Red Team Recruiting":
+				entSigninType = signin.TypeRedTeamRecruiting
+			case "RVAPT":
+				entSigninType = signin.TypeRVAPT
+			case "Reversing":
+				entSigninType = signin.TypeReversing
+			case "Physical":
+				entSigninType = signin.TypePhysical
+			case "Wireless":
+				entSigninType = signin.TypeWireless
+			case "WiCyS":
+				entSigninType = signin.TypeWiCyS
+			case "Vulnerability Research":
+				entSigninType = signin.TypeVulnerabilityResearch
+			case "Other":
+				entSigninType = signin.TypeOther
+			}
+
 			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, j *discordgo.InteractionCreate) {
 				span_signinSlug := tracer.StartSpan(
 					"commands.slash.signin:Signin:signinSlug",
@@ -116,38 +149,6 @@ func Signin() *structs.SlashCommand {
 					tracer.ChildOf(span.Context()),
 				)
 				defer span.Finish()
-
-				var entSigninType signin.Type
-				switch signinType {
-				case "General Meeting":
-					entSigninType = signin.TypeGeneralMeeting
-				case "Contagion":
-					entSigninType = signin.TypeContagion
-				case "DFIR":
-					entSigninType = signin.TypeDFIR
-				case "Ops":
-					entSigninType = signin.TypeOps
-				case "Ops IG":
-					entSigninType = signin.TypeOpsIG
-				case "Red Team":
-					entSigninType = signin.TypeRedTeam
-				case "Red Team Recruiting":
-					entSigninType = signin.TypeRedTeamRecruiting
-				case "RVAPT":
-					entSigninType = signin.TypeRVAPT
-				case "Reversing":
-					entSigninType = signin.TypeReversing
-				case "Physical":
-					entSigninType = signin.TypePhysical
-				case "Wireless":
-					entSigninType = signin.TypeWireless
-				case "WiCyS":
-					entSigninType = signin.TypeWiCyS
-				case "Vulnerability Research":
-					entSigninType = signin.TypeVulnerabilityResearch
-				case "Other":
-					entSigninType = signin.TypeOther
-				}
 
 				recentSignin, err := data.Signin.RecentSignin(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
@@ -235,6 +236,22 @@ func Signin() *structs.SlashCommand {
 				err = s.ChannelMessageDelete(i.ChannelID, message.ID)
 				if err != nil {
 					logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
+
+				users, err := data.Signin.QueryUsers(time.Duration(12)*time.Hour, entSigninType, span.Context())
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
+				}
+
+				message := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(users))
+				for _, user := range users {
+					message += fmt.Sprintf("- %s\n", helpers.AtUser(user.ID))
+				}
+
+				err = helpers.SendDirectMessage(s, i.Message.Author.ID, "", span.Context())
+				if err != nil {
+					logging.Error(s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				}
 			}()
 

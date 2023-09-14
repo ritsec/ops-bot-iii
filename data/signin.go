@@ -85,3 +85,21 @@ func (*signin_s) RecentSignin(userID string, signinType signin.Type, ctx ddtrace
 	}
 	return ok, nil
 }
+
+func (*signin_s) QueryUsers(delta time.Duration, signinType signin.Type, ctx ddtrace.SpanContext) ([]*ent.User, error) {
+	span := tracer.StartSpan(
+		"data.signin:Query",
+		tracer.ResourceName("Data.Signin.Query"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	return Client.User.Query().
+		Where(
+			user.HasSigninsWith(
+				signin.TypeEQ(signinType),
+				signin.TimestampGTE(time.Now().Add(-delta)),
+			),
+		).
+		All(Ctx)
+}
