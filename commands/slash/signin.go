@@ -246,10 +246,15 @@ func Signin() *structs.SlashCommand {
 
 			msg := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
 			for _, user := range userPairs {
-				msg += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
+				username, err := helpers.Username(s, user.Key)
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					username = "Failed to resolve"
+				}
+				msg += fmt.Sprintf("- [%s] %s\n", username, helpers.AtUser(user.Key))
 			}
 			if len(msg) > 2000 {
-				err = helpers.SendDirectMessage(s, i.Message.Author.ID, msg, span.Context())
+				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, msg, msg, span.Context())
 			} else {
 				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, fmt.Sprintf("Signins for `%s`; %d users signed in\n", signinType, len(userPairs)), msg, span.Context())
 			}
