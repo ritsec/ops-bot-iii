@@ -231,14 +231,12 @@ func Signin() *structs.SlashCommand {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			defer func() {
-				err = s.ChannelMessageDelete(i.ChannelID, message.ID)
-				if err != nil {
-					logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				}
-			}()
-
 			time.Sleep(time.Duration(delay) * time.Hour)
+
+			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
+			if err != nil {
+				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 		},
 	}
 }
