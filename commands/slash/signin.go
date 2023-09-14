@@ -248,10 +248,14 @@ func Signin() *structs.SlashCommand {
 				for _, user := range userPairs {
 					message += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
 				}
-
-				err = helpers.SendDirectMessage(s, i.Message.Author.ID, "", span.Context())
+				if len(message) > 2000 {
+					err = helpers.SendDirectMessage(s, i.Message.Author.ID, "", span.Context())
+				} else {
+					err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, fmt.Sprintf("Signins for `%s`; %d users signed in\n", signinType, len(userPairs)), message, span.Context())
+				}
 				if err != nil {
-					logging.Error(s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					logging.Error(
+						s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				}
 			}()
 
