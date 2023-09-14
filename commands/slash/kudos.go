@@ -161,16 +161,14 @@ func Kudos() *structs.SlashCommand {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			defer func() {
-				err = s.ChannelMessageDelete(KudosApprovalChannelID, approvalMessage.ID)
-				if err != nil {
-					logging.Error(s, "Error deleting channel message", i.Member.User, span, logrus.Fields{"error": err})
-				}
-				delete(*ComponentHandlers, approve_slug)
-				delete(*ComponentHandlers, deny_slug)
-			}()
-
 			wg.Wait()
+
+			err = s.ChannelMessageDelete(KudosApprovalChannelID, approvalMessage.ID)
+			if err != nil {
+				logging.Error(s, "Error deleting channel message", i.Member.User, span, logrus.Fields{"error": err})
+			}
+			delete(*ComponentHandlers, approve_slug)
+			delete(*ComponentHandlers, deny_slug)
 		},
 	}
 }

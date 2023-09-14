@@ -232,34 +232,31 @@ func Signin() *structs.SlashCommand {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			defer func() {
-				err = s.ChannelMessageDelete(i.ChannelID, message.ID)
-				if err != nil {
-					logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				}
-
-				userPairs, err := data.Signin.Query(time.Duration(12)*time.Hour, entSigninType, span.Context())
-				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-					return
-				}
-
-				message := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
-				for _, user := range userPairs {
-					message += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
-				}
-				if len(message) > 2000 {
-					err = helpers.SendDirectMessage(s, i.Message.Author.ID, "", span.Context())
-				} else {
-					err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, fmt.Sprintf("Signins for `%s`; %d users signed in\n", signinType, len(userPairs)), message, span.Context())
-				}
-				if err != nil {
-					logging.Error(
-						s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				}
-			}()
-
 			time.Sleep(time.Duration(delay) * time.Hour)
+			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
+			if err != nil {
+				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
+
+			userPairs, err := data.Signin.Query(time.Duration(12)*time.Hour, entSigninType, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
+			msg := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
+			for _, user := range userPairs {
+				msg += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
+			}
+			if len(msg) > 2000 {
+				err = helpers.SendDirectMessage(s, i.Message.Author.ID, msg, span.Context())
+			} else {
+				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, fmt.Sprintf("Signins for `%s`; %d users signed in\n", signinType, len(userPairs)), msg, span.Context())
+			}
+			if err != nil {
+				logging.Error(
+					s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 		},
 	}
 }
