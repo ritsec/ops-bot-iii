@@ -6,6 +6,7 @@ import (
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
+	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
@@ -86,7 +87,7 @@ func (*signin_s) RecentSignin(userID string, signinType signin.Type, ctx ddtrace
 	return ok, nil
 }
 
-func (*signin_s) QueryUsers(delta time.Duration, signinType signin.Type, ctx ddtrace.SpanContext) ([]*ent.User, error) {
+func (*signin_s) Query(delta time.Duration, signinType signin.Type, ctx ddtrace.SpanContext) (structs.PairList[string], error) {
 	span := tracer.StartSpan(
 		"data.signin:Query",
 		tracer.ResourceName("Data.Signin.Query"),
@@ -94,12 +95,46 @@ func (*signin_s) QueryUsers(delta time.Duration, signinType signin.Type, ctx ddt
 	)
 	defer span.Finish()
 
-	return Client.User.Query().
-		Where(
-			user.HasSigninsWith(
+	var (
+		entSignins []*ent.Signin
+		err        error
+	)
+
+	if signinType == "All" {
+		entSignins, err = Client.Signin.Query().
+			Where(
+				signin.TimestampGTE(time.Now().Add(-delta)),
+			).
+			WithUser().
+			All(Ctx)
+	} else {
+		entSignins, err = Client.Signin.Query().
+			Where(
 				signin.TypeEQ(signinType),
 				signin.TimestampGTE(time.Now().Add(-delta)),
-			),
-		).
-		All(Ctx)
+			).
+			WithUser().
+			All(Ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	userCount := make(map[string]int)
+
+	for _, entSignin := range entSignins {
+		userCount[entSignin.Edges.User.ID]++
+	}
+
+	pairList := make(structs.PairList[string], len(userCount))
+
+	i := 0
+	for userID, count := range userCount {
+		pairList[i] = structs.Pair[string]{Key: userID, Value: count}
+		i++
+	}
+
+	pairList.Sort()
+
+	return pairList, nil
 }

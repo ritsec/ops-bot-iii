@@ -238,15 +238,15 @@ func Signin() *structs.SlashCommand {
 					logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				}
 
-				users, err := data.Signin.QueryUsers(time.Duration(12)*time.Hour, entSigninType, span.Context())
+				userPairs, err := data.Signin.Query(time.Duration(12)*time.Hour, entSigninType, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 					return
 				}
 
-				message := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(users))
-				for _, user := range users {
-					message += fmt.Sprintf("- %s\n", helpers.AtUser(user.ID))
+				message := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
+				for _, user := range userPairs {
+					message += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
 				}
 
 				err = helpers.SendDirectMessage(s, i.Message.Author.ID, "", span.Context())
