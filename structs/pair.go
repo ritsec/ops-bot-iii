@@ -24,3 +24,9 @@ func (p PairList[T]) Swap(i, j int) {
 func (p PairList[T]) Sort() {
 	sort.Sort(p)
 }
+
+func (p PairList[T]) Reverse() {
+	for i, j := 0, len(p)-1; i < j; i, j = i+1, j-1 {
+		p[i], p[j] = p[j], p[i]
+	}
+}
