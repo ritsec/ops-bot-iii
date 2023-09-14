@@ -88,7 +88,7 @@ func (sc *SigninCreate) ExecX(ctx context.Context) {
 // defaults sets the default values of the builder before save.
 func (sc *SigninCreate) defaults() {
 	if _, ok := sc.mutation.Timestamp(); !ok {
-		v := signin.DefaultTimestamp
+		v := signin.DefaultTimestamp()
 		sc.mutation.SetTimestamp(v)
 	}
 }
