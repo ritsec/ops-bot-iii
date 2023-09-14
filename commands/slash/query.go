@@ -196,12 +196,7 @@ func Query() *structs.SlashCommand {
 			message := fmt.Sprintf("Signin Type: `%s`\nTotal Signins: `%d`\nTime Delta: `hours=%d,days=%d,weeks=%d`\n", signinType, sum, hours, days, weeks)
 
 			for _, signin := range signins {
-				username, err := helpers.Username(s, signin.Key)
-				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-					username = "Failed to resolve"
-				}
-				message += fmt.Sprintf("[%d] [%s] %s\n", signin.Value, username, helpers.AtUser(signin.Key))
+				message += fmt.Sprintf("[%d] %s\n", signin.Value, helpers.AtUser(signin.Key))
 			}
 			if len(message) <= 2000 {
 				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
