@@ -2,6 +2,7 @@ package slash
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -233,6 +234,7 @@ func Signin() *structs.SlashCommand {
 			}
 
 			time.Sleep(time.Duration(delay) * time.Hour)
+
 			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
 			if err != nil {
 				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
@@ -246,17 +248,15 @@ func Signin() *structs.SlashCommand {
 
 			msg := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
 			for _, user := range userPairs {
-				username, err := helpers.Username(s, user.Key)
-				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-					username = "Failed to resolve"
-				}
-				msg += fmt.Sprintf("- [%s] %s\n", username, helpers.AtUser(user.Key))
+				msg += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
 			}
+
 			if len(msg) > 2000 {
 				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, msg, msg, span.Context())
 			} else {
-				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, fmt.Sprintf("Signins for `%s`; %d users signed in\n", signinType, len(userPairs)), msg, span.Context())
+				trimmedMsg := msg[:2000]
+				trimmedMsg = trimmedMsg[:strings.LastIndex(trimmedMsg, "\n")]
+				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, trimmedMsg, msg, span.Context())
 			}
 			if err != nil {
 				logging.Error(

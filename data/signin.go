@@ -135,6 +135,7 @@ func (*signin_s) Query(delta time.Duration, signinType signin.Type, ctx ddtrace.
 	}
 
 	pairList.Sort()
+	pairList.Reverse()
 
 	return pairList, nil
 }
