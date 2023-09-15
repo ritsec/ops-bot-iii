@@ -251,12 +251,12 @@ func Signin() *structs.SlashCommand {
 				msg += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
 			}
 
-			if len(msg) > 2000 {
-				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, msg, msg, span.Context())
+			if len(msg) <= 2000 {
+				err = helpers.SendDirectMessageWithFile(s, i.Member.User.ID, msg, msg, span.Context())
 			} else {
 				trimmedMsg := msg[:2000]
 				trimmedMsg = trimmedMsg[:strings.LastIndex(trimmedMsg, "\n")]
-				err = helpers.SendDirectMessageWithFile(s, i.Message.Author.ID, trimmedMsg, msg, span.Context())
+				err = helpers.SendDirectMessageWithFile(s, i.Member.User.ID, trimmedMsg, msg, span.Context())
 			}
 			if err != nil {
 				logging.Error(
