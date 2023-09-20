@@ -2,6 +2,7 @@ package slash
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,6 +12,7 @@ import (
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/data"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/google"
+	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/helpers"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
@@ -109,6 +111,38 @@ func Signin() *structs.SlashCommand {
 
 			signinSlug := uuid.New().String()
 
+			var entSigninType signin.Type
+			switch signinType {
+			case "General Meeting":
+				entSigninType = signin.TypeGeneralMeeting
+			case "Contagion":
+				entSigninType = signin.TypeContagion
+			case "DFIR":
+				entSigninType = signin.TypeDFIR
+			case "Ops":
+				entSigninType = signin.TypeOps
+			case "Ops IG":
+				entSigninType = signin.TypeOpsIG
+			case "Red Team":
+				entSigninType = signin.TypeRedTeam
+			case "Red Team Recruiting":
+				entSigninType = signin.TypeRedTeamRecruiting
+			case "RVAPT":
+				entSigninType = signin.TypeRVAPT
+			case "Reversing":
+				entSigninType = signin.TypeReversing
+			case "Physical":
+				entSigninType = signin.TypePhysical
+			case "Wireless":
+				entSigninType = signin.TypeWireless
+			case "WiCyS":
+				entSigninType = signin.TypeWiCyS
+			case "Vulnerability Research":
+				entSigninType = signin.TypeVulnerabilityResearch
+			case "Other":
+				entSigninType = signin.TypeOther
+			}
+
 			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, j *discordgo.InteractionCreate) {
 				span_signinSlug := tracer.StartSpan(
 					"commands.slash.signin:Signin:signinSlug",
@@ -116,38 +150,6 @@ func Signin() *structs.SlashCommand {
 					tracer.ChildOf(span.Context()),
 				)
 				defer span.Finish()
-
-				var entSigninType signin.Type
-				switch signinType {
-				case "General Meeting":
-					entSigninType = signin.TypeGeneralMeeting
-				case "Contagion":
-					entSigninType = signin.TypeContagion
-				case "DFIR":
-					entSigninType = signin.TypeDFIR
-				case "Ops":
-					entSigninType = signin.TypeOps
-				case "Ops IG":
-					entSigninType = signin.TypeOpsIG
-				case "Red Team":
-					entSigninType = signin.TypeRedTeam
-				case "Red Team Recruiting":
-					entSigninType = signin.TypeRedTeamRecruiting
-				case "RVAPT":
-					entSigninType = signin.TypeRVAPT
-				case "Reversing":
-					entSigninType = signin.TypeReversing
-				case "Physical":
-					entSigninType = signin.TypePhysical
-				case "Wireless":
-					entSigninType = signin.TypeWireless
-				case "WiCyS":
-					entSigninType = signin.TypeWiCyS
-				case "Vulnerability Research":
-					entSigninType = signin.TypeVulnerabilityResearch
-				case "Other":
-					entSigninType = signin.TypeOther
-				}
 
 				recentSignin, err := data.Signin.RecentSignin(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
@@ -236,6 +238,29 @@ func Signin() *structs.SlashCommand {
 			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
 			if err != nil {
 				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
+
+			userPairs, err := data.Signin.Query(time.Duration(12)*time.Hour, entSigninType, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
+			msg := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
+			for _, user := range userPairs {
+				msg += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
+			}
+
+			if len(msg) <= 2000 {
+				err = helpers.SendDirectMessageWithFile(s, i.Member.User.ID, msg, msg, span.Context())
+			} else {
+				trimmedMsg := msg[:2000]
+				trimmedMsg = trimmedMsg[:strings.LastIndex(trimmedMsg, "\n")]
+				err = helpers.SendDirectMessageWithFile(s, i.Member.User.ID, trimmedMsg, msg, span.Context())
+			}
+			if err != nil {
+				logging.Error(
+					s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 		},
 	}
