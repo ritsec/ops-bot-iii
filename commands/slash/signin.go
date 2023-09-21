@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/slash/permission"
+	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/data"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/google"
@@ -177,10 +178,12 @@ func Signin() *structs.SlashCommand {
 					return
 				}
 
-				err = google.SheetsAppendSignin(j.Member.User.ID, j.Member.User.Username, signinType, span.Context())
-				if err != nil {
-					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
-					return
+				if config.Google.Enabled {
+					err = google.SheetsAppendSignin(j.Member.User.ID, j.Member.User.Username, signinType, span.Context())
+					if err != nil {
+						logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
+						return
+					}
 				}
 
 				err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{

@@ -1,16 +1,17 @@
 app_id: 
 guild_id:  
 logging:
+    level: Debug # DebugLow < Debug < Info < Warning < Error < Critical < Audit
     audit_channel: 
     critical_channel: 
+    error_channel: 
+    warning_channel: 
+    info_channel: 
     debug_channel: 
     debug_low_channel: 
-    error_channel: 
-    info_channel: 
-    level: Debug # DebugLow < Debug < Info < Warning < Error < Critical < Audit
-    warning_channel: 
     log_file:
 google:
+    enabled: 
     credentials: 
     token: 
     username:

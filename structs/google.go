@@ -2,6 +2,9 @@ package structs
 
 // GoogleConfig is the config for google sheets
 type GoogleConfig struct {
+	// Enabled is whether or not google sheets is enabled
+	Enabled bool
+
 	// KeyFile is the path to the JSON key file
 	KeyFile string
 
