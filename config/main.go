@@ -87,6 +87,7 @@ func logging() structs.LoggingConfig {
 // google returns the google configuration
 func google() structs.GoogleConfig {
 	return structs.GoogleConfig{
+		Enabled:   viper.GetBool("google.enabled"),
 		KeyFile:   viper.GetString("google.key_file"),
 		SheetName: viper.GetString("google.sheet_name"),
 		SheetID:   viper.GetString("google.sheet_id"),
