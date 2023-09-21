@@ -22,27 +22,29 @@ var (
 )
 
 func init() {
-	// Read the JSON key file
-	keyBytes, err := os.ReadFile(config.Google.KeyFile)
-	if err != nil {
-		log.Fatalf("Failed to read the JSON key file: %v", err)
+	if config.Google.Enabled {
+		// Read the JSON key file
+		keyBytes, err := os.ReadFile(config.Google.KeyFile)
+		if err != nil {
+			log.Fatalf("Failed to read the JSON key file: %v", err)
+		}
+
+		// Create a JWT config from the JSON key file
+		jwtConfig, err := google.JWTConfigFromJSON(keyBytes, sheets.SpreadsheetsScope, gmail.GmailSendScope)
+		if err != nil {
+			log.Fatalf("Failed to create JWT config: %v", err)
+		}
+
+		// Create an OAuth2 client using the JWT config
+		ctx := context.Background()
+		_client := jwtConfig.Client(ctx)
+
+		client = _client
+
+		_sheetsSrv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
+		if err != nil {
+			log.Fatalf("Unable to retrieve Sheets client: %v", err)
+		}
+		sheetsSrv = _sheetsSrv
 	}
-
-	// Create a JWT config from the JSON key file
-	jwtConfig, err := google.JWTConfigFromJSON(keyBytes, sheets.SpreadsheetsScope, gmail.GmailSendScope)
-	if err != nil {
-		log.Fatalf("Failed to create JWT config: %v", err)
-	}
-
-	// Create an OAuth2 client using the JWT config
-	ctx := context.Background()
-	_client := jwtConfig.Client(ctx)
-
-	client = _client
-
-	_sheetsSrv, err := sheets.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
-	}
-	sheetsSrv = _sheetsSrv
 }
