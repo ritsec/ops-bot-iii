@@ -1,5 +1,8 @@
+name:
+env:
 app_id: 
 guild_id:  
+token: 
 logging:
     level: Debug # DebugLow < Debug < Info < Warning < Error < Critical < Audit
     audit_channel: 
@@ -20,7 +23,6 @@ google:
 web:
     hostname: 
     port: 
-token: 
 commands:
     angry_react:
         emoji_id:

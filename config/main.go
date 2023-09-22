@@ -27,6 +27,12 @@ var (
 
 	// MailGun is the mailgun configuration
 	MailGun structs.MailGunConfig
+
+	// ServiceName is the name of the application
+	ServiceName string
+
+	// Environment is the environment the application is running in
+	Environment string
 )
 
 func init() {
@@ -55,6 +61,8 @@ func UpdateConfigs() {
 	Token = viper.GetString("token")
 	AppID = viper.GetString("app_id")
 	GuildID = viper.GetString("guild_id")
+	ServiceName = viper.GetString("name")
+	Environment = viper.GetString("env")
 	Logging = logging()
 	Google = google()
 	Web = web()
