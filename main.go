@@ -9,6 +9,7 @@ import (
 
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/bot"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands"
+	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
 	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/web"
 )
@@ -19,8 +20,8 @@ func main() {
 
 	// start datadog tracer
 	tracer.Start(
-		tracer.WithService("OBIII"),
-		tracer.WithEnv("prod"),
+		tracer.WithService(config.ServiceName),
+		tracer.WithEnv(config.Environment),
 	)
 	defer tracer.Stop()
 
