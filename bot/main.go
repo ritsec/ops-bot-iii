@@ -2,7 +2,7 @@ package bot
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/config"
 )
 
 var (

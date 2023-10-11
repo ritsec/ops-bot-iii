@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/voteresult"
+	"github.com/ritsec/ops-bot-iii/ent/voteresult"
 )
 
 // VoteResultCreate is the builder for creating a VoteResult entity.

@@ -3,8 +3,8 @@ package data
 import (
 	"strings"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
+	"github.com/ritsec/ops-bot-iii/ent"
+	"github.com/ritsec/ops-bot-iii/ent/user"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )

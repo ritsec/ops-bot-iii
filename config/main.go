@@ -2,8 +2,8 @@ package config
 
 import (
 	"github.com/fsnotify/fsnotify"
+	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/spf13/viper"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 )
 
 var (

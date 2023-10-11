@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent"
+	"github.com/ritsec/ops-bot-iii/ent"
 )
 
 // The SigninFunc type is an adapter to allow the use of ordinary

@@ -3,7 +3,7 @@ package google
 import (
 	"fmt"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/config"
 	"google.golang.org/api/sheets/v4"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"

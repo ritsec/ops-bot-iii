@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/vote"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/voteresult"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/ent/user"
+	"github.com/ritsec/ops-bot-iii/ent/vote"
+	"github.com/ritsec/ops-bot-iii/ent/voteresult"
 )
 
 // ent aliases to avoid import conflicts in user's code.

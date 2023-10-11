@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
+	"github.com/ritsec/ops-bot-iii/data"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/helpers"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/slash/permission"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/data"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/helpers"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 

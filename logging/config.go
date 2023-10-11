@@ -1,8 +1,8 @@
 package logging
 
 import (
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
+	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/structs"
 )
 
 const (

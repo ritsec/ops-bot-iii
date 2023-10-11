@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/predicate"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/voteresult"
+	"github.com/ritsec/ops-bot-iii/ent/predicate"
+	"github.com/ritsec/ops-bot-iii/ent/voteresult"
 )
 
 // VoteResultUpdate is the builder for updating VoteResult entities.
