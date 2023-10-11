@@ -5,7 +5,7 @@ package vote
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/predicate"
+	"github.com/ritsec/ops-bot-iii/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.

@@ -4,10 +4,10 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/helpers"
+	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/helpers"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 

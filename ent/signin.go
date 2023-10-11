@@ -9,8 +9,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
 // Signin is the model entity for the Signin schema.

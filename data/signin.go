@@ -3,10 +3,10 @@ package data
 import (
 	"time"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
+	"github.com/ritsec/ops-bot-iii/ent"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/ent/user"
+	"github.com/ritsec/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )

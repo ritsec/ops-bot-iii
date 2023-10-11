@@ -8,13 +8,13 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/bot"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/handlers"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/scheduled"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/slash"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
+	"github.com/ritsec/ops-bot-iii/bot"
+	"github.com/ritsec/ops-bot-iii/commands/handlers"
+	"github.com/ritsec/ops-bot-iii/commands/scheduled"
+	"github.com/ritsec/ops-bot-iii/commands/slash"
+	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"github.com/ritsec/ops-bot-iii/structs"
 )
 
 var (

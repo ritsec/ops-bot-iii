@@ -8,16 +8,16 @@ import (
 	"fmt"
 	"log"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/migrate"
+	"github.com/ritsec/ops-bot-iii/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/vote"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/voteresult"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/ent/user"
+	"github.com/ritsec/ops-bot-iii/ent/vote"
+	"github.com/ritsec/ops-bot-iii/ent/voteresult"
 )
 
 // Client is the client that holds all ent builders.

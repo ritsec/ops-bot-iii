@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/robfig/cron"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )

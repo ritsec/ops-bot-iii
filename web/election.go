@@ -2,9 +2,9 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/ritsec/ops-bot-iii/data"
+	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/data"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 

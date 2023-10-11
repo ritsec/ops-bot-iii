@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/predicate"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/user"
+	"github.com/ritsec/ops-bot-iii/ent/predicate"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
 // SigninUpdate is the builder for updating Signin entities.
