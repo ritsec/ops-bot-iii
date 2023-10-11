@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent"
+	"github.com/ritsec/ops-bot-iii/ent"
 	// required by schema hooks.
-	_ "gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/runtime"
+	_ "github.com/ritsec/ops-bot-iii/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/migrate"
+	"github.com/ritsec/ops-bot-iii/ent/migrate"
 )
 
 type (

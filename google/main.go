@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/config"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/gmail/v1"
 	"google.golang.org/api/option"

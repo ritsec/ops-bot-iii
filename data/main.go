@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 
+	"github.com/ritsec/ops-bot-iii/ent"
 	"github.com/sirupsen/logrus"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent"
 
 	_ "github.com/mattn/go-sqlite3"
 )

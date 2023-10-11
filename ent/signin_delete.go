@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/predicate"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/ent/predicate"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
 )
 
 // SigninDelete is the builder for deleting a Signin entity.

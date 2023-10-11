@@ -8,7 +8,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/ent/voteresult"
+	"github.com/ritsec/ops-bot-iii/ent/voteresult"
 )
 
 // VoteResult is the model entity for the VoteResult schema.

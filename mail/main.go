@@ -6,7 +6,7 @@ import (
 	"math/big"
 
 	"github.com/mailgun/mailgun-go"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/config"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )

@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/handlers"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/scheduled"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands/slash"
+	"github.com/ritsec/ops-bot-iii/commands/handlers"
+	"github.com/ritsec/ops-bot-iii/commands/scheduled"
+	"github.com/ritsec/ops-bot-iii/commands/slash"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )

@@ -6,9 +6,9 @@ import (
 	"runtime"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
 

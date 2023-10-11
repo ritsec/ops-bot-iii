@@ -7,11 +7,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/bot"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/commands"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/config"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/logging"
-	"gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii/web"
+	"github.com/ritsec/ops-bot-iii/bot"
+	"github.com/ritsec/ops-bot-iii/commands"
+	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"github.com/ritsec/ops-bot-iii/web"
 )
 
 func main() {

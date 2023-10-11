@@ -1,4 +1,4 @@
-module gitlab.ritsec.cloud/1nv8rZim/ops-bot-iii
+module github.com/ritsec/ops-bot-iii
 
 go 1.20
 
