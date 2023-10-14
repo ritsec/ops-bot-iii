@@ -12,9 +12,9 @@ OBIII is a Discord bot specifically built for RITSEC and its Discord server. As 
 
 OBIII shares many of the same goals as OBII:
 
-* Modularity
-* Meaningful Documentation
-* Open Source Community and Contributions
+- Modularity
+- Meaningful Documentation
+- Open Source Community and Contributions
 
 We want OBIII to grow as the needs of its users do. We strive to make it a project that is not only easy to contribute to but also one that people want to contribute to!
 
@@ -28,11 +28,9 @@ OBIII is licensed under the [Apache License 2.0](https://www.apache.org/licenses
 
 Make a copy of [config_example.yml](./config_example.yml) and name it `config.yml`:
 
-
 ```
 cp config_example.yml config.yml
 ```
-
 
 ### Discord Bot Token, Application ID, and Guild ID
 
@@ -101,7 +99,6 @@ Handlers can respond to various events such as a user joining or leaving, a mess
 
 A full set of handlers can be found [here](https://github.com/bwmarrin/discordgo/blob/v0.27.1/events.go)
 
-
 ```go
 package handlers
 
@@ -120,7 +117,7 @@ Scheduled events run once when the bot starts and manage scheduling tasks on the
 
 To configure a new scheduled event, create a new file under [commands/scheduled/](./commands/scheduled/)
 
-There are two main examples that can be used: 
+There are two main examples that can be used:
 
 #### Cron Events
 
@@ -136,22 +133,18 @@ import (
 	"github.com/robfig/cron"
 )
 
-func [Name]() *structs.ScheduledEvent {
-	return structs.NewScheduledTask(
-		func(s *discordgo.Session, quit chan interface{}) error {
-			est, _ := time.LoadLocation([location])
+func [Name](s *discordgo.Session, quit chan interface{}) error {
+	est, _ := time.LoadLocation([location])
 
-			c := cron.NewWithLocation(est)
+	c := cron.NewWithLocation(est)
 
-			c.AddFunc([cron expression], func() { [function] })
+	c.AddFunc([cron expression], func() { [function] })
 
-			c.Start()
-			<-quit
-			c.Stop()
+	c.Start()
+	<-quit
+	c.Stop()
 
-			return nil
-		},
-	)
+	return nil
 }
 ```
 
