@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ritsec/ops-bot-iii/ent/schema"
+	"github.com/ritsec/ops-bot-iii/ent/shitposts"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -16,6 +17,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	shitpostsFields := schema.Shitposts{}.Fields()
+	_ = shitpostsFields
+	// shitpostsDescID is the schema descriptor for id field.
+	shitpostsDescID := shitpostsFields[0].Descriptor()
+	// shitposts.IDValidator is a validator for the "id" field. It is called by the builders before save.
+	shitposts.IDValidator = shitpostsDescID.Validators[0].(func(string) error)
 	signinFields := schema.Signin{}.Fields()
 	_ = signinFields
 	// signinDescTimestamp is the schema descriptor for timestamp field.

@@ -22,6 +22,8 @@ const (
 	EdgeSignins = "signins"
 	// EdgeVotes holds the string denoting the votes edge name in mutations.
 	EdgeVotes = "votes"
+	// EdgeShitposts holds the string denoting the shitposts edge name in mutations.
+	EdgeShitposts = "shitposts"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SigninsTable is the table that holds the signins relation/edge.
@@ -38,6 +40,13 @@ const (
 	VotesInverseTable = "votes"
 	// VotesColumn is the table column denoting the votes relation/edge.
 	VotesColumn = "user_votes"
+	// ShitpostsTable is the table that holds the shitposts relation/edge.
+	ShitpostsTable = "shitposts"
+	// ShitpostsInverseTable is the table name for the Shitposts entity.
+	// It exists in this package in order to avoid circular dependency with the "shitposts" package.
+	ShitpostsInverseTable = "shitposts"
+	// ShitpostsColumn is the table column denoting the shitposts relation/edge.
+	ShitpostsColumn = "user_shitposts"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -121,6 +130,20 @@ func ByVotes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newVotesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByShitpostsCount orders the results by shitposts count.
+func ByShitpostsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newShitpostsStep(), opts...)
+	}
+}
+
+// ByShitposts orders the results by shitposts terms.
+func ByShitposts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newShitpostsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSigninsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -133,5 +156,12 @@ func newVotesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(VotesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, VotesTable, VotesColumn),
+	)
+}
+func newShitpostsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ShitpostsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ShitpostsTable, ShitpostsColumn),
 	)
 }

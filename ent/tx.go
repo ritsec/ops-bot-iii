@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Shitposts is the client for interacting with the Shitposts builders.
+	Shitposts *ShitpostsClient
 	// Signin is the client for interacting with the Signin builders.
 	Signin *SigninClient
 	// User is the client for interacting with the User builders.
@@ -151,6 +153,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Shitposts = NewShitpostsClient(tx.config)
 	tx.Signin = NewSigninClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.Vote = NewVoteClient(tx.config)
@@ -164,7 +167,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Signin.QueryXXX(), the query will be executed
+// applies a query, for example: Shitposts.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

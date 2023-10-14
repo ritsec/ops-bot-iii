@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/ritsec/ops-bot-iii/ent/shitposts"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -25,6 +26,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Shitposts is the client for interacting with the Shitposts builders.
+	Shitposts *ShitpostsClient
 	// Signin is the client for interacting with the Signin builders.
 	Signin *SigninClient
 	// User is the client for interacting with the User builders.
@@ -46,6 +49,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Shitposts = NewShitpostsClient(c.config)
 	c.Signin = NewSigninClient(c.config)
 	c.User = NewUserClient(c.config)
 	c.Vote = NewVoteClient(c.config)
@@ -132,6 +136,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Shitposts:  NewShitpostsClient(cfg),
 		Signin:     NewSigninClient(cfg),
 		User:       NewUserClient(cfg),
 		Vote:       NewVoteClient(cfg),
@@ -155,6 +160,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Shitposts:  NewShitpostsClient(cfg),
 		Signin:     NewSigninClient(cfg),
 		User:       NewUserClient(cfg),
 		Vote:       NewVoteClient(cfg),
@@ -165,7 +171,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Signin.
+//		Shitposts.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -187,6 +193,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Shitposts.Use(hooks...)
 	c.Signin.Use(hooks...)
 	c.User.Use(hooks...)
 	c.Vote.Use(hooks...)
@@ -196,6 +203,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Shitposts.Intercept(interceptors...)
 	c.Signin.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 	c.Vote.Intercept(interceptors...)
@@ -205,6 +213,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *ShitpostsMutation:
+		return c.Shitposts.mutate(ctx, m)
 	case *SigninMutation:
 		return c.Signin.mutate(ctx, m)
 	case *UserMutation:
@@ -215,6 +225,140 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.VoteResult.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// ShitpostsClient is a client for the Shitposts schema.
+type ShitpostsClient struct {
+	config
+}
+
+// NewShitpostsClient returns a client for the Shitposts from the given config.
+func NewShitpostsClient(c config) *ShitpostsClient {
+	return &ShitpostsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `shitposts.Hooks(f(g(h())))`.
+func (c *ShitpostsClient) Use(hooks ...Hook) {
+	c.hooks.Shitposts = append(c.hooks.Shitposts, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `shitposts.Intercept(f(g(h())))`.
+func (c *ShitpostsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Shitposts = append(c.inters.Shitposts, interceptors...)
+}
+
+// Create returns a builder for creating a Shitposts entity.
+func (c *ShitpostsClient) Create() *ShitpostsCreate {
+	mutation := newShitpostsMutation(c.config, OpCreate)
+	return &ShitpostsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Shitposts entities.
+func (c *ShitpostsClient) CreateBulk(builders ...*ShitpostsCreate) *ShitpostsCreateBulk {
+	return &ShitpostsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Shitposts.
+func (c *ShitpostsClient) Update() *ShitpostsUpdate {
+	mutation := newShitpostsMutation(c.config, OpUpdate)
+	return &ShitpostsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ShitpostsClient) UpdateOne(s *Shitposts) *ShitpostsUpdateOne {
+	mutation := newShitpostsMutation(c.config, OpUpdateOne, withShitposts(s))
+	return &ShitpostsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ShitpostsClient) UpdateOneID(id string) *ShitpostsUpdateOne {
+	mutation := newShitpostsMutation(c.config, OpUpdateOne, withShitpostsID(id))
+	return &ShitpostsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Shitposts.
+func (c *ShitpostsClient) Delete() *ShitpostsDelete {
+	mutation := newShitpostsMutation(c.config, OpDelete)
+	return &ShitpostsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ShitpostsClient) DeleteOne(s *Shitposts) *ShitpostsDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ShitpostsClient) DeleteOneID(id string) *ShitpostsDeleteOne {
+	builder := c.Delete().Where(shitposts.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ShitpostsDeleteOne{builder}
+}
+
+// Query returns a query builder for Shitposts.
+func (c *ShitpostsClient) Query() *ShitpostsQuery {
+	return &ShitpostsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeShitposts},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Shitposts entity by its id.
+func (c *ShitpostsClient) Get(ctx context.Context, id string) (*Shitposts, error) {
+	return c.Query().Where(shitposts.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ShitpostsClient) GetX(ctx context.Context, id string) *Shitposts {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Shitposts.
+func (c *ShitpostsClient) QueryUser(s *Shitposts) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(shitposts.Table, shitposts.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, shitposts.UserTable, shitposts.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ShitpostsClient) Hooks() []Hook {
+	return c.hooks.Shitposts
+}
+
+// Interceptors returns the client interceptors.
+func (c *ShitpostsClient) Interceptors() []Interceptor {
+	return c.inters.Shitposts
+}
+
+func (c *ShitpostsClient) mutate(ctx context.Context, m *ShitpostsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ShitpostsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ShitpostsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ShitpostsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ShitpostsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Shitposts mutation op: %q", m.Op())
 	}
 }
 
@@ -470,6 +614,22 @@ func (c *UserClient) QueryVotes(u *User) *VoteQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(vote.Table, vote.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.VotesTable, user.VotesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryShitposts queries the shitposts edge of a User.
+func (c *UserClient) QueryShitposts(u *User) *ShitpostsQuery {
+	query := (&ShitpostsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(shitposts.Table, shitposts.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ShitpostsTable, user.ShitpostsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -757,9 +917,9 @@ func (c *VoteResultClient) mutate(ctx context.Context, m *VoteResultMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Signin, User, Vote, VoteResult []ent.Hook
+		Shitposts, Signin, User, Vote, VoteResult []ent.Hook
 	}
 	inters struct {
-		Signin, User, Vote, VoteResult []ent.Interceptor
+		Shitposts, Signin, User, Vote, VoteResult []ent.Interceptor
 	}
 )

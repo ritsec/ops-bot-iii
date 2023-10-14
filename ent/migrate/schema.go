@@ -8,6 +8,26 @@ import (
 )
 
 var (
+	// ShitpostsColumns holds the columns for the "shitposts" table.
+	ShitpostsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "count", Type: field.TypeInt},
+		{Name: "user_shitposts", Type: field.TypeString, Nullable: true},
+	}
+	// ShitpostsTable holds the schema information for the "shitposts" table.
+	ShitpostsTable = &schema.Table{
+		Name:       "shitposts",
+		Columns:    ShitpostsColumns,
+		PrimaryKey: []*schema.Column{ShitpostsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "shitposts_users_shitposts",
+				Columns:    []*schema.Column{ShitpostsColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// SigninsColumns holds the columns for the "signins" table.
 	SigninsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -79,6 +99,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ShitpostsTable,
 		SigninsTable,
 		UsersTable,
 		VotesTable,
@@ -87,6 +108,7 @@ var (
 )
 
 func init() {
+	ShitpostsTable.ForeignKeys[0].RefTable = UsersTable
 	SigninsTable.ForeignKeys[0].RefTable = UsersTable
 	VotesTable.ForeignKeys[0].RefTable = UsersTable
 }

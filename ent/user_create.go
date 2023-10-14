@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ritsec/ops-bot-iii/ent/shitposts"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -97,6 +98,21 @@ func (uc *UserCreate) AddVotes(v ...*Vote) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return uc.AddVoteIDs(ids...)
+}
+
+// AddShitpostIDs adds the "shitposts" edge to the Shitposts entity by IDs.
+func (uc *UserCreate) AddShitpostIDs(ids ...string) *UserCreate {
+	uc.mutation.AddShitpostIDs(ids...)
+	return uc
+}
+
+// AddShitposts adds the "shitposts" edges to the Shitposts entity.
+func (uc *UserCreate) AddShitposts(s ...*Shitposts) *UserCreate {
+	ids := make([]string, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddShitpostIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -241,6 +257,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(vote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ShitpostsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
