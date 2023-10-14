@@ -18,6 +18,8 @@ type Shitpost struct {
 	// ID of the ent.
 	// Message ID
 	ID string `json:"id,omitempty"`
+	// Channel ID
+	ChannelID string `json:"channel_id,omitempty"`
 	// Shitpost Count
 	Count int `json:"count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -56,7 +58,7 @@ func (*Shitpost) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case shitpost.FieldCount:
 			values[i] = new(sql.NullInt64)
-		case shitpost.FieldID:
+		case shitpost.FieldID, shitpost.FieldChannelID:
 			values[i] = new(sql.NullString)
 		case shitpost.ForeignKeys[0]: // user_shitposts
 			values[i] = new(sql.NullString)
@@ -80,6 +82,12 @@ func (s *Shitpost) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				s.ID = value.String
+			}
+		case shitpost.FieldChannelID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field channel_id", values[i])
+			} else if value.Valid {
+				s.ChannelID = value.String
 			}
 		case shitpost.FieldCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -135,6 +143,9 @@ func (s *Shitpost) String() string {
 	var builder strings.Builder
 	builder.WriteString("Shitpost(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
+	builder.WriteString("channel_id=")
+	builder.WriteString(s.ChannelID)
+	builder.WriteString(", ")
 	builder.WriteString("count=")
 	builder.WriteString(fmt.Sprintf("%v", s.Count))
 	builder.WriteByte(')')

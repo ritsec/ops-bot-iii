@@ -19,6 +19,10 @@ import (
 func init() {
 	shitpostFields := schema.Shitpost{}.Fields()
 	_ = shitpostFields
+	// shitpostDescChannelID is the schema descriptor for channel_id field.
+	shitpostDescChannelID := shitpostFields[1].Descriptor()
+	// shitpost.ChannelIDValidator is a validator for the "channel_id" field. It is called by the builders before save.
+	shitpost.ChannelIDValidator = shitpostDescChannelID.Validators[0].(func(string) error)
 	// shitpostDescID is the schema descriptor for id field.
 	shitpostDescID := shitpostFields[0].Descriptor()
 	// shitpost.IDValidator is a validator for the "id" field. It is called by the builders before save.

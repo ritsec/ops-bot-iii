@@ -298,12 +298,12 @@ func (sq *ShitpostQuery) WithUser(opts ...func(*UserQuery)) *ShitpostQuery {
 // Example:
 //
 //	var v []struct {
-//		Count int `json:"count,omitempty"`
+//		ChannelID string `json:"channel_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Shitpost.Query().
-//		GroupBy(shitpost.FieldCount).
+//		GroupBy(shitpost.FieldChannelID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *ShitpostQuery) GroupBy(field string, fields ...string) *ShitpostGroupBy {
@@ -321,11 +321,11 @@ func (sq *ShitpostQuery) GroupBy(field string, fields ...string) *ShitpostGroupB
 // Example:
 //
 //	var v []struct {
-//		Count int `json:"count,omitempty"`
+//		ChannelID string `json:"channel_id,omitempty"`
 //	}
 //
 //	client.Shitpost.Query().
-//		Select(shitpost.FieldCount).
+//		Select(shitpost.FieldChannelID).
 //		Scan(ctx, &v)
 func (sq *ShitpostQuery) Select(fields ...string) *ShitpostSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)

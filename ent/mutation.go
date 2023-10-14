@@ -41,6 +41,7 @@ type ShitpostMutation struct {
 	op            Op
 	typ           string
 	id            *string
+	channel_id    *string
 	count         *int
 	addcount      *int
 	clearedFields map[string]struct{}
@@ -153,6 +154,42 @@ func (m *ShitpostMutation) IDs(ctx context.Context) ([]string, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetChannelID sets the "channel_id" field.
+func (m *ShitpostMutation) SetChannelID(s string) {
+	m.channel_id = &s
+}
+
+// ChannelID returns the value of the "channel_id" field in the mutation.
+func (m *ShitpostMutation) ChannelID() (r string, exists bool) {
+	v := m.channel_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChannelID returns the old "channel_id" field's value of the Shitpost entity.
+// If the Shitpost object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ShitpostMutation) OldChannelID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChannelID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChannelID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChannelID: %w", err)
+	}
+	return oldValue.ChannelID, nil
+}
+
+// ResetChannelID resets all changes to the "channel_id" field.
+func (m *ShitpostMutation) ResetChannelID() {
+	m.channel_id = nil
 }
 
 // SetCount sets the "count" field.
@@ -284,7 +321,10 @@ func (m *ShitpostMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ShitpostMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
+	if m.channel_id != nil {
+		fields = append(fields, shitpost.FieldChannelID)
+	}
 	if m.count != nil {
 		fields = append(fields, shitpost.FieldCount)
 	}
@@ -296,6 +336,8 @@ func (m *ShitpostMutation) Fields() []string {
 // schema.
 func (m *ShitpostMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case shitpost.FieldChannelID:
+		return m.ChannelID()
 	case shitpost.FieldCount:
 		return m.Count()
 	}
@@ -307,6 +349,8 @@ func (m *ShitpostMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ShitpostMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case shitpost.FieldChannelID:
+		return m.OldChannelID(ctx)
 	case shitpost.FieldCount:
 		return m.OldCount(ctx)
 	}
@@ -318,6 +362,13 @@ func (m *ShitpostMutation) OldField(ctx context.Context, name string) (ent.Value
 // type.
 func (m *ShitpostMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case shitpost.FieldChannelID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChannelID(v)
+		return nil
 	case shitpost.FieldCount:
 		v, ok := value.(int)
 		if !ok {
@@ -389,6 +440,9 @@ func (m *ShitpostMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ShitpostMutation) ResetField(name string) error {
 	switch name {
+	case shitpost.FieldChannelID:
+		m.ResetChannelID()
+		return nil
 	case shitpost.FieldCount:
 		m.ResetCount()
 		return nil

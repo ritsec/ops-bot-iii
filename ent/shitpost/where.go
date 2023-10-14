@@ -63,9 +63,79 @@ func IDContainsFold(id string) predicate.Shitpost {
 	return predicate.Shitpost(sql.FieldContainsFold(FieldID, id))
 }
 
+// ChannelID applies equality check predicate on the "channel_id" field. It's identical to ChannelIDEQ.
+func ChannelID(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldEQ(FieldChannelID, v))
+}
+
 // Count applies equality check predicate on the "count" field. It's identical to CountEQ.
 func Count(v int) predicate.Shitpost {
 	return predicate.Shitpost(sql.FieldEQ(FieldCount, v))
+}
+
+// ChannelIDEQ applies the EQ predicate on the "channel_id" field.
+func ChannelIDEQ(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldEQ(FieldChannelID, v))
+}
+
+// ChannelIDNEQ applies the NEQ predicate on the "channel_id" field.
+func ChannelIDNEQ(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldNEQ(FieldChannelID, v))
+}
+
+// ChannelIDIn applies the In predicate on the "channel_id" field.
+func ChannelIDIn(vs ...string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldIn(FieldChannelID, vs...))
+}
+
+// ChannelIDNotIn applies the NotIn predicate on the "channel_id" field.
+func ChannelIDNotIn(vs ...string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldNotIn(FieldChannelID, vs...))
+}
+
+// ChannelIDGT applies the GT predicate on the "channel_id" field.
+func ChannelIDGT(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldGT(FieldChannelID, v))
+}
+
+// ChannelIDGTE applies the GTE predicate on the "channel_id" field.
+func ChannelIDGTE(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldGTE(FieldChannelID, v))
+}
+
+// ChannelIDLT applies the LT predicate on the "channel_id" field.
+func ChannelIDLT(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldLT(FieldChannelID, v))
+}
+
+// ChannelIDLTE applies the LTE predicate on the "channel_id" field.
+func ChannelIDLTE(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldLTE(FieldChannelID, v))
+}
+
+// ChannelIDContains applies the Contains predicate on the "channel_id" field.
+func ChannelIDContains(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldContains(FieldChannelID, v))
+}
+
+// ChannelIDHasPrefix applies the HasPrefix predicate on the "channel_id" field.
+func ChannelIDHasPrefix(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldHasPrefix(FieldChannelID, v))
+}
+
+// ChannelIDHasSuffix applies the HasSuffix predicate on the "channel_id" field.
+func ChannelIDHasSuffix(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldHasSuffix(FieldChannelID, v))
+}
+
+// ChannelIDEqualFold applies the EqualFold predicate on the "channel_id" field.
+func ChannelIDEqualFold(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldEqualFold(FieldChannelID, v))
+}
+
+// ChannelIDContainsFold applies the ContainsFold predicate on the "channel_id" field.
+func ChannelIDContainsFold(v string) predicate.Shitpost {
+	return predicate.Shitpost(sql.FieldContainsFold(FieldChannelID, v))
 }
 
 // CountEQ applies the EQ predicate on the "count" field.

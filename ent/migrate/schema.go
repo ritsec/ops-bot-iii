@@ -11,6 +11,7 @@ var (
 	// ShitpostsColumns holds the columns for the "shitposts" table.
 	ShitpostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
+		{Name: "channel_id", Type: field.TypeString},
 		{Name: "count", Type: field.TypeInt},
 		{Name: "user_shitposts", Type: field.TypeString, Nullable: true},
 	}
@@ -22,7 +23,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "shitposts_users_shitposts",
-				Columns:    []*schema.Column{ShitpostsColumns[2]},
+				Columns:    []*schema.Column{ShitpostsColumns[3]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

@@ -20,6 +20,12 @@ type ShitpostCreate struct {
 	hooks    []Hook
 }
 
+// SetChannelID sets the "channel_id" field.
+func (sc *ShitpostCreate) SetChannelID(s string) *ShitpostCreate {
+	sc.mutation.SetChannelID(s)
+	return sc
+}
+
 // SetCount sets the "count" field.
 func (sc *ShitpostCreate) SetCount(i int) *ShitpostCreate {
 	sc.mutation.SetCount(i)
@@ -85,6 +91,14 @@ func (sc *ShitpostCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (sc *ShitpostCreate) check() error {
+	if _, ok := sc.mutation.ChannelID(); !ok {
+		return &ValidationError{Name: "channel_id", err: errors.New(`ent: missing required field "Shitpost.channel_id"`)}
+	}
+	if v, ok := sc.mutation.ChannelID(); ok {
+		if err := shitpost.ChannelIDValidator(v); err != nil {
+			return &ValidationError{Name: "channel_id", err: fmt.Errorf(`ent: validator failed for field "Shitpost.channel_id": %w`, err)}
+		}
+	}
 	if _, ok := sc.mutation.Count(); !ok {
 		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "Shitpost.count"`)}
 	}
@@ -127,6 +141,10 @@ func (sc *ShitpostCreate) createSpec() (*Shitpost, *sqlgraph.CreateSpec) {
 	if id, ok := sc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
+	}
+	if value, ok := sc.mutation.ChannelID(); ok {
+		_spec.SetField(shitpost.FieldChannelID, field.TypeString, value)
+		_node.ChannelID = value
 	}
 	if value, ok := sc.mutation.Count(); ok {
 		_spec.SetField(shitpost.FieldCount, field.TypeInt, value)

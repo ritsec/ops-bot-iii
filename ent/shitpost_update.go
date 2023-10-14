@@ -28,6 +28,12 @@ func (su *ShitpostUpdate) Where(ps ...predicate.Shitpost) *ShitpostUpdate {
 	return su
 }
 
+// SetChannelID sets the "channel_id" field.
+func (su *ShitpostUpdate) SetChannelID(s string) *ShitpostUpdate {
+	su.mutation.SetChannelID(s)
+	return su
+}
+
 // SetCount sets the "count" field.
 func (su *ShitpostUpdate) SetCount(i int) *ShitpostUpdate {
 	su.mutation.ResetCount()
@@ -98,7 +104,20 @@ func (su *ShitpostUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (su *ShitpostUpdate) check() error {
+	if v, ok := su.mutation.ChannelID(); ok {
+		if err := shitpost.ChannelIDValidator(v); err != nil {
+			return &ValidationError{Name: "channel_id", err: fmt.Errorf(`ent: validator failed for field "Shitpost.channel_id": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (su *ShitpostUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := su.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(shitpost.Table, shitpost.Columns, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	if ps := su.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -106,6 +125,9 @@ func (su *ShitpostUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := su.mutation.ChannelID(); ok {
+		_spec.SetField(shitpost.FieldChannelID, field.TypeString, value)
 	}
 	if value, ok := su.mutation.Count(); ok {
 		_spec.SetField(shitpost.FieldCount, field.TypeInt, value)
@@ -160,6 +182,12 @@ type ShitpostUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ShitpostMutation
+}
+
+// SetChannelID sets the "channel_id" field.
+func (suo *ShitpostUpdateOne) SetChannelID(s string) *ShitpostUpdateOne {
+	suo.mutation.SetChannelID(s)
+	return suo
 }
 
 // SetCount sets the "count" field.
@@ -245,7 +273,20 @@ func (suo *ShitpostUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (suo *ShitpostUpdateOne) check() error {
+	if v, ok := suo.mutation.ChannelID(); ok {
+		if err := shitpost.ChannelIDValidator(v); err != nil {
+			return &ValidationError{Name: "channel_id", err: fmt.Errorf(`ent: validator failed for field "Shitpost.channel_id": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (suo *ShitpostUpdateOne) sqlSave(ctx context.Context) (_node *Shitpost, err error) {
+	if err := suo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(shitpost.Table, shitpost.Columns, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	id, ok := suo.mutation.ID()
 	if !ok {
@@ -270,6 +311,9 @@ func (suo *ShitpostUpdateOne) sqlSave(ctx context.Context) (_node *Shitpost, err
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := suo.mutation.ChannelID(); ok {
+		_spec.SetField(shitpost.FieldChannelID, field.TypeString, value)
 	}
 	if value, ok := suo.mutation.Count(); ok {
 		_spec.SetField(shitpost.FieldCount, field.TypeInt, value)

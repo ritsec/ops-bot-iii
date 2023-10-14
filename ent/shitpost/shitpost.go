@@ -12,6 +12,8 @@ const (
 	Label = "shitpost"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldChannelID holds the string denoting the channel_id field in the database.
+	FieldChannelID = "channel_id"
 	// FieldCount holds the string denoting the count field in the database.
 	FieldCount = "count"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -30,6 +32,7 @@ const (
 // Columns holds all SQL columns for shitpost fields.
 var Columns = []string{
 	FieldID,
+	FieldChannelID,
 	FieldCount,
 }
 
@@ -55,6 +58,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// ChannelIDValidator is a validator for the "channel_id" field. It is called by the builders before save.
+	ChannelIDValidator func(string) error
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(string) error
 )
@@ -65,6 +70,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByChannelID orders the results by the channel_id field.
+func ByChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChannelID, opts...).ToFunc()
 }
 
 // ByCount orders the results by the count field.
