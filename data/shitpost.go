@@ -108,12 +108,6 @@ func (*shitpost_s) Update(message_id string, channel_id string, user_id string, 
 		return nil, err
 	}
 
-	_, err = Client.Shitpost.Delete().
-		Where(
-			shitpost.CountLT(10),
-		).
-		Exec(Ctx)
-
 	return entShitpost, err
 }
 
@@ -124,6 +118,15 @@ func (*shitpost_s) GetTopXShitposts(amount int, ctx ddtrace.SpanContext) ([]*ent
 		tracer.ChildOf(ctx),
 	)
 	defer span.Finish()
+
+	_, err := Client.Shitpost.Delete().
+		Where(
+			shitpost.CountLT(10),
+		).
+		Exec(Ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	return Client.Shitpost.Query().
 		WithUser().
