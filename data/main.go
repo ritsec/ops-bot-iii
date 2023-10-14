@@ -27,6 +27,9 @@ var (
 
 	// VoteResult is the struct reference vote_result
 	VoteResult *vote_result_s = &vote_result_s{}
+
+	// Shitposts is the struct reference shitposts
+	Shitposts *shitpost_s = &shitpost_s{}
 )
 
 func init() {
