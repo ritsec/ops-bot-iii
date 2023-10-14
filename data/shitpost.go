@@ -27,7 +27,7 @@ func (*shitpost_s) Get(id string, ctx ddtrace.SpanContext) (*ent.Shitpost, error
 }
 
 // Create creates a new shitpost
-func (*shitpost_s) Create(message_id string, user_id string, count int, ctx ddtrace.SpanContext) (*ent.Shitpost, error) {
+func (*shitpost_s) Create(message_id string, channel_id string, user_id string, count int, ctx ddtrace.SpanContext) (*ent.Shitpost, error) {
 	span := tracer.StartSpan(
 		"data.shitpost:Create",
 		tracer.ResourceName("Data.Shitpost.Create"),
@@ -43,6 +43,7 @@ func (*shitpost_s) Create(message_id string, user_id string, count int, ctx ddtr
 	return Client.Shitpost.Create().
 		SetID(message_id).
 		SetUser(ent_user).
+		SetChannelID(channel_id).
 		SetCount(count).
 		Save(Ctx)
 }
@@ -66,7 +67,7 @@ func (*shitpost_s) Delete(id string, ctx ddtrace.SpanContext) error {
 }
 
 // Update updates a shitpost by its ID
-func (*shitpost_s) Update(message_id string, user_id string, count int, ctx ddtrace.SpanContext) (*ent.Shitpost, error) {
+func (*shitpost_s) Update(message_id string, channel_id string, user_id string, count int, ctx ddtrace.SpanContext) (*ent.Shitpost, error) {
 	span := tracer.StartSpan(
 		"data.shitpost:Update",
 		tracer.ResourceName("Data.Shitpost.Update"),
@@ -86,22 +87,34 @@ func (*shitpost_s) Update(message_id string, user_id string, count int, ctx ddtr
 	if !exists {
 		return Shitposts.Create(
 			message_id,
+			channel_id,
 			user_id,
 			count,
 			span.Context(),
 		)
 	}
 
-	ent_user, err := User.Get(user_id, span.Context())
+	entUser, err := User.Get(user_id, span.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	return Client.Shitpost.
+	entShitpost, err := Client.Shitpost.
 		UpdateOneID(message_id).
-		SetUser(ent_user).
+		SetUser(entUser).
 		SetCount(count).
 		Save(Ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = Client.Shitpost.Delete().
+		Where(
+			shitpost.CountLT(10),
+		).
+		Exec(Ctx)
+
+	return entShitpost, err
 }
 
 func (*shitpost_s) GetTopXShitposts(amount int, ctx ddtrace.SpanContext) ([]*ent.Shitpost, error) {
