@@ -38,7 +38,7 @@ func (User) Edges() []ent.Edge {
 			Comment("Signins made by the user"),
 		edge.To("votes", Vote.Type).
 			Comment("Votes made by the user"),
-		edge.To("shitposts", Shitposts.Type).
+		edge.To("shitpost", Shitpost.Type).
 			Comment("Shitposts made by the user"),
 	}
 }
