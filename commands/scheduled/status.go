@@ -6,7 +6,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/robfig/cron"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -59,32 +58,27 @@ func updateStatus(s *discordgo.Session, ctx ddtrace.SpanContext) {
 }
 
 // Status is a scheduled task that updates the bot's status
-func Status() *structs.ScheduledEvent {
-	return structs.NewScheduledTask(
-		func(s *discordgo.Session, quit chan interface{}) error {
-			span := tracer.StartSpan(
-				"commands.scheduled.status:Status",
-				tracer.ResourceName("Scheduled.Status"),
-			)
-			defer span.Finish()
-
-			c := cron.New()
-
-			err := c.AddFunc("0 0 * * * *", func() { updateStatus(s, span.Context()) })
-			if err != nil {
-				return err
-			}
-
-			updateStatus(s, span.Context())
-
-			c.Start()
-			<-quit
-			c.Stop()
-
-			return nil
-		},
+func Status(s *discordgo.Session, quit chan interface{}) error {
+	span := tracer.StartSpan(
+		"commands.scheduled.status:Status",
+		tracer.ResourceName("Scheduled.Status"),
 	)
+	defer span.Finish()
 
+	c := cron.New()
+
+	err := c.AddFunc("0 0 * * * *", func() { updateStatus(s, span.Context()) })
+	if err != nil {
+		return err
+	}
+
+	updateStatus(s, span.Context())
+
+	c.Start()
+	<-quit
+	c.Stop()
+
+	return nil
 }
 
 // activities is a list of activities that the bot can be doing
