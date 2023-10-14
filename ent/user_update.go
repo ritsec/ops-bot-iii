@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -108,6 +109,21 @@ func (uu *UserUpdate) AddVotes(v ...*Vote) *UserUpdate {
 	return uu.AddVoteIDs(ids...)
 }
 
+// AddShitpostIDs adds the "shitposts" edge to the Shitpost entity by IDs.
+func (uu *UserUpdate) AddShitpostIDs(ids ...string) *UserUpdate {
+	uu.mutation.AddShitpostIDs(ids...)
+	return uu
+}
+
+// AddShitposts adds the "shitposts" edges to the Shitpost entity.
+func (uu *UserUpdate) AddShitposts(s ...*Shitpost) *UserUpdate {
+	ids := make([]string, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.AddShitpostIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -153,6 +169,27 @@ func (uu *UserUpdate) RemoveVotes(v ...*Vote) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return uu.RemoveVoteIDs(ids...)
+}
+
+// ClearShitposts clears all "shitposts" edges to the Shitpost entity.
+func (uu *UserUpdate) ClearShitposts() *UserUpdate {
+	uu.mutation.ClearShitposts()
+	return uu
+}
+
+// RemoveShitpostIDs removes the "shitposts" edge to Shitpost entities by IDs.
+func (uu *UserUpdate) RemoveShitpostIDs(ids ...string) *UserUpdate {
+	uu.mutation.RemoveShitpostIDs(ids...)
+	return uu
+}
+
+// RemoveShitposts removes "shitposts" edges to Shitpost entities.
+func (uu *UserUpdate) RemoveShitposts(s ...*Shitpost) *UserUpdate {
+	ids := make([]string, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.RemoveShitpostIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -306,6 +343,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ShitpostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedShitpostsIDs(); len(nodes) > 0 && !uu.mutation.ShitpostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ShitpostsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -405,6 +487,21 @@ func (uuo *UserUpdateOne) AddVotes(v ...*Vote) *UserUpdateOne {
 	return uuo.AddVoteIDs(ids...)
 }
 
+// AddShitpostIDs adds the "shitposts" edge to the Shitpost entity by IDs.
+func (uuo *UserUpdateOne) AddShitpostIDs(ids ...string) *UserUpdateOne {
+	uuo.mutation.AddShitpostIDs(ids...)
+	return uuo
+}
+
+// AddShitposts adds the "shitposts" edges to the Shitpost entity.
+func (uuo *UserUpdateOne) AddShitposts(s ...*Shitpost) *UserUpdateOne {
+	ids := make([]string, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.AddShitpostIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -450,6 +547,27 @@ func (uuo *UserUpdateOne) RemoveVotes(v ...*Vote) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return uuo.RemoveVoteIDs(ids...)
+}
+
+// ClearShitposts clears all "shitposts" edges to the Shitpost entity.
+func (uuo *UserUpdateOne) ClearShitposts() *UserUpdateOne {
+	uuo.mutation.ClearShitposts()
+	return uuo
+}
+
+// RemoveShitpostIDs removes the "shitposts" edge to Shitpost entities by IDs.
+func (uuo *UserUpdateOne) RemoveShitpostIDs(ids ...string) *UserUpdateOne {
+	uuo.mutation.RemoveShitpostIDs(ids...)
+	return uuo
+}
+
+// RemoveShitposts removes "shitposts" edges to Shitpost entities.
+func (uuo *UserUpdateOne) RemoveShitposts(s ...*Shitpost) *UserUpdateOne {
+	ids := make([]string, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.RemoveShitpostIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -626,6 +744,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(vote.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ShitpostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedShitpostsIDs(); len(nodes) > 0 && !uuo.mutation.ShitpostsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ShitpostsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ShitpostsTable,
+			Columns: []string{user.ShitpostsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

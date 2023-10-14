@@ -9,6 +9,18 @@ import (
 	"github.com/ritsec/ops-bot-iii/ent"
 )
 
+// The ShitpostFunc type is an adapter to allow the use of ordinary
+// function as Shitpost mutator.
+type ShitpostFunc func(context.Context, *ent.ShitpostMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ShitpostFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ShitpostMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ShitpostMutation", m)
+}
+
 // The SigninFunc type is an adapter to allow the use of ordinary
 // function as Signin mutator.
 type SigninFunc func(context.Context, *ent.SigninMutation) (ent.Value, error)

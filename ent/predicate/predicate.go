@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Shitpost is the predicate function for shitpost builders.
+type Shitpost func(*sql.Selector)
+
 // Signin is the predicate function for signin builders.
 type Signin func(*sql.Selector)
 
