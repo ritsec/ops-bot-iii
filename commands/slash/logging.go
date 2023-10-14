@@ -5,15 +5,13 @@ import (
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Log is a slash command that allows users to get or set the logging level
-func Log() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Log() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:        "log",
 			Description: "Get or set the logging level",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -52,7 +50,7 @@ func Log() *structs.SlashCommand {
 			},
 			DefaultMemberPermissions: &permission.Admin,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.log:Log",
 				tracer.ResourceName("/log"),
@@ -88,6 +86,5 @@ func Log() *structs.SlashCommand {
 					logging.Error(s, "Error sending confirmation of change of log level", i.Member.User, span, logrus.Fields{"error": err})
 				}
 			}
-		},
-	}
+		}
 }

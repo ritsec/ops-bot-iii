@@ -11,16 +11,14 @@ import (
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Query users based on signins
-func Query() *structs.SlashCommand {
+func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	minValue := float64(0)
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+	return &discordgo.ApplicationCommand{
 			Name:        "query",
 			Description: "Query users by signins",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -116,7 +114,7 @@ func Query() *structs.SlashCommand {
 			},
 			DefaultMemberPermissions: &permission.IGLead,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.signin:Signin",
 				tracer.ResourceName("/signin"),
@@ -235,6 +233,5 @@ func Query() *structs.SlashCommand {
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
-		},
-	}
+		}
 }

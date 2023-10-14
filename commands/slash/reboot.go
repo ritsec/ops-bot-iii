@@ -6,19 +6,17 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Reboot is a slash command that reboots the bot
-func Reboot() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Reboot() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:                     "reboot",
 			Description:              "Reboot the bot",
 			DefaultMemberPermissions: &permission.Admin,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.reboot:Reboot",
 				tracer.ResourceName("/reboot"),
@@ -31,6 +29,5 @@ func Reboot() *structs.SlashCommand {
 			span.Finish()
 
 			os.Exit(0)
-		},
-	}
+		}
 }

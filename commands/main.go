@@ -14,12 +14,14 @@ import (
 	"github.com/ritsec/ops-bot-iii/commands/slash"
 	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 )
 
 var (
 	// SlashCommands is a map of all slash commands
-	SlashCommands map[string]*structs.SlashCommand = make(map[string]*structs.SlashCommand)
+	SlashCommands map[string]func() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) = make(map[string]func() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)))
+
+	// SlashCommandHandlers is a map of all slash command handlers
+	SlashCommandHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = make(map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate))
 
 	// Handlers is a map of all handlers
 	Handlers map[string]interface{} = make(map[string]interface{})
@@ -68,15 +70,18 @@ func addSlashCommands(ctx ddtrace.SpanContext) {
 	defer span.Finish()
 
 	// Add all slash commands to the bot
-	for _, command := range SlashCommands {
-		_, err := bot.Session.ApplicationCommandCreate(config.AppID, config.GuildID, command.Command)
+	for _, slashFunc := range SlashCommands {
+		command, handler := slashFunc()
+		_, err := bot.Session.ApplicationCommandCreate(config.AppID, config.GuildID, command)
 		if err != nil {
-			logging.Error(bot.Session, fmt.Sprintf("Failed Loading Command: %v", command.Command.Name), nil, span, logrus.Fields{"error": err})
-			logrus.Errorf("Error registered slash command: %s", command.Command.Name)
+			logging.Error(bot.Session, fmt.Sprintf("Failed Loading Command: %v", command.Name), nil, span, logrus.Fields{"error": err})
+			logrus.Errorf("Error registered slash command: %s", command.Name)
 		} else {
-			logrus.Infof("Registered slash command: %s", command.Command.Name)
-			logging.Debug(bot.Session, fmt.Sprintf("Registered slash command: %s", command.Command.Name), nil, span)
+			logrus.Infof("Registered slash command: %s", command.Name)
+			logging.Debug(bot.Session, fmt.Sprintf("Registered slash command: %s", command.Name), nil, span)
 		}
+
+		SlashCommandHandlers[command.Name] = handler
 	}
 
 	// Main handler for all events
@@ -89,8 +94,8 @@ func addSlashCommands(ctx ddtrace.SpanContext) {
 		case discordgo.InteractionApplicationCommand:
 			data := i.ApplicationCommandData()
 
-			if command, ok := SlashCommands[data.Name]; ok {
-				command.Handler(s, i)
+			if command, ok := SlashCommandHandlers[data.Name]; ok {
+				command(s, i)
 			}
 		case discordgo.InteractionMessageComponent:
 			if command, ok := ComponentHandlers[i.MessageComponentData().CustomID]; ok {
