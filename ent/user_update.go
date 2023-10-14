@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -109,14 +109,14 @@ func (uu *UserUpdate) AddVotes(v ...*Vote) *UserUpdate {
 	return uu.AddVoteIDs(ids...)
 }
 
-// AddShitpostIDs adds the "shitposts" edge to the Shitposts entity by IDs.
+// AddShitpostIDs adds the "shitposts" edge to the Shitpost entity by IDs.
 func (uu *UserUpdate) AddShitpostIDs(ids ...string) *UserUpdate {
 	uu.mutation.AddShitpostIDs(ids...)
 	return uu
 }
 
-// AddShitposts adds the "shitposts" edges to the Shitposts entity.
-func (uu *UserUpdate) AddShitposts(s ...*Shitposts) *UserUpdate {
+// AddShitposts adds the "shitposts" edges to the Shitpost entity.
+func (uu *UserUpdate) AddShitposts(s ...*Shitpost) *UserUpdate {
 	ids := make([]string, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -171,20 +171,20 @@ func (uu *UserUpdate) RemoveVotes(v ...*Vote) *UserUpdate {
 	return uu.RemoveVoteIDs(ids...)
 }
 
-// ClearShitposts clears all "shitposts" edges to the Shitposts entity.
+// ClearShitposts clears all "shitposts" edges to the Shitpost entity.
 func (uu *UserUpdate) ClearShitposts() *UserUpdate {
 	uu.mutation.ClearShitposts()
 	return uu
 }
 
-// RemoveShitpostIDs removes the "shitposts" edge to Shitposts entities by IDs.
+// RemoveShitpostIDs removes the "shitposts" edge to Shitpost entities by IDs.
 func (uu *UserUpdate) RemoveShitpostIDs(ids ...string) *UserUpdate {
 	uu.mutation.RemoveShitpostIDs(ids...)
 	return uu
 }
 
-// RemoveShitposts removes "shitposts" edges to Shitposts entities.
-func (uu *UserUpdate) RemoveShitposts(s ...*Shitposts) *UserUpdate {
+// RemoveShitposts removes "shitposts" edges to Shitpost entities.
+func (uu *UserUpdate) RemoveShitposts(s ...*Shitpost) *UserUpdate {
 	ids := make([]string, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -351,7 +351,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -364,7 +364,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -380,7 +380,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -487,14 +487,14 @@ func (uuo *UserUpdateOne) AddVotes(v ...*Vote) *UserUpdateOne {
 	return uuo.AddVoteIDs(ids...)
 }
 
-// AddShitpostIDs adds the "shitposts" edge to the Shitposts entity by IDs.
+// AddShitpostIDs adds the "shitposts" edge to the Shitpost entity by IDs.
 func (uuo *UserUpdateOne) AddShitpostIDs(ids ...string) *UserUpdateOne {
 	uuo.mutation.AddShitpostIDs(ids...)
 	return uuo
 }
 
-// AddShitposts adds the "shitposts" edges to the Shitposts entity.
-func (uuo *UserUpdateOne) AddShitposts(s ...*Shitposts) *UserUpdateOne {
+// AddShitposts adds the "shitposts" edges to the Shitpost entity.
+func (uuo *UserUpdateOne) AddShitposts(s ...*Shitpost) *UserUpdateOne {
 	ids := make([]string, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -549,20 +549,20 @@ func (uuo *UserUpdateOne) RemoveVotes(v ...*Vote) *UserUpdateOne {
 	return uuo.RemoveVoteIDs(ids...)
 }
 
-// ClearShitposts clears all "shitposts" edges to the Shitposts entity.
+// ClearShitposts clears all "shitposts" edges to the Shitpost entity.
 func (uuo *UserUpdateOne) ClearShitposts() *UserUpdateOne {
 	uuo.mutation.ClearShitposts()
 	return uuo
 }
 
-// RemoveShitpostIDs removes the "shitposts" edge to Shitposts entities by IDs.
+// RemoveShitpostIDs removes the "shitposts" edge to Shitpost entities by IDs.
 func (uuo *UserUpdateOne) RemoveShitpostIDs(ids ...string) *UserUpdateOne {
 	uuo.mutation.RemoveShitpostIDs(ids...)
 	return uuo
 }
 
-// RemoveShitposts removes "shitposts" edges to Shitposts entities.
-func (uuo *UserUpdateOne) RemoveShitposts(s ...*Shitposts) *UserUpdateOne {
+// RemoveShitposts removes "shitposts" edges to Shitpost entities.
+func (uuo *UserUpdateOne) RemoveShitposts(s ...*Shitpost) *UserUpdateOne {
 	ids := make([]string, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -759,7 +759,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -772,7 +772,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -788,7 +788,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

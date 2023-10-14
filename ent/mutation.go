@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -28,15 +28,15 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeShitposts  = "Shitposts"
+	TypeShitpost   = "Shitpost"
 	TypeSignin     = "Signin"
 	TypeUser       = "User"
 	TypeVote       = "Vote"
 	TypeVoteResult = "VoteResult"
 )
 
-// ShitpostsMutation represents an operation that mutates the Shitposts nodes in the graph.
-type ShitpostsMutation struct {
+// ShitpostMutation represents an operation that mutates the Shitpost nodes in the graph.
+type ShitpostMutation struct {
 	config
 	op            Op
 	typ           string
@@ -47,21 +47,21 @@ type ShitpostsMutation struct {
 	user          *string
 	cleareduser   bool
 	done          bool
-	oldValue      func(context.Context) (*Shitposts, error)
-	predicates    []predicate.Shitposts
+	oldValue      func(context.Context) (*Shitpost, error)
+	predicates    []predicate.Shitpost
 }
 
-var _ ent.Mutation = (*ShitpostsMutation)(nil)
+var _ ent.Mutation = (*ShitpostMutation)(nil)
 
-// shitpostsOption allows management of the mutation configuration using functional options.
-type shitpostsOption func(*ShitpostsMutation)
+// shitpostOption allows management of the mutation configuration using functional options.
+type shitpostOption func(*ShitpostMutation)
 
-// newShitpostsMutation creates new mutation for the Shitposts entity.
-func newShitpostsMutation(c config, op Op, opts ...shitpostsOption) *ShitpostsMutation {
-	m := &ShitpostsMutation{
+// newShitpostMutation creates new mutation for the Shitpost entity.
+func newShitpostMutation(c config, op Op, opts ...shitpostOption) *ShitpostMutation {
+	m := &ShitpostMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeShitposts,
+		typ:           TypeShitpost,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -70,20 +70,20 @@ func newShitpostsMutation(c config, op Op, opts ...shitpostsOption) *ShitpostsMu
 	return m
 }
 
-// withShitpostsID sets the ID field of the mutation.
-func withShitpostsID(id string) shitpostsOption {
-	return func(m *ShitpostsMutation) {
+// withShitpostID sets the ID field of the mutation.
+func withShitpostID(id string) shitpostOption {
+	return func(m *ShitpostMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *Shitposts
+			value *Shitpost
 		)
-		m.oldValue = func(ctx context.Context) (*Shitposts, error) {
+		m.oldValue = func(ctx context.Context) (*Shitpost, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().Shitposts.Get(ctx, id)
+					value, err = m.Client().Shitpost.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -92,10 +92,10 @@ func withShitpostsID(id string) shitpostsOption {
 	}
 }
 
-// withShitposts sets the old Shitposts of the mutation.
-func withShitposts(node *Shitposts) shitpostsOption {
-	return func(m *ShitpostsMutation) {
-		m.oldValue = func(context.Context) (*Shitposts, error) {
+// withShitpost sets the old Shitpost of the mutation.
+func withShitpost(node *Shitpost) shitpostOption {
+	return func(m *ShitpostMutation) {
+		m.oldValue = func(context.Context) (*Shitpost, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -104,7 +104,7 @@ func withShitposts(node *Shitposts) shitpostsOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ShitpostsMutation) Client() *Client {
+func (m ShitpostMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -112,7 +112,7 @@ func (m ShitpostsMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m ShitpostsMutation) Tx() (*Tx, error) {
+func (m ShitpostMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -122,14 +122,14 @@ func (m ShitpostsMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Shitposts entities.
-func (m *ShitpostsMutation) SetID(id string) {
+// operation is only accepted on creation of Shitpost entities.
+func (m *ShitpostMutation) SetID(id string) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ShitpostsMutation) ID() (id string, exists bool) {
+func (m *ShitpostMutation) ID() (id string, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -140,7 +140,7 @@ func (m *ShitpostsMutation) ID() (id string, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ShitpostsMutation) IDs(ctx context.Context) ([]string, error) {
+func (m *ShitpostMutation) IDs(ctx context.Context) ([]string, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -149,20 +149,20 @@ func (m *ShitpostsMutation) IDs(ctx context.Context) ([]string, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Shitposts.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().Shitpost.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetCount sets the "count" field.
-func (m *ShitpostsMutation) SetCount(i int) {
+func (m *ShitpostMutation) SetCount(i int) {
 	m.count = &i
 	m.addcount = nil
 }
 
 // Count returns the value of the "count" field in the mutation.
-func (m *ShitpostsMutation) Count() (r int, exists bool) {
+func (m *ShitpostMutation) Count() (r int, exists bool) {
 	v := m.count
 	if v == nil {
 		return
@@ -170,10 +170,10 @@ func (m *ShitpostsMutation) Count() (r int, exists bool) {
 	return *v, true
 }
 
-// OldCount returns the old "count" field's value of the Shitposts entity.
-// If the Shitposts object wasn't provided to the builder, the object is fetched from the database.
+// OldCount returns the old "count" field's value of the Shitpost entity.
+// If the Shitpost object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ShitpostsMutation) OldCount(ctx context.Context) (v int, err error) {
+func (m *ShitpostMutation) OldCount(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCount is only allowed on UpdateOne operations")
 	}
@@ -188,7 +188,7 @@ func (m *ShitpostsMutation) OldCount(ctx context.Context) (v int, err error) {
 }
 
 // AddCount adds i to the "count" field.
-func (m *ShitpostsMutation) AddCount(i int) {
+func (m *ShitpostMutation) AddCount(i int) {
 	if m.addcount != nil {
 		*m.addcount += i
 	} else {
@@ -197,7 +197,7 @@ func (m *ShitpostsMutation) AddCount(i int) {
 }
 
 // AddedCount returns the value that was added to the "count" field in this mutation.
-func (m *ShitpostsMutation) AddedCount() (r int, exists bool) {
+func (m *ShitpostMutation) AddedCount() (r int, exists bool) {
 	v := m.addcount
 	if v == nil {
 		return
@@ -206,28 +206,28 @@ func (m *ShitpostsMutation) AddedCount() (r int, exists bool) {
 }
 
 // ResetCount resets all changes to the "count" field.
-func (m *ShitpostsMutation) ResetCount() {
+func (m *ShitpostMutation) ResetCount() {
 	m.count = nil
 	m.addcount = nil
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
-func (m *ShitpostsMutation) SetUserID(id string) {
+func (m *ShitpostMutation) SetUserID(id string) {
 	m.user = &id
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (m *ShitpostsMutation) ClearUser() {
+func (m *ShitpostMutation) ClearUser() {
 	m.cleareduser = true
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *ShitpostsMutation) UserCleared() bool {
+func (m *ShitpostMutation) UserCleared() bool {
 	return m.cleareduser
 }
 
 // UserID returns the "user" edge ID in the mutation.
-func (m *ShitpostsMutation) UserID() (id string, exists bool) {
+func (m *ShitpostMutation) UserID() (id string, exists bool) {
 	if m.user != nil {
 		return *m.user, true
 	}
@@ -237,7 +237,7 @@ func (m *ShitpostsMutation) UserID() (id string, exists bool) {
 // UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // UserID instead. It exists only for internal usage by the builders.
-func (m *ShitpostsMutation) UserIDs() (ids []string) {
+func (m *ShitpostMutation) UserIDs() (ids []string) {
 	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
@@ -245,20 +245,20 @@ func (m *ShitpostsMutation) UserIDs() (ids []string) {
 }
 
 // ResetUser resets all changes to the "user" edge.
-func (m *ShitpostsMutation) ResetUser() {
+func (m *ShitpostMutation) ResetUser() {
 	m.user = nil
 	m.cleareduser = false
 }
 
-// Where appends a list predicates to the ShitpostsMutation builder.
-func (m *ShitpostsMutation) Where(ps ...predicate.Shitposts) {
+// Where appends a list predicates to the ShitpostMutation builder.
+func (m *ShitpostMutation) Where(ps ...predicate.Shitpost) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the ShitpostsMutation builder. Using this method,
+// WhereP appends storage-level predicates to the ShitpostMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ShitpostsMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Shitposts, len(ps))
+func (m *ShitpostMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Shitpost, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -266,27 +266,27 @@ func (m *ShitpostsMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *ShitpostsMutation) Op() Op {
+func (m *ShitpostMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *ShitpostsMutation) SetOp(op Op) {
+func (m *ShitpostMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (Shitposts).
-func (m *ShitpostsMutation) Type() string {
+// Type returns the node type of this mutation (Shitpost).
+func (m *ShitpostMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *ShitpostsMutation) Fields() []string {
+func (m *ShitpostMutation) Fields() []string {
 	fields := make([]string, 0, 1)
 	if m.count != nil {
-		fields = append(fields, shitposts.FieldCount)
+		fields = append(fields, shitpost.FieldCount)
 	}
 	return fields
 }
@@ -294,9 +294,9 @@ func (m *ShitpostsMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *ShitpostsMutation) Field(name string) (ent.Value, bool) {
+func (m *ShitpostMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case shitposts.FieldCount:
+	case shitpost.FieldCount:
 		return m.Count()
 	}
 	return nil, false
@@ -305,20 +305,20 @@ func (m *ShitpostsMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *ShitpostsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *ShitpostMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case shitposts.FieldCount:
+	case shitpost.FieldCount:
 		return m.OldCount(ctx)
 	}
-	return nil, fmt.Errorf("unknown Shitposts field %s", name)
+	return nil, fmt.Errorf("unknown Shitpost field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ShitpostsMutation) SetField(name string, value ent.Value) error {
+func (m *ShitpostMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case shitposts.FieldCount:
+	case shitpost.FieldCount:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -326,15 +326,15 @@ func (m *ShitpostsMutation) SetField(name string, value ent.Value) error {
 		m.SetCount(v)
 		return nil
 	}
-	return fmt.Errorf("unknown Shitposts field %s", name)
+	return fmt.Errorf("unknown Shitpost field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *ShitpostsMutation) AddedFields() []string {
+func (m *ShitpostMutation) AddedFields() []string {
 	var fields []string
 	if m.addcount != nil {
-		fields = append(fields, shitposts.FieldCount)
+		fields = append(fields, shitpost.FieldCount)
 	}
 	return fields
 }
@@ -342,9 +342,9 @@ func (m *ShitpostsMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *ShitpostsMutation) AddedField(name string) (ent.Value, bool) {
+func (m *ShitpostMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case shitposts.FieldCount:
+	case shitpost.FieldCount:
 		return m.AddedCount()
 	}
 	return nil, false
@@ -353,9 +353,9 @@ func (m *ShitpostsMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *ShitpostsMutation) AddField(name string, value ent.Value) error {
+func (m *ShitpostMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case shitposts.FieldCount:
+	case shitpost.FieldCount:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -363,53 +363,53 @@ func (m *ShitpostsMutation) AddField(name string, value ent.Value) error {
 		m.AddCount(v)
 		return nil
 	}
-	return fmt.Errorf("unknown Shitposts numeric field %s", name)
+	return fmt.Errorf("unknown Shitpost numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *ShitpostsMutation) ClearedFields() []string {
+func (m *ShitpostMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *ShitpostsMutation) FieldCleared(name string) bool {
+func (m *ShitpostMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *ShitpostsMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Shitposts nullable field %s", name)
+func (m *ShitpostMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Shitpost nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *ShitpostsMutation) ResetField(name string) error {
+func (m *ShitpostMutation) ResetField(name string) error {
 	switch name {
-	case shitposts.FieldCount:
+	case shitpost.FieldCount:
 		m.ResetCount()
 		return nil
 	}
-	return fmt.Errorf("unknown Shitposts field %s", name)
+	return fmt.Errorf("unknown Shitpost field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ShitpostsMutation) AddedEdges() []string {
+func (m *ShitpostMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.user != nil {
-		edges = append(edges, shitposts.EdgeUser)
+		edges = append(edges, shitpost.EdgeUser)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *ShitpostsMutation) AddedIDs(name string) []ent.Value {
+func (m *ShitpostMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case shitposts.EdgeUser:
+	case shitpost.EdgeUser:
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
@@ -418,31 +418,31 @@ func (m *ShitpostsMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ShitpostsMutation) RemovedEdges() []string {
+func (m *ShitpostMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *ShitpostsMutation) RemovedIDs(name string) []ent.Value {
+func (m *ShitpostMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ShitpostsMutation) ClearedEdges() []string {
+func (m *ShitpostMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
 	if m.cleareduser {
-		edges = append(edges, shitposts.EdgeUser)
+		edges = append(edges, shitpost.EdgeUser)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *ShitpostsMutation) EdgeCleared(name string) bool {
+func (m *ShitpostMutation) EdgeCleared(name string) bool {
 	switch name {
-	case shitposts.EdgeUser:
+	case shitpost.EdgeUser:
 		return m.cleareduser
 	}
 	return false
@@ -450,24 +450,24 @@ func (m *ShitpostsMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *ShitpostsMutation) ClearEdge(name string) error {
+func (m *ShitpostMutation) ClearEdge(name string) error {
 	switch name {
-	case shitposts.EdgeUser:
+	case shitpost.EdgeUser:
 		m.ClearUser()
 		return nil
 	}
-	return fmt.Errorf("unknown Shitposts unique edge %s", name)
+	return fmt.Errorf("unknown Shitpost unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *ShitpostsMutation) ResetEdge(name string) error {
+func (m *ShitpostMutation) ResetEdge(name string) error {
 	switch name {
-	case shitposts.EdgeUser:
+	case shitpost.EdgeUser:
 		m.ResetUser()
 		return nil
 	}
-	return fmt.Errorf("unknown Shitposts edge %s", name)
+	return fmt.Errorf("unknown Shitpost edge %s", name)
 }
 
 // SigninMutation represents an operation that mutates the Signin nodes in the graph.
@@ -1282,7 +1282,7 @@ func (m *UserMutation) ResetVotes() {
 	m.removedvotes = nil
 }
 
-// AddShitpostIDs adds the "shitposts" edge to the Shitposts entity by ids.
+// AddShitpostIDs adds the "shitposts" edge to the Shitpost entity by ids.
 func (m *UserMutation) AddShitpostIDs(ids ...string) {
 	if m.shitposts == nil {
 		m.shitposts = make(map[string]struct{})
@@ -1292,17 +1292,17 @@ func (m *UserMutation) AddShitpostIDs(ids ...string) {
 	}
 }
 
-// ClearShitposts clears the "shitposts" edge to the Shitposts entity.
+// ClearShitposts clears the "shitposts" edge to the Shitpost entity.
 func (m *UserMutation) ClearShitposts() {
 	m.clearedshitposts = true
 }
 
-// ShitpostsCleared reports if the "shitposts" edge to the Shitposts entity was cleared.
+// ShitpostsCleared reports if the "shitposts" edge to the Shitpost entity was cleared.
 func (m *UserMutation) ShitpostsCleared() bool {
 	return m.clearedshitposts
 }
 
-// RemoveShitpostIDs removes the "shitposts" edge to the Shitposts entity by IDs.
+// RemoveShitpostIDs removes the "shitposts" edge to the Shitpost entity by IDs.
 func (m *UserMutation) RemoveShitpostIDs(ids ...string) {
 	if m.removedshitposts == nil {
 		m.removedshitposts = make(map[string]struct{})
@@ -1313,7 +1313,7 @@ func (m *UserMutation) RemoveShitpostIDs(ids ...string) {
 	}
 }
 
-// RemovedShitposts returns the removed IDs of the "shitposts" edge to the Shitposts entity.
+// RemovedShitposts returns the removed IDs of the "shitposts" edge to the Shitpost entity.
 func (m *UserMutation) RemovedShitpostsIDs() (ids []string) {
 	for id := range m.removedshitposts {
 		ids = append(ids, id)

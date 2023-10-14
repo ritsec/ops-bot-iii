@@ -9,7 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -100,14 +100,14 @@ func (uc *UserCreate) AddVotes(v ...*Vote) *UserCreate {
 	return uc.AddVoteIDs(ids...)
 }
 
-// AddShitpostIDs adds the "shitposts" edge to the Shitposts entity by IDs.
+// AddShitpostIDs adds the "shitposts" edge to the Shitpost entity by IDs.
 func (uc *UserCreate) AddShitpostIDs(ids ...string) *UserCreate {
 	uc.mutation.AddShitpostIDs(ids...)
 	return uc
 }
 
-// AddShitposts adds the "shitposts" edges to the Shitposts entity.
-func (uc *UserCreate) AddShitposts(s ...*Shitposts) *UserCreate {
+// AddShitposts adds the "shitposts" edges to the Shitpost entity.
+func (uc *UserCreate) AddShitposts(s ...*Shitpost) *UserCreate {
 	ids := make([]string, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -272,7 +272,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.ShitpostsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString),
+				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {

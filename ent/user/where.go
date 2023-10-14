@@ -251,7 +251,7 @@ func HasShitposts() predicate.User {
 }
 
 // HasShitpostsWith applies the HasEdge predicate on the "shitposts" edge with a given conditions (other predicates).
-func HasShitpostsWith(preds ...predicate.Shitposts) predicate.User {
+func HasShitpostsWith(preds ...predicate.Shitpost) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newShitpostsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

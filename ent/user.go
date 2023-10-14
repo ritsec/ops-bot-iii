@@ -36,7 +36,7 @@ type UserEdges struct {
 	// Votes made by the user
 	Votes []*Vote `json:"votes,omitempty"`
 	// Shitposts made by the user
-	Shitposts []*Shitposts `json:"shitposts,omitempty"`
+	Shitposts []*Shitpost `json:"shitposts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -62,7 +62,7 @@ func (e UserEdges) VotesOrErr() ([]*Vote, error) {
 
 // ShitpostsOrErr returns the Shitposts value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) ShitpostsOrErr() ([]*Shitposts, error) {
+func (e UserEdges) ShitpostsOrErr() ([]*Shitpost, error) {
 	if e.loadedTypes[2] {
 		return e.Shitposts, nil
 	}
@@ -143,7 +143,7 @@ func (u *User) QueryVotes() *VoteQuery {
 }
 
 // QueryShitposts queries the "shitposts" edge of the User entity.
-func (u *User) QueryShitposts() *ShitpostsQuery {
+func (u *User) QueryShitposts() *ShitpostQuery {
 	return NewUserClient(u.config).QueryShitposts(u)
 }
 

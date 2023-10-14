@@ -8,12 +8,12 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
-// Shitposts is the model entity for the Shitposts schema.
-type Shitposts struct {
+// Shitpost is the model entity for the Shitpost schema.
+type Shitpost struct {
 	config `json:"-"`
 	// ID of the ent.
 	// Message ID
@@ -21,14 +21,14 @@ type Shitposts struct {
 	// Shitpost Count
 	Count int `json:"count,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ShitpostsQuery when eager-loading is set.
-	Edges          ShitpostsEdges `json:"edges"`
+	// The values are being populated by the ShitpostQuery when eager-loading is set.
+	Edges          ShitpostEdges `json:"edges"`
 	user_shitposts *string
 	selectValues   sql.SelectValues
 }
 
-// ShitpostsEdges holds the relations/edges for other nodes in the graph.
-type ShitpostsEdges struct {
+// ShitpostEdges holds the relations/edges for other nodes in the graph.
+type ShitpostEdges struct {
 	// Shitpost Author
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -38,7 +38,7 @@ type ShitpostsEdges struct {
 
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ShitpostsEdges) UserOrErr() (*User, error) {
+func (e ShitpostEdges) UserOrErr() (*User, error) {
 	if e.loadedTypes[0] {
 		if e.User == nil {
 			// Edge was loaded but was not found.
@@ -50,15 +50,15 @@ func (e ShitpostsEdges) UserOrErr() (*User, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Shitposts) scanValues(columns []string) ([]any, error) {
+func (*Shitpost) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case shitposts.FieldCount:
+		case shitpost.FieldCount:
 			values[i] = new(sql.NullInt64)
-		case shitposts.FieldID:
+		case shitpost.FieldID:
 			values[i] = new(sql.NullString)
-		case shitposts.ForeignKeys[0]: // user_shitposts
+		case shitpost.ForeignKeys[0]: // user_shitposts
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -68,26 +68,26 @@ func (*Shitposts) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Shitposts fields.
-func (s *Shitposts) assignValues(columns []string, values []any) error {
+// to the Shitpost fields.
+func (s *Shitpost) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case shitposts.FieldID:
+		case shitpost.FieldID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
 				s.ID = value.String
 			}
-		case shitposts.FieldCount:
+		case shitpost.FieldCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field count", values[i])
 			} else if value.Valid {
 				s.Count = int(value.Int64)
 			}
-		case shitposts.ForeignKeys[0]:
+		case shitpost.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field user_shitposts", values[i])
 			} else if value.Valid {
@@ -101,39 +101,39 @@ func (s *Shitposts) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Shitposts.
+// Value returns the ent.Value that was dynamically selected and assigned to the Shitpost.
 // This includes values selected through modifiers, order, etc.
-func (s *Shitposts) Value(name string) (ent.Value, error) {
+func (s *Shitpost) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QueryUser queries the "user" edge of the Shitposts entity.
-func (s *Shitposts) QueryUser() *UserQuery {
-	return NewShitpostsClient(s.config).QueryUser(s)
+// QueryUser queries the "user" edge of the Shitpost entity.
+func (s *Shitpost) QueryUser() *UserQuery {
+	return NewShitpostClient(s.config).QueryUser(s)
 }
 
-// Update returns a builder for updating this Shitposts.
-// Note that you need to call Shitposts.Unwrap() before calling this method if this Shitposts
+// Update returns a builder for updating this Shitpost.
+// Note that you need to call Shitpost.Unwrap() before calling this method if this Shitpost
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (s *Shitposts) Update() *ShitpostsUpdateOne {
-	return NewShitpostsClient(s.config).UpdateOne(s)
+func (s *Shitpost) Update() *ShitpostUpdateOne {
+	return NewShitpostClient(s.config).UpdateOne(s)
 }
 
-// Unwrap unwraps the Shitposts entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Shitpost entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (s *Shitposts) Unwrap() *Shitposts {
+func (s *Shitpost) Unwrap() *Shitpost {
 	_tx, ok := s.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Shitposts is not a transactional entity")
+		panic("ent: Shitpost is not a transactional entity")
 	}
 	s.config.driver = _tx.drv
 	return s
 }
 
 // String implements the fmt.Stringer.
-func (s *Shitposts) String() string {
+func (s *Shitpost) String() string {
 	var builder strings.Builder
-	builder.WriteString("Shitposts(")
+	builder.WriteString("Shitpost(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
 	builder.WriteString("count=")
 	builder.WriteString(fmt.Sprintf("%v", s.Count))
@@ -141,5 +141,5 @@ func (s *Shitposts) String() string {
 	return builder.String()
 }
 
-// ShitpostsSlice is a parsable slice of Shitposts.
-type ShitpostsSlice []*Shitposts
+// Shitposts is a parsable slice of Shitpost.
+type Shitposts []*Shitpost

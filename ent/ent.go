@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -77,7 +77,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			shitposts.Table:  shitposts.ValidColumn,
+			shitpost.Table:   shitpost.ValidColumn,
 			signin.Table:     signin.ValidColumn,
 			user.Table:       user.ValidColumn,
 			vote.Table:       vote.ValidColumn,

@@ -42,8 +42,8 @@ const (
 	VotesColumn = "user_votes"
 	// ShitpostsTable is the table that holds the shitposts relation/edge.
 	ShitpostsTable = "shitposts"
-	// ShitpostsInverseTable is the table name for the Shitposts entity.
-	// It exists in this package in order to avoid circular dependency with the "shitposts" package.
+	// ShitpostsInverseTable is the table name for the Shitpost entity.
+	// It exists in this package in order to avoid circular dependency with the "shitpost" package.
 	ShitpostsInverseTable = "shitposts"
 	// ShitpostsColumn is the table column denoting the shitposts relation/edge.
 	ShitpostsColumn = "user_shitposts"

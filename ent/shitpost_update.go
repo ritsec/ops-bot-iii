@@ -11,44 +11,44 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
-// ShitpostsUpdate is the builder for updating Shitposts entities.
-type ShitpostsUpdate struct {
+// ShitpostUpdate is the builder for updating Shitpost entities.
+type ShitpostUpdate struct {
 	config
 	hooks    []Hook
-	mutation *ShitpostsMutation
+	mutation *ShitpostMutation
 }
 
-// Where appends a list predicates to the ShitpostsUpdate builder.
-func (su *ShitpostsUpdate) Where(ps ...predicate.Shitposts) *ShitpostsUpdate {
+// Where appends a list predicates to the ShitpostUpdate builder.
+func (su *ShitpostUpdate) Where(ps ...predicate.Shitpost) *ShitpostUpdate {
 	su.mutation.Where(ps...)
 	return su
 }
 
 // SetCount sets the "count" field.
-func (su *ShitpostsUpdate) SetCount(i int) *ShitpostsUpdate {
+func (su *ShitpostUpdate) SetCount(i int) *ShitpostUpdate {
 	su.mutation.ResetCount()
 	su.mutation.SetCount(i)
 	return su
 }
 
 // AddCount adds i to the "count" field.
-func (su *ShitpostsUpdate) AddCount(i int) *ShitpostsUpdate {
+func (su *ShitpostUpdate) AddCount(i int) *ShitpostUpdate {
 	su.mutation.AddCount(i)
 	return su
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (su *ShitpostsUpdate) SetUserID(id string) *ShitpostsUpdate {
+func (su *ShitpostUpdate) SetUserID(id string) *ShitpostUpdate {
 	su.mutation.SetUserID(id)
 	return su
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (su *ShitpostsUpdate) SetNillableUserID(id *string) *ShitpostsUpdate {
+func (su *ShitpostUpdate) SetNillableUserID(id *string) *ShitpostUpdate {
 	if id != nil {
 		su = su.SetUserID(*id)
 	}
@@ -56,28 +56,28 @@ func (su *ShitpostsUpdate) SetNillableUserID(id *string) *ShitpostsUpdate {
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (su *ShitpostsUpdate) SetUser(u *User) *ShitpostsUpdate {
+func (su *ShitpostUpdate) SetUser(u *User) *ShitpostUpdate {
 	return su.SetUserID(u.ID)
 }
 
-// Mutation returns the ShitpostsMutation object of the builder.
-func (su *ShitpostsUpdate) Mutation() *ShitpostsMutation {
+// Mutation returns the ShitpostMutation object of the builder.
+func (su *ShitpostUpdate) Mutation() *ShitpostMutation {
 	return su.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (su *ShitpostsUpdate) ClearUser() *ShitpostsUpdate {
+func (su *ShitpostUpdate) ClearUser() *ShitpostUpdate {
 	su.mutation.ClearUser()
 	return su
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (su *ShitpostsUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, ShitpostsMutation](ctx, su.sqlSave, su.mutation, su.hooks)
+func (su *ShitpostUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks[int, ShitpostMutation](ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (su *ShitpostsUpdate) SaveX(ctx context.Context) int {
+func (su *ShitpostUpdate) SaveX(ctx context.Context) int {
 	affected, err := su.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -86,20 +86,20 @@ func (su *ShitpostsUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (su *ShitpostsUpdate) Exec(ctx context.Context) error {
+func (su *ShitpostUpdate) Exec(ctx context.Context) error {
 	_, err := su.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (su *ShitpostsUpdate) ExecX(ctx context.Context) {
+func (su *ShitpostUpdate) ExecX(ctx context.Context) {
 	if err := su.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (su *ShitpostsUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(shitposts.Table, shitposts.Columns, sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString))
+func (su *ShitpostUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	_spec := sqlgraph.NewUpdateSpec(shitpost.Table, shitpost.Columns, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	if ps := su.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -108,17 +108,17 @@ func (su *ShitpostsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 	}
 	if value, ok := su.mutation.Count(); ok {
-		_spec.SetField(shitposts.FieldCount, field.TypeInt, value)
+		_spec.SetField(shitpost.FieldCount, field.TypeInt, value)
 	}
 	if value, ok := su.mutation.AddedCount(); ok {
-		_spec.AddField(shitposts.FieldCount, field.TypeInt, value)
+		_spec.AddField(shitpost.FieldCount, field.TypeInt, value)
 	}
 	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shitposts.UserTable,
-			Columns: []string{shitposts.UserColumn},
+			Table:   shitpost.UserTable,
+			Columns: []string{shitpost.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -130,8 +130,8 @@ func (su *ShitpostsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shitposts.UserTable,
-			Columns: []string{shitposts.UserColumn},
+			Table:   shitpost.UserTable,
+			Columns: []string{shitpost.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -144,7 +144,7 @@ func (su *ShitpostsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{shitposts.Label}
+			err = &NotFoundError{shitpost.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -154,35 +154,35 @@ func (su *ShitpostsUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	return n, nil
 }
 
-// ShitpostsUpdateOne is the builder for updating a single Shitposts entity.
-type ShitpostsUpdateOne struct {
+// ShitpostUpdateOne is the builder for updating a single Shitpost entity.
+type ShitpostUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *ShitpostsMutation
+	mutation *ShitpostMutation
 }
 
 // SetCount sets the "count" field.
-func (suo *ShitpostsUpdateOne) SetCount(i int) *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) SetCount(i int) *ShitpostUpdateOne {
 	suo.mutation.ResetCount()
 	suo.mutation.SetCount(i)
 	return suo
 }
 
 // AddCount adds i to the "count" field.
-func (suo *ShitpostsUpdateOne) AddCount(i int) *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) AddCount(i int) *ShitpostUpdateOne {
 	suo.mutation.AddCount(i)
 	return suo
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (suo *ShitpostsUpdateOne) SetUserID(id string) *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) SetUserID(id string) *ShitpostUpdateOne {
 	suo.mutation.SetUserID(id)
 	return suo
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (suo *ShitpostsUpdateOne) SetNillableUserID(id *string) *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) SetNillableUserID(id *string) *ShitpostUpdateOne {
 	if id != nil {
 		suo = suo.SetUserID(*id)
 	}
@@ -190,41 +190,41 @@ func (suo *ShitpostsUpdateOne) SetNillableUserID(id *string) *ShitpostsUpdateOne
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (suo *ShitpostsUpdateOne) SetUser(u *User) *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) SetUser(u *User) *ShitpostUpdateOne {
 	return suo.SetUserID(u.ID)
 }
 
-// Mutation returns the ShitpostsMutation object of the builder.
-func (suo *ShitpostsUpdateOne) Mutation() *ShitpostsMutation {
+// Mutation returns the ShitpostMutation object of the builder.
+func (suo *ShitpostUpdateOne) Mutation() *ShitpostMutation {
 	return suo.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (suo *ShitpostsUpdateOne) ClearUser() *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) ClearUser() *ShitpostUpdateOne {
 	suo.mutation.ClearUser()
 	return suo
 }
 
-// Where appends a list predicates to the ShitpostsUpdate builder.
-func (suo *ShitpostsUpdateOne) Where(ps ...predicate.Shitposts) *ShitpostsUpdateOne {
+// Where appends a list predicates to the ShitpostUpdate builder.
+func (suo *ShitpostUpdateOne) Where(ps ...predicate.Shitpost) *ShitpostUpdateOne {
 	suo.mutation.Where(ps...)
 	return suo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (suo *ShitpostsUpdateOne) Select(field string, fields ...string) *ShitpostsUpdateOne {
+func (suo *ShitpostUpdateOne) Select(field string, fields ...string) *ShitpostUpdateOne {
 	suo.fields = append([]string{field}, fields...)
 	return suo
 }
 
-// Save executes the query and returns the updated Shitposts entity.
-func (suo *ShitpostsUpdateOne) Save(ctx context.Context) (*Shitposts, error) {
-	return withHooks[*Shitposts, ShitpostsMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
+// Save executes the query and returns the updated Shitpost entity.
+func (suo *ShitpostUpdateOne) Save(ctx context.Context) (*Shitpost, error) {
+	return withHooks[*Shitpost, ShitpostMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (suo *ShitpostsUpdateOne) SaveX(ctx context.Context) *Shitposts {
+func (suo *ShitpostUpdateOne) SaveX(ctx context.Context) *Shitpost {
 	node, err := suo.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -233,33 +233,33 @@ func (suo *ShitpostsUpdateOne) SaveX(ctx context.Context) *Shitposts {
 }
 
 // Exec executes the query on the entity.
-func (suo *ShitpostsUpdateOne) Exec(ctx context.Context) error {
+func (suo *ShitpostUpdateOne) Exec(ctx context.Context) error {
 	_, err := suo.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (suo *ShitpostsUpdateOne) ExecX(ctx context.Context) {
+func (suo *ShitpostUpdateOne) ExecX(ctx context.Context) {
 	if err := suo.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
-func (suo *ShitpostsUpdateOne) sqlSave(ctx context.Context) (_node *Shitposts, err error) {
-	_spec := sqlgraph.NewUpdateSpec(shitposts.Table, shitposts.Columns, sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString))
+func (suo *ShitpostUpdateOne) sqlSave(ctx context.Context) (_node *Shitpost, err error) {
+	_spec := sqlgraph.NewUpdateSpec(shitpost.Table, shitpost.Columns, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	id, ok := suo.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Shitposts.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Shitpost.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := suo.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, shitposts.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, shitpost.FieldID)
 		for _, f := range fields {
-			if !shitposts.ValidColumn(f) {
+			if !shitpost.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != shitposts.FieldID {
+			if f != shitpost.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -272,17 +272,17 @@ func (suo *ShitpostsUpdateOne) sqlSave(ctx context.Context) (_node *Shitposts, e
 		}
 	}
 	if value, ok := suo.mutation.Count(); ok {
-		_spec.SetField(shitposts.FieldCount, field.TypeInt, value)
+		_spec.SetField(shitpost.FieldCount, field.TypeInt, value)
 	}
 	if value, ok := suo.mutation.AddedCount(); ok {
-		_spec.AddField(shitposts.FieldCount, field.TypeInt, value)
+		_spec.AddField(shitpost.FieldCount, field.TypeInt, value)
 	}
 	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shitposts.UserTable,
-			Columns: []string{shitposts.UserColumn},
+			Table:   shitpost.UserTable,
+			Columns: []string{shitpost.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -294,8 +294,8 @@ func (suo *ShitpostsUpdateOne) sqlSave(ctx context.Context) (_node *Shitposts, e
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shitposts.UserTable,
-			Columns: []string{shitposts.UserColumn},
+			Table:   shitpost.UserTable,
+			Columns: []string{shitpost.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -306,12 +306,12 @@ func (suo *ShitpostsUpdateOne) sqlSave(ctx context.Context) (_node *Shitposts, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &Shitposts{config: suo.config}
+	_node = &Shitpost{config: suo.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, suo.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{shitposts.Label}
+			err = &NotFoundError{shitpost.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

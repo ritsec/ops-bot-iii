@@ -9,29 +9,29 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 )
 
-// ShitpostsDelete is the builder for deleting a Shitposts entity.
-type ShitpostsDelete struct {
+// ShitpostDelete is the builder for deleting a Shitpost entity.
+type ShitpostDelete struct {
 	config
 	hooks    []Hook
-	mutation *ShitpostsMutation
+	mutation *ShitpostMutation
 }
 
-// Where appends a list predicates to the ShitpostsDelete builder.
-func (sd *ShitpostsDelete) Where(ps ...predicate.Shitposts) *ShitpostsDelete {
+// Where appends a list predicates to the ShitpostDelete builder.
+func (sd *ShitpostDelete) Where(ps ...predicate.Shitpost) *ShitpostDelete {
 	sd.mutation.Where(ps...)
 	return sd
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (sd *ShitpostsDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, ShitpostsMutation](ctx, sd.sqlExec, sd.mutation, sd.hooks)
+func (sd *ShitpostDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks[int, ShitpostMutation](ctx, sd.sqlExec, sd.mutation, sd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sd *ShitpostsDelete) ExecX(ctx context.Context) int {
+func (sd *ShitpostDelete) ExecX(ctx context.Context) int {
 	n, err := sd.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (sd *ShitpostsDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (sd *ShitpostsDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(shitposts.Table, sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString))
+func (sd *ShitpostDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(shitpost.Table, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	if ps := sd.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (sd *ShitpostsDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// ShitpostsDeleteOne is the builder for deleting a single Shitposts entity.
-type ShitpostsDeleteOne struct {
-	sd *ShitpostsDelete
+// ShitpostDeleteOne is the builder for deleting a single Shitpost entity.
+type ShitpostDeleteOne struct {
+	sd *ShitpostDelete
 }
 
-// Where appends a list predicates to the ShitpostsDelete builder.
-func (sdo *ShitpostsDeleteOne) Where(ps ...predicate.Shitposts) *ShitpostsDeleteOne {
+// Where appends a list predicates to the ShitpostDelete builder.
+func (sdo *ShitpostDeleteOne) Where(ps ...predicate.Shitpost) *ShitpostDeleteOne {
 	sdo.sd.mutation.Where(ps...)
 	return sdo
 }
 
 // Exec executes the deletion query.
-func (sdo *ShitpostsDeleteOne) Exec(ctx context.Context) error {
+func (sdo *ShitpostDeleteOne) Exec(ctx context.Context) error {
 	n, err := sdo.sd.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{shitposts.Label}
+		return &NotFoundError{shitpost.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sdo *ShitpostsDeleteOne) ExecX(ctx context.Context) {
+func (sdo *ShitpostDeleteOne) ExecX(ctx context.Context) {
 	if err := sdo.Exec(ctx); err != nil {
 		panic(err)
 	}

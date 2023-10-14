@@ -9,37 +9,37 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
-// ShitpostsCreate is the builder for creating a Shitposts entity.
-type ShitpostsCreate struct {
+// ShitpostCreate is the builder for creating a Shitpost entity.
+type ShitpostCreate struct {
 	config
-	mutation *ShitpostsMutation
+	mutation *ShitpostMutation
 	hooks    []Hook
 }
 
 // SetCount sets the "count" field.
-func (sc *ShitpostsCreate) SetCount(i int) *ShitpostsCreate {
+func (sc *ShitpostCreate) SetCount(i int) *ShitpostCreate {
 	sc.mutation.SetCount(i)
 	return sc
 }
 
 // SetID sets the "id" field.
-func (sc *ShitpostsCreate) SetID(s string) *ShitpostsCreate {
+func (sc *ShitpostCreate) SetID(s string) *ShitpostCreate {
 	sc.mutation.SetID(s)
 	return sc
 }
 
 // SetUserID sets the "user" edge to the User entity by ID.
-func (sc *ShitpostsCreate) SetUserID(id string) *ShitpostsCreate {
+func (sc *ShitpostCreate) SetUserID(id string) *ShitpostCreate {
 	sc.mutation.SetUserID(id)
 	return sc
 }
 
 // SetNillableUserID sets the "user" edge to the User entity by ID if the given value is not nil.
-func (sc *ShitpostsCreate) SetNillableUserID(id *string) *ShitpostsCreate {
+func (sc *ShitpostCreate) SetNillableUserID(id *string) *ShitpostCreate {
 	if id != nil {
 		sc = sc.SetUserID(*id)
 	}
@@ -47,22 +47,22 @@ func (sc *ShitpostsCreate) SetNillableUserID(id *string) *ShitpostsCreate {
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (sc *ShitpostsCreate) SetUser(u *User) *ShitpostsCreate {
+func (sc *ShitpostCreate) SetUser(u *User) *ShitpostCreate {
 	return sc.SetUserID(u.ID)
 }
 
-// Mutation returns the ShitpostsMutation object of the builder.
-func (sc *ShitpostsCreate) Mutation() *ShitpostsMutation {
+// Mutation returns the ShitpostMutation object of the builder.
+func (sc *ShitpostCreate) Mutation() *ShitpostMutation {
 	return sc.mutation
 }
 
-// Save creates the Shitposts in the database.
-func (sc *ShitpostsCreate) Save(ctx context.Context) (*Shitposts, error) {
-	return withHooks[*Shitposts, ShitpostsMutation](ctx, sc.sqlSave, sc.mutation, sc.hooks)
+// Save creates the Shitpost in the database.
+func (sc *ShitpostCreate) Save(ctx context.Context) (*Shitpost, error) {
+	return withHooks[*Shitpost, ShitpostMutation](ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (sc *ShitpostsCreate) SaveX(ctx context.Context) *Shitposts {
+func (sc *ShitpostCreate) SaveX(ctx context.Context) *Shitpost {
 	v, err := sc.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -71,32 +71,32 @@ func (sc *ShitpostsCreate) SaveX(ctx context.Context) *Shitposts {
 }
 
 // Exec executes the query.
-func (sc *ShitpostsCreate) Exec(ctx context.Context) error {
+func (sc *ShitpostCreate) Exec(ctx context.Context) error {
 	_, err := sc.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sc *ShitpostsCreate) ExecX(ctx context.Context) {
+func (sc *ShitpostCreate) ExecX(ctx context.Context) {
 	if err := sc.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sc *ShitpostsCreate) check() error {
+func (sc *ShitpostCreate) check() error {
 	if _, ok := sc.mutation.Count(); !ok {
-		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "Shitposts.count"`)}
+		return &ValidationError{Name: "count", err: errors.New(`ent: missing required field "Shitpost.count"`)}
 	}
 	if v, ok := sc.mutation.ID(); ok {
-		if err := shitposts.IDValidator(v); err != nil {
-			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Shitposts.id": %w`, err)}
+		if err := shitpost.IDValidator(v); err != nil {
+			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "Shitpost.id": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (sc *ShitpostsCreate) sqlSave(ctx context.Context) (*Shitposts, error) {
+func (sc *ShitpostCreate) sqlSave(ctx context.Context) (*Shitpost, error) {
 	if err := sc.check(); err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (sc *ShitpostsCreate) sqlSave(ctx context.Context) (*Shitposts, error) {
 		if id, ok := _spec.ID.Value.(string); ok {
 			_node.ID = id
 		} else {
-			return nil, fmt.Errorf("unexpected Shitposts.ID type: %T", _spec.ID.Value)
+			return nil, fmt.Errorf("unexpected Shitpost.ID type: %T", _spec.ID.Value)
 		}
 	}
 	sc.mutation.id = &_node.ID
@@ -119,25 +119,25 @@ func (sc *ShitpostsCreate) sqlSave(ctx context.Context) (*Shitposts, error) {
 	return _node, nil
 }
 
-func (sc *ShitpostsCreate) createSpec() (*Shitposts, *sqlgraph.CreateSpec) {
+func (sc *ShitpostCreate) createSpec() (*Shitpost, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Shitposts{config: sc.config}
-		_spec = sqlgraph.NewCreateSpec(shitposts.Table, sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString))
+		_node = &Shitpost{config: sc.config}
+		_spec = sqlgraph.NewCreateSpec(shitpost.Table, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	)
 	if id, ok := sc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = id
 	}
 	if value, ok := sc.mutation.Count(); ok {
-		_spec.SetField(shitposts.FieldCount, field.TypeInt, value)
+		_spec.SetField(shitpost.FieldCount, field.TypeInt, value)
 		_node.Count = value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   shitposts.UserTable,
-			Columns: []string{shitposts.UserColumn},
+			Table:   shitpost.UserTable,
+			Columns: []string{shitpost.UserColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeString),
@@ -152,22 +152,22 @@ func (sc *ShitpostsCreate) createSpec() (*Shitposts, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// ShitpostsCreateBulk is the builder for creating many Shitposts entities in bulk.
-type ShitpostsCreateBulk struct {
+// ShitpostCreateBulk is the builder for creating many Shitpost entities in bulk.
+type ShitpostCreateBulk struct {
 	config
-	builders []*ShitpostsCreate
+	builders []*ShitpostCreate
 }
 
-// Save creates the Shitposts entities in the database.
-func (scb *ShitpostsCreateBulk) Save(ctx context.Context) ([]*Shitposts, error) {
+// Save creates the Shitpost entities in the database.
+func (scb *ShitpostCreateBulk) Save(ctx context.Context) ([]*Shitpost, error) {
 	specs := make([]*sqlgraph.CreateSpec, len(scb.builders))
-	nodes := make([]*Shitposts, len(scb.builders))
+	nodes := make([]*Shitpost, len(scb.builders))
 	mutators := make([]Mutator, len(scb.builders))
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*ShitpostsMutation)
+				mutation, ok := m.(*ShitpostMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -210,7 +210,7 @@ func (scb *ShitpostsCreateBulk) Save(ctx context.Context) ([]*Shitposts, error) 
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scb *ShitpostsCreateBulk) SaveX(ctx context.Context) []*Shitposts {
+func (scb *ShitpostCreateBulk) SaveX(ctx context.Context) []*Shitpost {
 	v, err := scb.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -219,13 +219,13 @@ func (scb *ShitpostsCreateBulk) SaveX(ctx context.Context) []*Shitposts {
 }
 
 // Exec executes the query.
-func (scb *ShitpostsCreateBulk) Exec(ctx context.Context) error {
+func (scb *ShitpostCreateBulk) Exec(ctx context.Context) error {
 	_, err := scb.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scb *ShitpostsCreateBulk) ExecX(ctx context.Context) {
+func (scb *ShitpostCreateBulk) ExecX(ctx context.Context) {
 	if err := scb.Exec(ctx); err != nil {
 		panic(err)
 	}

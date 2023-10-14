@@ -11,17 +11,17 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
-// ShitpostsQuery is the builder for querying Shitposts entities.
-type ShitpostsQuery struct {
+// ShitpostQuery is the builder for querying Shitpost entities.
+type ShitpostQuery struct {
 	config
 	ctx        *QueryContext
-	order      []shitposts.OrderOption
+	order      []shitpost.OrderOption
 	inters     []Interceptor
-	predicates []predicate.Shitposts
+	predicates []predicate.Shitpost
 	withUser   *UserQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
@@ -29,39 +29,39 @@ type ShitpostsQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the ShitpostsQuery builder.
-func (sq *ShitpostsQuery) Where(ps ...predicate.Shitposts) *ShitpostsQuery {
+// Where adds a new predicate for the ShitpostQuery builder.
+func (sq *ShitpostQuery) Where(ps ...predicate.Shitpost) *ShitpostQuery {
 	sq.predicates = append(sq.predicates, ps...)
 	return sq
 }
 
 // Limit the number of records to be returned by this query.
-func (sq *ShitpostsQuery) Limit(limit int) *ShitpostsQuery {
+func (sq *ShitpostQuery) Limit(limit int) *ShitpostQuery {
 	sq.ctx.Limit = &limit
 	return sq
 }
 
 // Offset to start from.
-func (sq *ShitpostsQuery) Offset(offset int) *ShitpostsQuery {
+func (sq *ShitpostQuery) Offset(offset int) *ShitpostQuery {
 	sq.ctx.Offset = &offset
 	return sq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (sq *ShitpostsQuery) Unique(unique bool) *ShitpostsQuery {
+func (sq *ShitpostQuery) Unique(unique bool) *ShitpostQuery {
 	sq.ctx.Unique = &unique
 	return sq
 }
 
 // Order specifies how the records should be ordered.
-func (sq *ShitpostsQuery) Order(o ...shitposts.OrderOption) *ShitpostsQuery {
+func (sq *ShitpostQuery) Order(o ...shitpost.OrderOption) *ShitpostQuery {
 	sq.order = append(sq.order, o...)
 	return sq
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (sq *ShitpostsQuery) QueryUser() *UserQuery {
+func (sq *ShitpostQuery) QueryUser() *UserQuery {
 	query := (&UserClient{config: sq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
@@ -72,9 +72,9 @@ func (sq *ShitpostsQuery) QueryUser() *UserQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(shitposts.Table, shitposts.FieldID, selector),
+			sqlgraph.From(shitpost.Table, shitpost.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, shitposts.UserTable, shitposts.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, shitpost.UserTable, shitpost.UserColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -82,21 +82,21 @@ func (sq *ShitpostsQuery) QueryUser() *UserQuery {
 	return query
 }
 
-// First returns the first Shitposts entity from the query.
-// Returns a *NotFoundError when no Shitposts was found.
-func (sq *ShitpostsQuery) First(ctx context.Context) (*Shitposts, error) {
+// First returns the first Shitpost entity from the query.
+// Returns a *NotFoundError when no Shitpost was found.
+func (sq *ShitpostQuery) First(ctx context.Context) (*Shitpost, error) {
 	nodes, err := sq.Limit(1).All(setContextOp(ctx, sq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{shitposts.Label}
+		return nil, &NotFoundError{shitpost.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (sq *ShitpostsQuery) FirstX(ctx context.Context) *Shitposts {
+func (sq *ShitpostQuery) FirstX(ctx context.Context) *Shitpost {
 	node, err := sq.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -104,22 +104,22 @@ func (sq *ShitpostsQuery) FirstX(ctx context.Context) *Shitposts {
 	return node
 }
 
-// FirstID returns the first Shitposts ID from the query.
-// Returns a *NotFoundError when no Shitposts ID was found.
-func (sq *ShitpostsQuery) FirstID(ctx context.Context) (id string, err error) {
+// FirstID returns the first Shitpost ID from the query.
+// Returns a *NotFoundError when no Shitpost ID was found.
+func (sq *ShitpostQuery) FirstID(ctx context.Context) (id string, err error) {
 	var ids []string
 	if ids, err = sq.Limit(1).IDs(setContextOp(ctx, sq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{shitposts.Label}
+		err = &NotFoundError{shitpost.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sq *ShitpostsQuery) FirstIDX(ctx context.Context) string {
+func (sq *ShitpostQuery) FirstIDX(ctx context.Context) string {
 	id, err := sq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -127,10 +127,10 @@ func (sq *ShitpostsQuery) FirstIDX(ctx context.Context) string {
 	return id
 }
 
-// Only returns a single Shitposts entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Shitposts entity is found.
-// Returns a *NotFoundError when no Shitposts entities are found.
-func (sq *ShitpostsQuery) Only(ctx context.Context) (*Shitposts, error) {
+// Only returns a single Shitpost entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Shitpost entity is found.
+// Returns a *NotFoundError when no Shitpost entities are found.
+func (sq *ShitpostQuery) Only(ctx context.Context) (*Shitpost, error) {
 	nodes, err := sq.Limit(2).All(setContextOp(ctx, sq.ctx, "Only"))
 	if err != nil {
 		return nil, err
@@ -139,14 +139,14 @@ func (sq *ShitpostsQuery) Only(ctx context.Context) (*Shitposts, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{shitposts.Label}
+		return nil, &NotFoundError{shitpost.Label}
 	default:
-		return nil, &NotSingularError{shitposts.Label}
+		return nil, &NotSingularError{shitpost.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (sq *ShitpostsQuery) OnlyX(ctx context.Context) *Shitposts {
+func (sq *ShitpostQuery) OnlyX(ctx context.Context) *Shitpost {
 	node, err := sq.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -154,10 +154,10 @@ func (sq *ShitpostsQuery) OnlyX(ctx context.Context) *Shitposts {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Shitposts ID in the query.
-// Returns a *NotSingularError when more than one Shitposts ID is found.
+// OnlyID is like Only, but returns the only Shitpost ID in the query.
+// Returns a *NotSingularError when more than one Shitpost ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sq *ShitpostsQuery) OnlyID(ctx context.Context) (id string, err error) {
+func (sq *ShitpostQuery) OnlyID(ctx context.Context) (id string, err error) {
 	var ids []string
 	if ids, err = sq.Limit(2).IDs(setContextOp(ctx, sq.ctx, "OnlyID")); err != nil {
 		return
@@ -166,15 +166,15 @@ func (sq *ShitpostsQuery) OnlyID(ctx context.Context) (id string, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{shitposts.Label}
+		err = &NotFoundError{shitpost.Label}
 	default:
-		err = &NotSingularError{shitposts.Label}
+		err = &NotSingularError{shitpost.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sq *ShitpostsQuery) OnlyIDX(ctx context.Context) string {
+func (sq *ShitpostQuery) OnlyIDX(ctx context.Context) string {
 	id, err := sq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -182,18 +182,18 @@ func (sq *ShitpostsQuery) OnlyIDX(ctx context.Context) string {
 	return id
 }
 
-// All executes the query and returns a list of ShitpostsSlice.
-func (sq *ShitpostsQuery) All(ctx context.Context) ([]*Shitposts, error) {
+// All executes the query and returns a list of Shitposts.
+func (sq *ShitpostQuery) All(ctx context.Context) ([]*Shitpost, error) {
 	ctx = setContextOp(ctx, sq.ctx, "All")
 	if err := sq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Shitposts, *ShitpostsQuery]()
-	return withInterceptors[[]*Shitposts](ctx, sq, qr, sq.inters)
+	qr := querierAll[[]*Shitpost, *ShitpostQuery]()
+	return withInterceptors[[]*Shitpost](ctx, sq, qr, sq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (sq *ShitpostsQuery) AllX(ctx context.Context) []*Shitposts {
+func (sq *ShitpostQuery) AllX(ctx context.Context) []*Shitpost {
 	nodes, err := sq.All(ctx)
 	if err != nil {
 		panic(err)
@@ -201,20 +201,20 @@ func (sq *ShitpostsQuery) AllX(ctx context.Context) []*Shitposts {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Shitposts IDs.
-func (sq *ShitpostsQuery) IDs(ctx context.Context) (ids []string, err error) {
+// IDs executes the query and returns a list of Shitpost IDs.
+func (sq *ShitpostQuery) IDs(ctx context.Context) (ids []string, err error) {
 	if sq.ctx.Unique == nil && sq.path != nil {
 		sq.Unique(true)
 	}
 	ctx = setContextOp(ctx, sq.ctx, "IDs")
-	if err = sq.Select(shitposts.FieldID).Scan(ctx, &ids); err != nil {
+	if err = sq.Select(shitpost.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sq *ShitpostsQuery) IDsX(ctx context.Context) []string {
+func (sq *ShitpostQuery) IDsX(ctx context.Context) []string {
 	ids, err := sq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -223,16 +223,16 @@ func (sq *ShitpostsQuery) IDsX(ctx context.Context) []string {
 }
 
 // Count returns the count of the given query.
-func (sq *ShitpostsQuery) Count(ctx context.Context) (int, error) {
+func (sq *ShitpostQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, sq.ctx, "Count")
 	if err := sq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, sq, querierCount[*ShitpostsQuery](), sq.inters)
+	return withInterceptors[int](ctx, sq, querierCount[*ShitpostQuery](), sq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (sq *ShitpostsQuery) CountX(ctx context.Context) int {
+func (sq *ShitpostQuery) CountX(ctx context.Context) int {
 	count, err := sq.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -241,7 +241,7 @@ func (sq *ShitpostsQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (sq *ShitpostsQuery) Exist(ctx context.Context) (bool, error) {
+func (sq *ShitpostQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, sq.ctx, "Exist")
 	switch _, err := sq.FirstID(ctx); {
 	case IsNotFound(err):
@@ -254,7 +254,7 @@ func (sq *ShitpostsQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (sq *ShitpostsQuery) ExistX(ctx context.Context) bool {
+func (sq *ShitpostQuery) ExistX(ctx context.Context) bool {
 	exist, err := sq.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -262,18 +262,18 @@ func (sq *ShitpostsQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the ShitpostsQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the ShitpostQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (sq *ShitpostsQuery) Clone() *ShitpostsQuery {
+func (sq *ShitpostQuery) Clone() *ShitpostQuery {
 	if sq == nil {
 		return nil
 	}
-	return &ShitpostsQuery{
+	return &ShitpostQuery{
 		config:     sq.config,
 		ctx:        sq.ctx.Clone(),
-		order:      append([]shitposts.OrderOption{}, sq.order...),
+		order:      append([]shitpost.OrderOption{}, sq.order...),
 		inters:     append([]Interceptor{}, sq.inters...),
-		predicates: append([]predicate.Shitposts{}, sq.predicates...),
+		predicates: append([]predicate.Shitpost{}, sq.predicates...),
 		withUser:   sq.withUser.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
@@ -283,7 +283,7 @@ func (sq *ShitpostsQuery) Clone() *ShitpostsQuery {
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *ShitpostsQuery) WithUser(opts ...func(*UserQuery)) *ShitpostsQuery {
+func (sq *ShitpostQuery) WithUser(opts ...func(*UserQuery)) *ShitpostQuery {
 	query := (&UserClient{config: sq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -302,15 +302,15 @@ func (sq *ShitpostsQuery) WithUser(opts ...func(*UserQuery)) *ShitpostsQuery {
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Shitposts.Query().
-//		GroupBy(shitposts.FieldCount).
+//	client.Shitpost.Query().
+//		GroupBy(shitpost.FieldCount).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (sq *ShitpostsQuery) GroupBy(field string, fields ...string) *ShitpostsGroupBy {
+func (sq *ShitpostQuery) GroupBy(field string, fields ...string) *ShitpostGroupBy {
 	sq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ShitpostsGroupBy{build: sq}
+	grbuild := &ShitpostGroupBy{build: sq}
 	grbuild.flds = &sq.ctx.Fields
-	grbuild.label = shitposts.Label
+	grbuild.label = shitpost.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -324,23 +324,23 @@ func (sq *ShitpostsQuery) GroupBy(field string, fields ...string) *ShitpostsGrou
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Shitposts.Query().
-//		Select(shitposts.FieldCount).
+//	client.Shitpost.Query().
+//		Select(shitpost.FieldCount).
 //		Scan(ctx, &v)
-func (sq *ShitpostsQuery) Select(fields ...string) *ShitpostsSelect {
+func (sq *ShitpostQuery) Select(fields ...string) *ShitpostSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)
-	sbuild := &ShitpostsSelect{ShitpostsQuery: sq}
-	sbuild.label = shitposts.Label
+	sbuild := &ShitpostSelect{ShitpostQuery: sq}
+	sbuild.label = shitpost.Label
 	sbuild.flds, sbuild.scan = &sq.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a ShitpostsSelect configured with the given aggregations.
-func (sq *ShitpostsQuery) Aggregate(fns ...AggregateFunc) *ShitpostsSelect {
+// Aggregate returns a ShitpostSelect configured with the given aggregations.
+func (sq *ShitpostQuery) Aggregate(fns ...AggregateFunc) *ShitpostSelect {
 	return sq.Select().Aggregate(fns...)
 }
 
-func (sq *ShitpostsQuery) prepareQuery(ctx context.Context) error {
+func (sq *ShitpostQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range sq.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -352,7 +352,7 @@ func (sq *ShitpostsQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range sq.ctx.Fields {
-		if !shitposts.ValidColumn(f) {
+		if !shitpost.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -366,9 +366,9 @@ func (sq *ShitpostsQuery) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (sq *ShitpostsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shitposts, error) {
+func (sq *ShitpostQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Shitpost, error) {
 	var (
-		nodes       = []*Shitposts{}
+		nodes       = []*Shitpost{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
 		loadedTypes = [1]bool{
@@ -379,13 +379,13 @@ func (sq *ShitpostsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Sh
 		withFKs = true
 	}
 	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, shitposts.ForeignKeys...)
+		_spec.Node.Columns = append(_spec.Node.Columns, shitpost.ForeignKeys...)
 	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Shitposts).scanValues(nil, columns)
+		return (*Shitpost).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Shitposts{config: sq.config}
+		node := &Shitpost{config: sq.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -401,16 +401,16 @@ func (sq *ShitpostsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Sh
 	}
 	if query := sq.withUser; query != nil {
 		if err := sq.loadUser(ctx, query, nodes, nil,
-			func(n *Shitposts, e *User) { n.Edges.User = e }); err != nil {
+			func(n *Shitpost, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (sq *ShitpostsQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Shitposts, init func(*Shitposts), assign func(*Shitposts, *User)) error {
+func (sq *ShitpostQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*Shitpost, init func(*Shitpost), assign func(*Shitpost, *User)) error {
 	ids := make([]string, 0, len(nodes))
-	nodeids := make(map[string][]*Shitposts)
+	nodeids := make(map[string][]*Shitpost)
 	for i := range nodes {
 		if nodes[i].user_shitposts == nil {
 			continue
@@ -441,7 +441,7 @@ func (sq *ShitpostsQuery) loadUser(ctx context.Context, query *UserQuery, nodes 
 	return nil
 }
 
-func (sq *ShitpostsQuery) sqlCount(ctx context.Context) (int, error) {
+func (sq *ShitpostQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := sq.querySpec()
 	_spec.Node.Columns = sq.ctx.Fields
 	if len(sq.ctx.Fields) > 0 {
@@ -450,8 +450,8 @@ func (sq *ShitpostsQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, sq.driver, _spec)
 }
 
-func (sq *ShitpostsQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(shitposts.Table, shitposts.Columns, sqlgraph.NewFieldSpec(shitposts.FieldID, field.TypeString))
+func (sq *ShitpostQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(shitpost.Table, shitpost.Columns, sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString))
 	_spec.From = sq.sql
 	if unique := sq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -460,9 +460,9 @@ func (sq *ShitpostsQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := sq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, shitposts.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, shitpost.FieldID)
 		for i := range fields {
-			if fields[i] != shitposts.FieldID {
+			if fields[i] != shitpost.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
@@ -490,12 +490,12 @@ func (sq *ShitpostsQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (sq *ShitpostsQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (sq *ShitpostQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(sq.driver.Dialect())
-	t1 := builder.Table(shitposts.Table)
+	t1 := builder.Table(shitpost.Table)
 	columns := sq.ctx.Fields
 	if len(columns) == 0 {
-		columns = shitposts.Columns
+		columns = shitpost.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if sq.sql != nil {
@@ -522,28 +522,28 @@ func (sq *ShitpostsQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// ShitpostsGroupBy is the group-by builder for Shitposts entities.
-type ShitpostsGroupBy struct {
+// ShitpostGroupBy is the group-by builder for Shitpost entities.
+type ShitpostGroupBy struct {
 	selector
-	build *ShitpostsQuery
+	build *ShitpostQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (sgb *ShitpostsGroupBy) Aggregate(fns ...AggregateFunc) *ShitpostsGroupBy {
+func (sgb *ShitpostGroupBy) Aggregate(fns ...AggregateFunc) *ShitpostGroupBy {
 	sgb.fns = append(sgb.fns, fns...)
 	return sgb
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sgb *ShitpostsGroupBy) Scan(ctx context.Context, v any) error {
+func (sgb *ShitpostGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, sgb.build.ctx, "GroupBy")
 	if err := sgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ShitpostsQuery, *ShitpostsGroupBy](ctx, sgb.build, sgb, sgb.build.inters, v)
+	return scanWithInterceptors[*ShitpostQuery, *ShitpostGroupBy](ctx, sgb.build, sgb, sgb.build.inters, v)
 }
 
-func (sgb *ShitpostsGroupBy) sqlScan(ctx context.Context, root *ShitpostsQuery, v any) error {
+func (sgb *ShitpostGroupBy) sqlScan(ctx context.Context, root *ShitpostQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(sgb.fns))
 	for _, fn := range sgb.fns {
@@ -570,28 +570,28 @@ func (sgb *ShitpostsGroupBy) sqlScan(ctx context.Context, root *ShitpostsQuery, 
 	return sql.ScanSlice(rows, v)
 }
 
-// ShitpostsSelect is the builder for selecting fields of Shitposts entities.
-type ShitpostsSelect struct {
-	*ShitpostsQuery
+// ShitpostSelect is the builder for selecting fields of Shitpost entities.
+type ShitpostSelect struct {
+	*ShitpostQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ss *ShitpostsSelect) Aggregate(fns ...AggregateFunc) *ShitpostsSelect {
+func (ss *ShitpostSelect) Aggregate(fns ...AggregateFunc) *ShitpostSelect {
 	ss.fns = append(ss.fns, fns...)
 	return ss
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ss *ShitpostsSelect) Scan(ctx context.Context, v any) error {
+func (ss *ShitpostSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, ss.ctx, "Select")
 	if err := ss.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ShitpostsQuery, *ShitpostsSelect](ctx, ss.ShitpostsQuery, ss, ss.inters, v)
+	return scanWithInterceptors[*ShitpostQuery, *ShitpostSelect](ctx, ss.ShitpostQuery, ss, ss.inters, v)
 }
 
-func (ss *ShitpostsSelect) sqlScan(ctx context.Context, root *ShitpostsQuery, v any) error {
+func (ss *ShitpostSelect) sqlScan(ctx context.Context, root *ShitpostQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(ss.fns))
 	for _, fn := range ss.fns {

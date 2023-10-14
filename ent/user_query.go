@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
-	"github.com/ritsec/ops-bot-iii/ent/shitposts"
+	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 	"github.com/ritsec/ops-bot-iii/ent/vote"
@@ -27,7 +27,7 @@ type UserQuery struct {
 	predicates    []predicate.User
 	withSignins   *SigninQuery
 	withVotes     *VoteQuery
-	withShitposts *ShitpostsQuery
+	withShitposts *ShitpostQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -109,8 +109,8 @@ func (uq *UserQuery) QueryVotes() *VoteQuery {
 }
 
 // QueryShitposts chains the current query on the "shitposts" edge.
-func (uq *UserQuery) QueryShitposts() *ShitpostsQuery {
-	query := (&ShitpostsClient{config: uq.config}).Query()
+func (uq *UserQuery) QueryShitposts() *ShitpostQuery {
+	query := (&ShitpostClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -121,7 +121,7 @@ func (uq *UserQuery) QueryShitposts() *ShitpostsQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(shitposts.Table, shitposts.FieldID),
+			sqlgraph.To(shitpost.Table, shitpost.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ShitpostsTable, user.ShitpostsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -355,8 +355,8 @@ func (uq *UserQuery) WithVotes(opts ...func(*VoteQuery)) *UserQuery {
 
 // WithShitposts tells the query-builder to eager-load the nodes that are connected to
 // the "shitposts" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithShitposts(opts ...func(*ShitpostsQuery)) *UserQuery {
-	query := (&ShitpostsClient{config: uq.config}).Query()
+func (uq *UserQuery) WithShitposts(opts ...func(*ShitpostQuery)) *UserQuery {
+	query := (&ShitpostClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -482,8 +482,8 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	}
 	if query := uq.withShitposts; query != nil {
 		if err := uq.loadShitposts(ctx, query, nodes,
-			func(n *User) { n.Edges.Shitposts = []*Shitposts{} },
-			func(n *User, e *Shitposts) { n.Edges.Shitposts = append(n.Edges.Shitposts, e) }); err != nil {
+			func(n *User) { n.Edges.Shitposts = []*Shitpost{} },
+			func(n *User, e *Shitpost) { n.Edges.Shitposts = append(n.Edges.Shitposts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -552,7 +552,7 @@ func (uq *UserQuery) loadVotes(ctx context.Context, query *VoteQuery, nodes []*U
 	}
 	return nil
 }
-func (uq *UserQuery) loadShitposts(ctx context.Context, query *ShitpostsQuery, nodes []*User, init func(*User), assign func(*User, *Shitposts)) error {
+func (uq *UserQuery) loadShitposts(ctx context.Context, query *ShitpostQuery, nodes []*User, init func(*User), assign func(*User, *Shitpost)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[string]*User)
 	for i := range nodes {
@@ -563,7 +563,7 @@ func (uq *UserQuery) loadShitposts(ctx context.Context, query *ShitpostsQuery, n
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.Shitposts(func(s *sql.Selector) {
+	query.Where(predicate.Shitpost(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.ShitpostsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
