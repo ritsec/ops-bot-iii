@@ -25,7 +25,7 @@ var (
 	Handlers map[string]interface{} = make(map[string]interface{})
 
 	// ScheduledEvents is a map of all scheduled events
-	ScheduledEvents map[string]*structs.ScheduledEvent = make(map[string]*structs.ScheduledEvent)
+	ScheduledEvents map[string]func(s *discordgo.Session, quit chan interface{}) error = make(map[string]func(s *discordgo.Session, quit chan interface{}) error)
 
 	// ComponentHandlers is a map of all component handlers
 	ComponentHandlers map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate) = make(map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate))
@@ -132,7 +132,17 @@ func StartScheduledTasks(ctx ddtrace.SpanContext) {
 
 	// Start all scheduled events
 	for name, event := range ScheduledEvents {
-		go event.Run(bot.Session, quit)
+		go func(eventName string, eventFunc func(s *discordgo.Session, quit chan interface{}) error) {
+			for {
+				err := eventFunc(bot.Session, quit)
+				if err != nil {
+					logging.Error(bot.Session, fmt.Sprintf("Scheduled event failed: %v", eventName), nil, span, logrus.Fields{"error": err})
+				} else {
+					return
+				}
+			}
+		}(name, event)
+
 		logrus.Infof("Starting scheduled task: %v\n", name)
 		logging.Debug(bot.Session, fmt.Sprintf("Starting scheduled task: %v\n", name), nil, span)
 	}

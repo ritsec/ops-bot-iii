@@ -7,7 +7,6 @@ import (
 	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
@@ -52,53 +51,48 @@ func sendGoodFoodPing(s *discordgo.Session, location string, ctx ddtrace.SpanCon
 }
 
 // GoodFood is the Good Food scheduled event
-func GoodFood() *structs.ScheduledEvent {
-	return structs.NewScheduledTask(
-		func(s *discordgo.Session, quit chan interface{}) error {
-			span := tracer.StartSpan(
-				"commands.scheduled.goodfood:GoodFood",
-				tracer.ResourceName("Scheduled.GoodFood"),
-			)
-			defer span.Finish()
-
-			est, err := time.LoadLocation("America/New_York")
-			if err != nil {
-				logging.Error(s, err.Error(), nil, span)
-				return err
-			}
-
-			c := cron.NewWithLocation(est)
-
-			must := func(err error) {
-				if err != nil {
-					logging.Error(s, err.Error(), nil, span)
-				}
-			}
-
-			// 11:00 AM
-			must(c.AddFunc("0 0 11 * * MON", func() {}))                                                    // Monday
-			must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Tuesday
-			must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Wednesday
-			must(c.AddFunc("0 0 11 * * THU", func() {}))                                                    // Thursday
-			must(c.AddFunc("0 0 11 * * FRI", func() {}))                                                    // Friday
-			must(c.AddFunc("0 0 11 * * SAT", func() {}))                                                    // Saturday
-			must(c.AddFunc("0 0 11 * * SUN", func() {}))                                                    // Sunday
-
-			// 4:00 PM
-			must(c.AddFunc("0 0 16 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Monday
-			must(c.AddFunc("0 0 16 * * TUE", func() {}))                                                    // Tuesday
-			must(c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Wednesday
-			must(c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Thursday
-			must(c.AddFunc("0 0 16 * * FRI", func() {}))                                                    // Friday
-			must(c.AddFunc("0 0 16 * * SAT", func() {}))                                                    // Saturday
-			must(c.AddFunc("0 0 16 * * SUN", func() {}))                                                    // Sunday
-
-			c.Start()
-			<-quit
-			c.Stop()
-
-			return nil
-		},
+func GoodFood(s *discordgo.Session, quit chan interface{}) error {
+	span := tracer.StartSpan(
+		"commands.scheduled.goodfood:GoodFood",
+		tracer.ResourceName("Scheduled.GoodFood"),
 	)
+	defer span.Finish()
 
+	est, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		logging.Error(s, err.Error(), nil, span)
+		return err
+	}
+
+	c := cron.NewWithLocation(est)
+
+	must := func(err error) {
+		if err != nil {
+			logging.Error(s, err.Error(), nil, span)
+		}
+	}
+
+	// 11:00 AM
+	must(c.AddFunc("0 0 11 * * MON", func() {}))                                                    // Monday
+	must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Tuesday
+	must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Wednesday
+	must(c.AddFunc("0 0 11 * * THU", func() {}))                                                    // Thursday
+	must(c.AddFunc("0 0 11 * * FRI", func() {}))                                                    // Friday
+	must(c.AddFunc("0 0 11 * * SAT", func() {}))                                                    // Saturday
+	must(c.AddFunc("0 0 11 * * SUN", func() {}))                                                    // Sunday
+
+	// 4:00 PM
+	must(c.AddFunc("0 0 16 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Monday
+	must(c.AddFunc("0 0 16 * * TUE", func() {}))                                                    // Tuesday
+	must(c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Wednesday
+	must(c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Thursday
+	must(c.AddFunc("0 0 16 * * FRI", func() {}))                                                    // Friday
+	must(c.AddFunc("0 0 16 * * SAT", func() {}))                                                    // Saturday
+	must(c.AddFunc("0 0 16 * * SUN", func() {}))                                                    // Sunday
+
+	c.Start()
+	<-quit
+	c.Stop()
+
+	return nil
 }
