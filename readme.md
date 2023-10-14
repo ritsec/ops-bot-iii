@@ -75,17 +75,15 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func [Name]() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func [Name]() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:                     [Name],
 			Description:              [Description],
 			DefaultMemberPermissions: [Permission],
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			[code]
-		},
-	}
+		}
 }
 ```
 

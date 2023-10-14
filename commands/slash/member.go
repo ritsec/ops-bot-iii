@@ -12,7 +12,6 @@ import (
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/ritsec/ops-bot-iii/mail"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -39,13 +38,12 @@ var (
 )
 
 // Member is the member command
-func Member() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:        "member",
 			Description: "Become a member through our verification process",
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.member:Member",
 				tracer.ResourceName("/member"),
@@ -185,8 +183,7 @@ func Member() *structs.SlashCommand {
 				manualVerification(s, i, "", attempts, span.Context())
 				return
 			}
-		},
-	}
+		}
 }
 
 // tooManyAttempts is called when a user has too many verification attempts

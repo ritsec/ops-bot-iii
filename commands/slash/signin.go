@@ -14,16 +14,14 @@ import (
 	"github.com/ritsec/ops-bot-iii/google"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Signin is a slash command that opens signins
-func Signin() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:        "signin",
 			Description: "Open Signins",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -94,7 +92,7 @@ func Signin() *structs.SlashCommand {
 			},
 			DefaultMemberPermissions: &permission.IGLead,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.signin:Signin",
 				tracer.ResourceName("/signin"),
@@ -265,8 +263,7 @@ func Signin() *structs.SlashCommand {
 				logging.Error(
 					s, "Error encounted while sending direct message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
-		},
-	}
+		}
 }
 
 // signinMessage returns the message to send to the user after they have signed in

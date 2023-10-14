@@ -6,7 +6,6 @@ import (
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
@@ -17,14 +16,13 @@ var (
 )
 
 // Feedback is the feedback command
-func Feedback() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Feedback() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:                     "feedback",
 			Description:              "Send Anonymous Feedback to E-Board",
 			DefaultMemberPermissions: &permission.Member,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.feedback:Feedback",
 				tracer.ResourceName("/feedback"),
@@ -103,6 +101,5 @@ func Feedback() *structs.SlashCommand {
 			<-closeChan
 
 			logging.Debug(s, "Feedback command closed", i.Member.User, span)
-		},
-	}
+		}
 }
