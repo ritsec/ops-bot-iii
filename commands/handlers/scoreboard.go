@@ -55,7 +55,7 @@ func Scoreboard(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
 			}
 		}
 
-		_, err = data.Shitposts.Update(message.ID, message.ChannelID, r.Member.User.ID, count, span.Context())
+		_, err = data.Shitposts.Update(message.ID, message.ChannelID, message.Author.ID, count, span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), nil, span)
 			return
