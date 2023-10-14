@@ -18,18 +18,18 @@ func populateSlashCommands(ctx ddtrace.SpanContext) {
 	defer span.Finish()
 
 	// Populate the slash commands
-	SlashCommands["ping"] = slash.Ping()
-	SlashCommands["purge"] = slash.Purge()
-	SlashCommands["kudos"] = slash.Kudos()
-	SlashCommands["reboot"] = slash.Reboot()
-	SlashCommands["log"] = slash.Log()
-	SlashCommands["usage"] = slash.Usage()
-	SlashCommands["member"] = slash.Member()
-	SlashCommands["signin"] = slash.Signin()
-	SlashCommands["vote"] = slash.Vote()
-	SlashCommands["feedback"] = slash.Feedback()
-	SlashCommands["update"] = slash.Update()
-	SlashCommands["query"] = slash.Query()
+	SlashCommands["ping"] = slash.Ping
+	SlashCommands["purge"] = slash.Purge
+	SlashCommands["kudos"] = slash.Kudos
+	SlashCommands["reboot"] = slash.Reboot
+	SlashCommands["log"] = slash.Log
+	SlashCommands["usage"] = slash.Usage
+	SlashCommands["member"] = slash.Member
+	SlashCommands["signin"] = slash.Signin
+	SlashCommands["vote"] = slash.Vote
+	SlashCommands["feedback"] = slash.Feedback
+	SlashCommands["update"] = slash.Update
+	SlashCommands["query"] = slash.Query
 }
 
 // populateHandlers populates the Handlers map with all of the handlers

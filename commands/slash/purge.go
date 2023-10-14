@@ -6,16 +6,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // Purge is the purge command
-func Purge() *structs.SlashCommand {
+func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	min := float64(1)
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+	return &discordgo.ApplicationCommand{
 			Name:        "purge",
 			Description: "Purge messages from a channel",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -30,7 +28,7 @@ func Purge() *structs.SlashCommand {
 			},
 			DefaultMemberPermissions: &permission.Admin,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.purge:Purge",
 				tracer.ResourceName("/purge"),
@@ -76,6 +74,5 @@ func Purge() *structs.SlashCommand {
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
-		},
-	}
+		}
 }

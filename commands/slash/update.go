@@ -7,14 +7,12 @@ import (
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
-func Update() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:                     "update",
 			Description:              "Update the bot",
 			DefaultMemberPermissions: &permission.Admin,
@@ -27,7 +25,7 @@ func Update() *structs.SlashCommand {
 				},
 			},
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.update:Update",
 				tracer.ResourceName("/update"),
@@ -138,6 +136,5 @@ func Update() *structs.SlashCommand {
 				logging.Error(s, "Error exiting", i.Member.User, span, logrus.Fields{"err": err.Error()})
 				return
 			}
-		},
-	}
+		}
 }

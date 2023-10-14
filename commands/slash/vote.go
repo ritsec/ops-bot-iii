@@ -18,9 +18,8 @@ import (
 )
 
 // Vote is a slash command that creates a vote
-func Vote() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:        "vote",
 			Description: "Create Vote",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -105,7 +104,7 @@ func Vote() *structs.SlashCommand {
 			},
 			DefaultMemberPermissions: &permission.Admin,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.vote:Vote",
 				tracer.ResourceName("/vote"),
@@ -280,8 +279,7 @@ func Vote() *structs.SlashCommand {
 			if err != nil {
 				logging.Error(s, err.Error(), nil, span, logrus.Fields{"error": err})
 			}
-		},
-	}
+		}
 }
 
 // voteRankChoiceVoting is a helper function to calculate the results of a rank choice vote

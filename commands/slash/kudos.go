@@ -9,7 +9,6 @@ import (
 	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"github.com/ritsec/ops-bot-iii/structs"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
@@ -23,9 +22,8 @@ var (
 )
 
 // Kudos is the kudos command
-func Kudos() *structs.SlashCommand {
-	return &structs.SlashCommand{
-		Command: &discordgo.ApplicationCommand{
+func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand{
 			Name:        "kudos",
 			Description: "Send Kudos to a user",
 			Options: []*discordgo.ApplicationCommandOption{
@@ -44,7 +42,7 @@ func Kudos() *structs.SlashCommand {
 			},
 			DefaultMemberPermissions: &permission.Member,
 		},
-		Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.kudos:Kudos",
 				tracer.ResourceName("/kudos"),
@@ -169,6 +167,5 @@ func Kudos() *structs.SlashCommand {
 			}
 			delete(*ComponentHandlers, approve_slug)
 			delete(*ComponentHandlers, deny_slug)
-		},
-	}
+		}
 }
