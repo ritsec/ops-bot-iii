@@ -18,6 +18,9 @@ func (Shitpost) Fields() []ent.Field {
 			Comment("Message ID").
 			Unique().
 			NotEmpty(),
+		field.String("channel_id").
+			Comment("Channel ID").
+			NotEmpty(),
 		field.Int("count").
 			Comment("Shitpost Count"),
 	}
