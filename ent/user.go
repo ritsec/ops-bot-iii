@@ -35,9 +35,11 @@ type UserEdges struct {
 	Signins []*Signin `json:"signins,omitempty"`
 	// Votes made by the user
 	Votes []*Vote `json:"votes,omitempty"`
+	// Shitposts made by the user
+	Shitposts []*Shitpost `json:"shitposts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // SigninsOrErr returns the Signins value or an error if the edge
@@ -56,6 +58,15 @@ func (e UserEdges) VotesOrErr() ([]*Vote, error) {
 		return e.Votes, nil
 	}
 	return nil, &NotLoadedError{edge: "votes"}
+}
+
+// ShitpostsOrErr returns the Shitposts value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ShitpostsOrErr() ([]*Shitpost, error) {
+	if e.loadedTypes[2] {
+		return e.Shitposts, nil
+	}
+	return nil, &NotLoadedError{edge: "shitposts"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -129,6 +140,11 @@ func (u *User) QuerySignins() *SigninQuery {
 // QueryVotes queries the "votes" edge of the User entity.
 func (u *User) QueryVotes() *VoteQuery {
 	return NewUserClient(u.config).QueryVotes(u)
+}
+
+// QueryShitposts queries the "shitposts" edge of the User entity.
+func (u *User) QueryShitposts() *ShitpostQuery {
+	return NewUserClient(u.config).QueryShitposts(u)
 }
 
 // Update returns a builder for updating this User.
