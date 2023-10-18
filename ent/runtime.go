@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/schema"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -17,6 +18,44 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	birthdayFields := schema.Birthday{}.Fields()
+	_ = birthdayFields
+	// birthdayDescDay is the schema descriptor for day field.
+	birthdayDescDay := birthdayFields[0].Descriptor()
+	// birthday.DayValidator is a validator for the "day" field. It is called by the builders before save.
+	birthday.DayValidator = func() func(int) error {
+		validators := birthdayDescDay.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(day int) error {
+			for _, fn := range fns {
+				if err := fn(day); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// birthdayDescMonth is the schema descriptor for month field.
+	birthdayDescMonth := birthdayFields[1].Descriptor()
+	// birthday.MonthValidator is a validator for the "month" field. It is called by the builders before save.
+	birthday.MonthValidator = func() func(int) error {
+		validators := birthdayDescMonth.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(month int) error {
+			for _, fn := range fns {
+				if err := fn(month); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	shitpostFields := schema.Shitpost{}.Fields()
 	_ = shitpostFields
 	// shitpostDescChannelID is the schema descriptor for channel_id field.

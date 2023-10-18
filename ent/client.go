@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
@@ -26,6 +27,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Birthday is the client for interacting with the Birthday builders.
+	Birthday *BirthdayClient
 	// Shitpost is the client for interacting with the Shitpost builders.
 	Shitpost *ShitpostClient
 	// Signin is the client for interacting with the Signin builders.
@@ -49,6 +52,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Birthday = NewBirthdayClient(c.config)
 	c.Shitpost = NewShitpostClient(c.config)
 	c.Signin = NewSigninClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -136,6 +140,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Birthday:   NewBirthdayClient(cfg),
 		Shitpost:   NewShitpostClient(cfg),
 		Signin:     NewSigninClient(cfg),
 		User:       NewUserClient(cfg),
@@ -160,6 +165,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:        ctx,
 		config:     cfg,
+		Birthday:   NewBirthdayClient(cfg),
 		Shitpost:   NewShitpostClient(cfg),
 		Signin:     NewSigninClient(cfg),
 		User:       NewUserClient(cfg),
@@ -171,7 +177,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Shitpost.
+//		Birthday.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -193,26 +199,28 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Shitpost.Use(hooks...)
-	c.Signin.Use(hooks...)
-	c.User.Use(hooks...)
-	c.Vote.Use(hooks...)
-	c.VoteResult.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Birthday, c.Shitpost, c.Signin, c.User, c.Vote, c.VoteResult,
+	} {
+		n.Use(hooks...)
+	}
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.Shitpost.Intercept(interceptors...)
-	c.Signin.Intercept(interceptors...)
-	c.User.Intercept(interceptors...)
-	c.Vote.Intercept(interceptors...)
-	c.VoteResult.Intercept(interceptors...)
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Birthday, c.Shitpost, c.Signin, c.User, c.Vote, c.VoteResult,
+	} {
+		n.Intercept(interceptors...)
+	}
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *BirthdayMutation:
+		return c.Birthday.mutate(ctx, m)
 	case *ShitpostMutation:
 		return c.Shitpost.mutate(ctx, m)
 	case *SigninMutation:
@@ -225,6 +233,140 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.VoteResult.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// BirthdayClient is a client for the Birthday schema.
+type BirthdayClient struct {
+	config
+}
+
+// NewBirthdayClient returns a client for the Birthday from the given config.
+func NewBirthdayClient(c config) *BirthdayClient {
+	return &BirthdayClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `birthday.Hooks(f(g(h())))`.
+func (c *BirthdayClient) Use(hooks ...Hook) {
+	c.hooks.Birthday = append(c.hooks.Birthday, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `birthday.Intercept(f(g(h())))`.
+func (c *BirthdayClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Birthday = append(c.inters.Birthday, interceptors...)
+}
+
+// Create returns a builder for creating a Birthday entity.
+func (c *BirthdayClient) Create() *BirthdayCreate {
+	mutation := newBirthdayMutation(c.config, OpCreate)
+	return &BirthdayCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Birthday entities.
+func (c *BirthdayClient) CreateBulk(builders ...*BirthdayCreate) *BirthdayCreateBulk {
+	return &BirthdayCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Birthday.
+func (c *BirthdayClient) Update() *BirthdayUpdate {
+	mutation := newBirthdayMutation(c.config, OpUpdate)
+	return &BirthdayUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BirthdayClient) UpdateOne(b *Birthday) *BirthdayUpdateOne {
+	mutation := newBirthdayMutation(c.config, OpUpdateOne, withBirthday(b))
+	return &BirthdayUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BirthdayClient) UpdateOneID(id int) *BirthdayUpdateOne {
+	mutation := newBirthdayMutation(c.config, OpUpdateOne, withBirthdayID(id))
+	return &BirthdayUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Birthday.
+func (c *BirthdayClient) Delete() *BirthdayDelete {
+	mutation := newBirthdayMutation(c.config, OpDelete)
+	return &BirthdayDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BirthdayClient) DeleteOne(b *Birthday) *BirthdayDeleteOne {
+	return c.DeleteOneID(b.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BirthdayClient) DeleteOneID(id int) *BirthdayDeleteOne {
+	builder := c.Delete().Where(birthday.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BirthdayDeleteOne{builder}
+}
+
+// Query returns a query builder for Birthday.
+func (c *BirthdayClient) Query() *BirthdayQuery {
+	return &BirthdayQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBirthday},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Birthday entity by its id.
+func (c *BirthdayClient) Get(ctx context.Context, id int) (*Birthday, error) {
+	return c.Query().Where(birthday.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BirthdayClient) GetX(ctx context.Context, id int) *Birthday {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Birthday.
+func (c *BirthdayClient) QueryUser(b *Birthday) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(birthday.Table, birthday.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, birthday.UserTable, birthday.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BirthdayClient) Hooks() []Hook {
+	return c.hooks.Birthday
+}
+
+// Interceptors returns the client interceptors.
+func (c *BirthdayClient) Interceptors() []Interceptor {
+	return c.inters.Birthday
+}
+
+func (c *BirthdayClient) mutate(ctx context.Context, m *BirthdayMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BirthdayCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BirthdayUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BirthdayUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BirthdayDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Birthday mutation op: %q", m.Op())
 	}
 }
 
@@ -637,6 +779,22 @@ func (c *UserClient) QueryShitposts(u *User) *ShitpostQuery {
 	return query
 }
 
+// QueryBirthday queries the birthday edge of a User.
+func (c *UserClient) QueryBirthday(u *User) *BirthdayQuery {
+	query := (&BirthdayClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(birthday.Table, birthday.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.BirthdayTable, user.BirthdayColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -917,9 +1075,9 @@ func (c *VoteResultClient) mutate(ctx context.Context, m *VoteResultMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Shitpost, Signin, User, Vote, VoteResult []ent.Hook
+		Birthday, Shitpost, Signin, User, Vote, VoteResult []ent.Hook
 	}
 	inters struct {
-		Shitpost, Signin, User, Vote, VoteResult []ent.Interceptor
+		Birthday, Shitpost, Signin, User, Vote, VoteResult []ent.Interceptor
 	}
 )
