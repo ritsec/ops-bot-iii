@@ -69,4 +69,5 @@ func populateScheduledEvents(ctx ddtrace.SpanContext) {
 	ScheduledEvents["heartbeat"] = scheduled.Heartbeat
 	ScheduledEvents["status"] = scheduled.Status
 	ScheduledEvents["update"] = scheduled.Update
+	ScheduledEvents["birthday"] = scheduled.Birthday
 }
