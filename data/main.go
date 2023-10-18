@@ -30,6 +30,9 @@ var (
 
 	// Shitposts is the struct reference shitposts
 	Shitposts *shitpost_s = &shitpost_s{}
+
+	// Birthday is the struct reference birthday
+	Birthday *birthday_s = &birthday_s{}
 )
 
 func init() {
