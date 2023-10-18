@@ -13,5 +13,7 @@ func Birthday(s *discordgo.Session, quit chan interface{}) error {
 	)
 	defer span.Finish()
 
+	// code here
+
 	return nil
 }
