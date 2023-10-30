@@ -3,7 +3,7 @@ package scheduled
 import (
 	"github.com/bwmarrin/discordgo"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
-	//Importing time to figure out when its midnight
+	"github.com/robfig/cron"
 	"time"
 )
 
@@ -16,28 +16,25 @@ func Birthday(s *discordgo.Session, quit chan interface{}) error {
 	defer span.Finish()
 
 	//Hal Williams
-	for {
-
-		// Get the time
-		currentTime := time.Now()
-
-		// Calculate midnight
-		midnight := time.Date(currentTime.Yea(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.Local)
-		if midnight.Before(currentTime) {
-			midnight = midnight.Add(24 * time.Hour)
-		}
-
-		// Calculate the time to midnight
-		timeToMidnight := midnight.Sub(currentTime)
-
-		//	Ticker to add and remove birthday roles at midnight
-		ticker := time.NewTicker(timeToMidnight)
-
-		select {
-		case <-ticker.C:
-			//birthday add and remove here
-		}
+	est, err := time.LoadLocation("America/New_York")\
+	if err != nil {
+		logging.Error(s, err.Error(), nil, span)
+		return err
 	}
+
+	c := cron.NewWithLocation(est)
+
+	err = c.AddFunc("0 0 0 * * *", func() {
+		//call two functions, first one to remove all roles
+		//second one to add the new birthday roles
+	})
+	if err != nil {}
+	return err
+	}
+
+	c.Start()
+	<-quit
+	c.Stop()
 
 
 	return nil
