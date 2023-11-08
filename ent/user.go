@@ -8,7 +8,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
@@ -38,11 +37,9 @@ type UserEdges struct {
 	Votes []*Vote `json:"votes,omitempty"`
 	// Shitposts made by the user
 	Shitposts []*Shitpost `json:"shitposts,omitempty"`
-	// Birthdays of the user
-	Birthday *Birthday `json:"birthday,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [3]bool
 }
 
 // SigninsOrErr returns the Signins value or an error if the edge
@@ -70,19 +67,6 @@ func (e UserEdges) ShitpostsOrErr() ([]*Shitpost, error) {
 		return e.Shitposts, nil
 	}
 	return nil, &NotLoadedError{edge: "shitposts"}
-}
-
-// BirthdayOrErr returns the Birthday value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) BirthdayOrErr() (*Birthday, error) {
-	if e.loadedTypes[3] {
-		if e.Birthday == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: birthday.Label}
-		}
-		return e.Birthday, nil
-	}
-	return nil, &NotLoadedError{edge: "birthday"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -161,11 +145,6 @@ func (u *User) QueryVotes() *VoteQuery {
 // QueryShitposts queries the "shitposts" edge of the User entity.
 func (u *User) QueryShitposts() *ShitpostQuery {
 	return NewUserClient(u.config).QueryShitposts(u)
-}
-
-// QueryBirthday queries the "birthday" edge of the User entity.
-func (u *User) QueryBirthday() *BirthdayQuery {
-	return NewUserClient(u.config).QueryBirthday(u)
 }
 
 // Update returns a builder for updating this User.

@@ -40,8 +40,5 @@ func (User) Edges() []ent.Edge {
 			Comment("Votes made by the user"),
 		edge.To("shitposts", Shitpost.Type).
 			Comment("Shitposts made by the user"),
-		edge.To("birthday", Birthday.Type).
-			Unique().
-			Comment("Birthdays of the user"),
 	}
 }

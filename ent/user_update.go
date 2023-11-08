@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -125,25 +124,6 @@ func (uu *UserUpdate) AddShitposts(s ...*Shitpost) *UserUpdate {
 	return uu.AddShitpostIDs(ids...)
 }
 
-// SetBirthdayID sets the "birthday" edge to the Birthday entity by ID.
-func (uu *UserUpdate) SetBirthdayID(id int) *UserUpdate {
-	uu.mutation.SetBirthdayID(id)
-	return uu
-}
-
-// SetNillableBirthdayID sets the "birthday" edge to the Birthday entity by ID if the given value is not nil.
-func (uu *UserUpdate) SetNillableBirthdayID(id *int) *UserUpdate {
-	if id != nil {
-		uu = uu.SetBirthdayID(*id)
-	}
-	return uu
-}
-
-// SetBirthday sets the "birthday" edge to the Birthday entity.
-func (uu *UserUpdate) SetBirthday(b *Birthday) *UserUpdate {
-	return uu.SetBirthdayID(b.ID)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -210,12 +190,6 @@ func (uu *UserUpdate) RemoveShitposts(s ...*Shitpost) *UserUpdate {
 		ids[i] = s[i].ID
 	}
 	return uu.RemoveShitpostIDs(ids...)
-}
-
-// ClearBirthday clears the "birthday" edge to the Birthday entity.
-func (uu *UserUpdate) ClearBirthday() *UserUpdate {
-	uu.mutation.ClearBirthday()
-	return uu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -414,35 +388,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.BirthdayCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.BirthdayTable,
-			Columns: []string{user.BirthdayColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.BirthdayIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.BirthdayTable,
-			Columns: []string{user.BirthdayColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -557,25 +502,6 @@ func (uuo *UserUpdateOne) AddShitposts(s ...*Shitpost) *UserUpdateOne {
 	return uuo.AddShitpostIDs(ids...)
 }
 
-// SetBirthdayID sets the "birthday" edge to the Birthday entity by ID.
-func (uuo *UserUpdateOne) SetBirthdayID(id int) *UserUpdateOne {
-	uuo.mutation.SetBirthdayID(id)
-	return uuo
-}
-
-// SetNillableBirthdayID sets the "birthday" edge to the Birthday entity by ID if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableBirthdayID(id *int) *UserUpdateOne {
-	if id != nil {
-		uuo = uuo.SetBirthdayID(*id)
-	}
-	return uuo
-}
-
-// SetBirthday sets the "birthday" edge to the Birthday entity.
-func (uuo *UserUpdateOne) SetBirthday(b *Birthday) *UserUpdateOne {
-	return uuo.SetBirthdayID(b.ID)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -642,12 +568,6 @@ func (uuo *UserUpdateOne) RemoveShitposts(s ...*Shitpost) *UserUpdateOne {
 		ids[i] = s[i].ID
 	}
 	return uuo.RemoveShitpostIDs(ids...)
-}
-
-// ClearBirthday clears the "birthday" edge to the Birthday entity.
-func (uuo *UserUpdateOne) ClearBirthday() *UserUpdateOne {
-	uuo.mutation.ClearBirthday()
-	return uuo
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -869,35 +789,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.BirthdayCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.BirthdayTable,
-			Columns: []string{user.BirthdayColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.BirthdayIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   user.BirthdayTable,
-			Columns: []string{user.BirthdayColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
