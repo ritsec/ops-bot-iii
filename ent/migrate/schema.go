@@ -8,27 +8,6 @@ import (
 )
 
 var (
-	// BirthdaysColumns holds the columns for the "birthdays" table.
-	BirthdaysColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "day", Type: field.TypeInt},
-		{Name: "month", Type: field.TypeInt},
-		{Name: "user_birthday", Type: field.TypeString, Unique: true, Nullable: true},
-	}
-	// BirthdaysTable holds the schema information for the "birthdays" table.
-	BirthdaysTable = &schema.Table{
-		Name:       "birthdays",
-		Columns:    BirthdaysColumns,
-		PrimaryKey: []*schema.Column{BirthdaysColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "birthdays_users_birthday",
-				Columns:    []*schema.Column{BirthdaysColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// ShitpostsColumns holds the columns for the "shitposts" table.
 	ShitpostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
@@ -121,7 +100,6 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		BirthdaysTable,
 		ShitpostsTable,
 		SigninsTable,
 		UsersTable,
@@ -131,7 +109,6 @@ var (
 )
 
 func init() {
-	BirthdaysTable.ForeignKeys[0].RefTable = UsersTable
 	ShitpostsTable.ForeignKeys[0].RefTable = UsersTable
 	SigninsTable.ForeignKeys[0].RefTable = UsersTable
 	VotesTable.ForeignKeys[0].RefTable = UsersTable

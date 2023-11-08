@@ -11,7 +11,6 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -29,529 +28,12 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeBirthday   = "Birthday"
 	TypeShitpost   = "Shitpost"
 	TypeSignin     = "Signin"
 	TypeUser       = "User"
 	TypeVote       = "Vote"
 	TypeVoteResult = "VoteResult"
 )
-
-// BirthdayMutation represents an operation that mutates the Birthday nodes in the graph.
-type BirthdayMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *int
-	day           *int
-	addday        *int
-	month         *int
-	addmonth      *int
-	clearedFields map[string]struct{}
-	user          *string
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*Birthday, error)
-	predicates    []predicate.Birthday
-}
-
-var _ ent.Mutation = (*BirthdayMutation)(nil)
-
-// birthdayOption allows management of the mutation configuration using functional options.
-type birthdayOption func(*BirthdayMutation)
-
-// newBirthdayMutation creates new mutation for the Birthday entity.
-func newBirthdayMutation(c config, op Op, opts ...birthdayOption) *BirthdayMutation {
-	m := &BirthdayMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeBirthday,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withBirthdayID sets the ID field of the mutation.
-func withBirthdayID(id int) birthdayOption {
-	return func(m *BirthdayMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Birthday
-		)
-		m.oldValue = func(ctx context.Context) (*Birthday, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Birthday.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withBirthday sets the old Birthday of the mutation.
-func withBirthday(node *Birthday) birthdayOption {
-	return func(m *BirthdayMutation) {
-		m.oldValue = func(context.Context) (*Birthday, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m BirthdayMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m BirthdayMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *BirthdayMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *BirthdayMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Birthday.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetDay sets the "day" field.
-func (m *BirthdayMutation) SetDay(i int) {
-	m.day = &i
-	m.addday = nil
-}
-
-// Day returns the value of the "day" field in the mutation.
-func (m *BirthdayMutation) Day() (r int, exists bool) {
-	v := m.day
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDay returns the old "day" field's value of the Birthday entity.
-// If the Birthday object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BirthdayMutation) OldDay(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDay is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDay requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDay: %w", err)
-	}
-	return oldValue.Day, nil
-}
-
-// AddDay adds i to the "day" field.
-func (m *BirthdayMutation) AddDay(i int) {
-	if m.addday != nil {
-		*m.addday += i
-	} else {
-		m.addday = &i
-	}
-}
-
-// AddedDay returns the value that was added to the "day" field in this mutation.
-func (m *BirthdayMutation) AddedDay() (r int, exists bool) {
-	v := m.addday
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetDay resets all changes to the "day" field.
-func (m *BirthdayMutation) ResetDay() {
-	m.day = nil
-	m.addday = nil
-}
-
-// SetMonth sets the "month" field.
-func (m *BirthdayMutation) SetMonth(i int) {
-	m.month = &i
-	m.addmonth = nil
-}
-
-// Month returns the value of the "month" field in the mutation.
-func (m *BirthdayMutation) Month() (r int, exists bool) {
-	v := m.month
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldMonth returns the old "month" field's value of the Birthday entity.
-// If the Birthday object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BirthdayMutation) OldMonth(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldMonth is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldMonth requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldMonth: %w", err)
-	}
-	return oldValue.Month, nil
-}
-
-// AddMonth adds i to the "month" field.
-func (m *BirthdayMutation) AddMonth(i int) {
-	if m.addmonth != nil {
-		*m.addmonth += i
-	} else {
-		m.addmonth = &i
-	}
-}
-
-// AddedMonth returns the value that was added to the "month" field in this mutation.
-func (m *BirthdayMutation) AddedMonth() (r int, exists bool) {
-	v := m.addmonth
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetMonth resets all changes to the "month" field.
-func (m *BirthdayMutation) ResetMonth() {
-	m.month = nil
-	m.addmonth = nil
-}
-
-// SetUserID sets the "user" edge to the User entity by id.
-func (m *BirthdayMutation) SetUserID(id string) {
-	m.user = &id
-}
-
-// ClearUser clears the "user" edge to the User entity.
-func (m *BirthdayMutation) ClearUser() {
-	m.cleareduser = true
-}
-
-// UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *BirthdayMutation) UserCleared() bool {
-	return m.cleareduser
-}
-
-// UserID returns the "user" edge ID in the mutation.
-func (m *BirthdayMutation) UserID() (id string, exists bool) {
-	if m.user != nil {
-		return *m.user, true
-	}
-	return
-}
-
-// UserIDs returns the "user" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UserID instead. It exists only for internal usage by the builders.
-func (m *BirthdayMutation) UserIDs() (ids []string) {
-	if id := m.user; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetUser resets all changes to the "user" edge.
-func (m *BirthdayMutation) ResetUser() {
-	m.user = nil
-	m.cleareduser = false
-}
-
-// Where appends a list predicates to the BirthdayMutation builder.
-func (m *BirthdayMutation) Where(ps ...predicate.Birthday) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the BirthdayMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *BirthdayMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Birthday, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *BirthdayMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *BirthdayMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Birthday).
-func (m *BirthdayMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *BirthdayMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.day != nil {
-		fields = append(fields, birthday.FieldDay)
-	}
-	if m.month != nil {
-		fields = append(fields, birthday.FieldMonth)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *BirthdayMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case birthday.FieldDay:
-		return m.Day()
-	case birthday.FieldMonth:
-		return m.Month()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *BirthdayMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case birthday.FieldDay:
-		return m.OldDay(ctx)
-	case birthday.FieldMonth:
-		return m.OldMonth(ctx)
-	}
-	return nil, fmt.Errorf("unknown Birthday field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *BirthdayMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case birthday.FieldDay:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDay(v)
-		return nil
-	case birthday.FieldMonth:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetMonth(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Birthday field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *BirthdayMutation) AddedFields() []string {
-	var fields []string
-	if m.addday != nil {
-		fields = append(fields, birthday.FieldDay)
-	}
-	if m.addmonth != nil {
-		fields = append(fields, birthday.FieldMonth)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *BirthdayMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case birthday.FieldDay:
-		return m.AddedDay()
-	case birthday.FieldMonth:
-		return m.AddedMonth()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *BirthdayMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case birthday.FieldDay:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddDay(v)
-		return nil
-	case birthday.FieldMonth:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddMonth(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Birthday numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *BirthdayMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *BirthdayMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *BirthdayMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown Birthday nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *BirthdayMutation) ResetField(name string) error {
-	switch name {
-	case birthday.FieldDay:
-		m.ResetDay()
-		return nil
-	case birthday.FieldMonth:
-		m.ResetMonth()
-		return nil
-	}
-	return fmt.Errorf("unknown Birthday field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *BirthdayMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.user != nil {
-		edges = append(edges, birthday.EdgeUser)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *BirthdayMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case birthday.EdgeUser:
-		if id := m.user; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *BirthdayMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *BirthdayMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *BirthdayMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.cleareduser {
-		edges = append(edges, birthday.EdgeUser)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *BirthdayMutation) EdgeCleared(name string) bool {
-	switch name {
-	case birthday.EdgeUser:
-		return m.cleareduser
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *BirthdayMutation) ClearEdge(name string) error {
-	switch name {
-	case birthday.EdgeUser:
-		m.ClearUser()
-		return nil
-	}
-	return fmt.Errorf("unknown Birthday unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *BirthdayMutation) ResetEdge(name string) error {
-	switch name {
-	case birthday.EdgeUser:
-		m.ResetUser()
-		return nil
-	}
-	return fmt.Errorf("unknown Birthday edge %s", name)
-}
 
 // ShitpostMutation represents an operation that mutates the Shitpost nodes in the graph.
 type ShitpostMutation struct {
@@ -1509,8 +991,6 @@ type UserMutation struct {
 	shitposts                map[string]struct{}
 	removedshitposts         map[string]struct{}
 	clearedshitposts         bool
-	birthday                 *int
-	clearedbirthday          bool
 	done                     bool
 	oldValue                 func(context.Context) (*User, error)
 	predicates               []predicate.User
@@ -1910,45 +1390,6 @@ func (m *UserMutation) ResetShitposts() {
 	m.removedshitposts = nil
 }
 
-// SetBirthdayID sets the "birthday" edge to the Birthday entity by id.
-func (m *UserMutation) SetBirthdayID(id int) {
-	m.birthday = &id
-}
-
-// ClearBirthday clears the "birthday" edge to the Birthday entity.
-func (m *UserMutation) ClearBirthday() {
-	m.clearedbirthday = true
-}
-
-// BirthdayCleared reports if the "birthday" edge to the Birthday entity was cleared.
-func (m *UserMutation) BirthdayCleared() bool {
-	return m.clearedbirthday
-}
-
-// BirthdayID returns the "birthday" edge ID in the mutation.
-func (m *UserMutation) BirthdayID() (id int, exists bool) {
-	if m.birthday != nil {
-		return *m.birthday, true
-	}
-	return
-}
-
-// BirthdayIDs returns the "birthday" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// BirthdayID instead. It exists only for internal usage by the builders.
-func (m *UserMutation) BirthdayIDs() (ids []int) {
-	if id := m.birthday; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetBirthday resets all changes to the "birthday" edge.
-func (m *UserMutation) ResetBirthday() {
-	m.birthday = nil
-	m.clearedbirthday = false
-}
-
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -2131,7 +1572,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.signins != nil {
 		edges = append(edges, user.EdgeSignins)
 	}
@@ -2140,9 +1581,6 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.shitposts != nil {
 		edges = append(edges, user.EdgeShitposts)
-	}
-	if m.birthday != nil {
-		edges = append(edges, user.EdgeBirthday)
 	}
 	return edges
 }
@@ -2169,17 +1607,13 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeBirthday:
-		if id := m.birthday; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.removedsignins != nil {
 		edges = append(edges, user.EdgeSignins)
 	}
@@ -2220,7 +1654,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedsignins {
 		edges = append(edges, user.EdgeSignins)
 	}
@@ -2229,9 +1663,6 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedshitposts {
 		edges = append(edges, user.EdgeShitposts)
-	}
-	if m.clearedbirthday {
-		edges = append(edges, user.EdgeBirthday)
 	}
 	return edges
 }
@@ -2246,8 +1677,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedvotes
 	case user.EdgeShitposts:
 		return m.clearedshitposts
-	case user.EdgeBirthday:
-		return m.clearedbirthday
 	}
 	return false
 }
@@ -2256,9 +1685,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
-	case user.EdgeBirthday:
-		m.ClearBirthday()
-		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -2275,9 +1701,6 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeShitposts:
 		m.ResetShitposts()
-		return nil
-	case user.EdgeBirthday:
-		m.ResetBirthday()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

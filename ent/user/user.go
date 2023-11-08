@@ -24,8 +24,6 @@ const (
 	EdgeVotes = "votes"
 	// EdgeShitposts holds the string denoting the shitposts edge name in mutations.
 	EdgeShitposts = "shitposts"
-	// EdgeBirthday holds the string denoting the birthday edge name in mutations.
-	EdgeBirthday = "birthday"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SigninsTable is the table that holds the signins relation/edge.
@@ -49,13 +47,6 @@ const (
 	ShitpostsInverseTable = "shitposts"
 	// ShitpostsColumn is the table column denoting the shitposts relation/edge.
 	ShitpostsColumn = "user_shitposts"
-	// BirthdayTable is the table that holds the birthday relation/edge.
-	BirthdayTable = "birthdays"
-	// BirthdayInverseTable is the table name for the Birthday entity.
-	// It exists in this package in order to avoid circular dependency with the "birthday" package.
-	BirthdayInverseTable = "birthdays"
-	// BirthdayColumn is the table column denoting the birthday relation/edge.
-	BirthdayColumn = "user_birthday"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -153,13 +144,6 @@ func ByShitposts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newShitpostsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByBirthdayField orders the results by birthday field.
-func ByBirthdayField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newBirthdayStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newSigninsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -179,12 +163,5 @@ func newShitpostsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShitpostsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ShitpostsTable, ShitpostsColumn),
-	)
-}
-func newBirthdayStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(BirthdayInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, BirthdayTable, BirthdayColumn),
 	)
 }

@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -29,7 +28,6 @@ type UserQuery struct {
 	withSignins   *SigninQuery
 	withVotes     *VoteQuery
 	withShitposts *ShitpostQuery
-	withBirthday  *BirthdayQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -125,28 +123,6 @@ func (uq *UserQuery) QueryShitposts() *ShitpostQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(shitpost.Table, shitpost.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.ShitpostsTable, user.ShitpostsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryBirthday chains the current query on the "birthday" edge.
-func (uq *UserQuery) QueryBirthday() *BirthdayQuery {
-	query := (&BirthdayClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(birthday.Table, birthday.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, user.BirthdayTable, user.BirthdayColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -349,7 +325,6 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withSignins:   uq.withSignins.Clone(),
 		withVotes:     uq.withVotes.Clone(),
 		withShitposts: uq.withShitposts.Clone(),
-		withBirthday:  uq.withBirthday.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -386,17 +361,6 @@ func (uq *UserQuery) WithShitposts(opts ...func(*ShitpostQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withShitposts = query
-	return uq
-}
-
-// WithBirthday tells the query-builder to eager-load the nodes that are connected to
-// the "birthday" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithBirthday(opts ...func(*BirthdayQuery)) *UserQuery {
-	query := (&BirthdayClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withBirthday = query
 	return uq
 }
 
@@ -478,11 +442,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			uq.withSignins != nil,
 			uq.withVotes != nil,
 			uq.withShitposts != nil,
-			uq.withBirthday != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -521,12 +484,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadShitposts(ctx, query, nodes,
 			func(n *User) { n.Edges.Shitposts = []*Shitpost{} },
 			func(n *User, e *Shitpost) { n.Edges.Shitposts = append(n.Edges.Shitposts, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withBirthday; query != nil {
-		if err := uq.loadBirthday(ctx, query, nodes, nil,
-			func(n *User, e *Birthday) { n.Edges.Birthday = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -621,34 +578,6 @@ func (uq *UserQuery) loadShitposts(ctx context.Context, query *ShitpostQuery, no
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "user_shitposts" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadBirthday(ctx context.Context, query *BirthdayQuery, nodes []*User, init func(*User), assign func(*User, *Birthday)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[string]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-	}
-	query.withFKs = true
-	query.Where(predicate.Birthday(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.BirthdayColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.user_birthday
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_birthday" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_birthday" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
