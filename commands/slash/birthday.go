@@ -1,10 +1,11 @@
 package slash
 
 import (
-	"fmt"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
+	"github.com/ritsec/ops-bot-iii/data"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
@@ -91,10 +92,52 @@ func Birthday() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 			day := int(i.ApplicationCommandData().Options[1].IntValue())
 
 			// remove print statement (just here not to cause unused variable error)
-			fmt.Println(month, day)
+			// fmt.Println(month, day)
 
-			// code here
+			exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
+			if err != nil {
+				logging.Error(s, "encounted error when checking if birthday exists", i.Member.User, span, logrus.Fields{"err": err.Error()})
+			}
 
+			if exists {
+				entBirthday, err := data.Birthday.Get(i.Member.User.ID, span.Context())
+				if err != nil {
+					logging.Error(s, "encounted error when getting birthday from user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
+
+				_, err = entBirthday.Update().SetDay(day).SetMonth(month).Save(data.Ctx)
+				if err != nil {
+					logging.Error(s, "encounted error when updating birthday", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
+
+				// Send user message that birthday was updated
+				logging.Debug(s, "Updated birthday for "+i.Member.User.Username, i.Member.User, span)
+
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Updated birthday for " + i.Member.User.Username + " ",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+
+			} else {
+				_, err = data.Birthday.Create(i.Member.User.ID, day, month, span.Context())
+				if err != nil {
+					logging.Error(s, "encounted error when creating birthday", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
+
+				// send user message that birthday was created
+				logging.Debug(s, "Created birthday for "+i.Member.User.Username, i.Member.User, span)
+
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Created birthday for " + i.Member.User.Username + " ",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+			}
 		}
 }
 
