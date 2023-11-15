@@ -5,7 +5,11 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/data"
+	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/robfig/cron"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
@@ -13,9 +17,15 @@ var (
 	birthdayRoleID string = config.GetString("commands.birthday.role_id")
 )
 
+func removeBirthday(s *discordgo.Session, UserID string, ctx ddtrace.SpanContext) error {
+	span := tracer.StartSpan(
+		"commands.scheduled.birthday:removeBirthday",
+		tracer.ResourceName("Scheduled.Birthday.removeBirthday"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
 
-func removeBirthday(GuildID, UserID, birthdayRoleID string) error {
-	err := s.GuildMemberRoleRemove(GuildID, UserID, birthdayRoleID)
+	err := s.GuildMemberRoleRemove(config.GuildID, UserID, birthdayRoleID)
 	if err != nil {
 		logging.Error(s, err.Error(), nil, span)
 		return err
@@ -23,8 +33,15 @@ func removeBirthday(GuildID, UserID, birthdayRoleID string) error {
 	return nil
 }
 
-func addBirthday(GuildID, UserID, birthdayRoleID string) error {
-	err := s.GuildMemberRoleAdd(GuildID, UserID, birthdayRoleID)
+func addBirthday(s *discordgo.Session, UserID string, ctx ddtrace.SpanContext) error {
+	span := tracer.StartSpan(
+		"commands.scheduled.birthday:addBirthday",
+		tracer.ResourceName("Scheduled.Birthday.addBirthday"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	err := s.GuildMemberRoleAdd(config.GuildID, UserID, birthdayRoleID)
 	if err != nil {
 		logging.Error(s, err.Error(), nil, span)
 		return err
@@ -50,46 +67,44 @@ func Birthday(s *discordgo.Session, quit chan interface{}) error {
 	c := cron.NewWithLocation(est)
 
 	err = c.AddFunc("0 0 0 * * *", func() {
-		currentTime := time.Now()
-		yesterday := currentTime.add(-24 * time.Hour)
-		
-		//removes birthday roles
-		yesterday_month := yesterday.Month()
-		yesterday_day := yesterday.Day()
+		internalSpan := tracer.StartSpan(
+			"commands.scheduled.birthday:Birthday.Cron",
+			tracer.ResourceName("Scheduled.Birthday.Cron"),
+			tracer.ChildOf(span.Context()),
+		)
+		defer internalSpan.Finish()
 
-		entRemvBirthday, err := data.getBirthday(yesterday_month, yesterday_day, ctx)
-		if err != nill {
-			logging.Error(s, err.Error(), nil, span)
-			return err
+		today := time.Now()
+		yesterday := today.Add(-24 * time.Hour)
+
+		entRemoveBirthdays, err := data.Birthday.GetBirthdays(yesterday.Day(), int(yesterday.Month()), internalSpan.Context())
+		if err != nil {
+			logging.Error(s, "failed to get yesterday's birthdays", nil, span, logrus.Fields{"error": err})
+			return
 		}
 
-		for _, entRemvBirthday := reange entRemvBirthday {
-			removeBirthday(config.GuildID, entRemvBirthday.Edges.User.ID, birthdayRoleID)
+		for _, entRemoveBirthday := range entRemoveBirthdays {
+			removeBirthday(s, entRemoveBirthday.Edges.User.ID, internalSpan.Context())
 		}
 
-		//adds birthday roles
-		current_month := currentTime.Month()
-		current_day := currentTime.Day()
-
-		entAddBirthday, err := data.getBirthday(current_month, current_day, ctx)
-		if err != nill {
-			logging.Error(s, err.Error(), nil, span)
-			return err
+		entAddBirthday, err := data.Birthday.GetBirthdays(today.Day(), int(today.Month()), internalSpan.Context())
+		if err != nil {
+			logging.Error(s, "failed to get today's birthdays", nil, span, logrus.Fields{"error": err})
+			return
 		}
 
 		for _, entAddBirthday := range entAddBirthday {
-			addBirthday(config.GuildID, entAddBirthday.Edges.User.ID, "birthdayID")
+			addBirthday(s, entAddBirthday.Edges.User.ID, internalSpan.Context())
 		}
 	})
 	if err != nil {
-	logging.Error(s, err.Error(), nil, span)
-	return err
+		logging.Error(s, "failed to create cron job", nil, span, logrus.Fields{"error": err})
+		return err
 	}
 
 	c.Start()
 	<-quit
 	c.Stop()
-
 
 	return nil
 }
