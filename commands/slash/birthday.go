@@ -91,8 +91,6 @@ func Birthday() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 			month := int(i.ApplicationCommandData().Options[0].IntValue())
 			day := int(i.ApplicationCommandData().Options[1].IntValue())
 
-			// remove print statement (just here not to cause unused variable error)
-			// fmt.Println(month, day)
 
 			exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
 			if err != nil {
