@@ -1,6 +1,8 @@
 package slash
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/data"
@@ -88,46 +90,56 @@ func Birthday() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 			)
 			defer span.Finish()
 
+			// get user parameters
 			month := int(i.ApplicationCommandData().Options[0].IntValue())
 			day := int(i.ApplicationCommandData().Options[1].IntValue())
 
-
+			// check is birthday already exists
 			exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
 			if err != nil {
 				logging.Error(s, "encounted error when checking if birthday exists", i.Member.User, span, logrus.Fields{"err": err.Error()})
 			}
 
 			if exists {
+				// birthday exists, update existing one
+
+				// get current birthday
 				entBirthday, err := data.Birthday.Get(i.Member.User.ID, span.Context())
 				if err != nil {
 					logging.Error(s, "encounted error when getting birthday from user", i.Member.User, span, logrus.Fields{"err": err.Error()})
 				}
 
+				// update birthday
 				_, err = entBirthday.Update().SetDay(day).SetMonth(month).Save(data.Ctx)
 				if err != nil {
 					logging.Error(s, "encounted error when updating birthday", i.Member.User, span, logrus.Fields{"err": err.Error()})
 				}
 
-				// Send user message that birthday was updated
+				// log that birthday has been updated
 				logging.Debug(s, "Updated birthday for "+i.Member.User.Username, i.Member.User, span)
 
+				// send user message that birthday was successfully updated
 				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
-						Content: "Updated birthday for " + i.Member.User.Username + " ",
+						Content: fmt.Sprintf("Changed birtday to %d/%d", month, day),
 						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
 
 			} else {
+				// birthday does not exist create new one
+
+				// create new birthday for user
 				_, err = data.Birthday.Create(i.Member.User.ID, day, month, span.Context())
 				if err != nil {
 					logging.Error(s, "encounted error when creating birthday", i.Member.User, span, logrus.Fields{"err": err.Error()})
 				}
 
-				// send user message that birthday was created
+				// log that birthday has been updated
 				logging.Debug(s, "Created birthday for "+i.Member.User.Username, i.Member.User, span)
 
+				// send user message that birthday was successfully updated
 				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
