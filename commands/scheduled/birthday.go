@@ -45,29 +45,35 @@ func Birthday(s *discordgo.Session, quit chan interface{}) error {
 
 	err = c.AddFunc("0 0 0 * * *", func() {
 		currentTime := time.Now()
-
-		month := currentTime.Month()
-		day := currentTime.Day()
-
+		yesterday := currentTime.add(-24 * time.Hour)
 		
-		//loop through all birthday users from the prior day
-			//for each user run removeBirthday()
-			//remove all stored birthdays
-		//obtain all current birthdays
-		
-		entBirthday, err := data.getBirthday(month, day, ctx)
+		//removes birthday roles
+		yesterday_month := yesterday.Month()
+		yesterday_day := yesterday.Day()
+
+		entRemvBirthday, err := data.getBirthday(yesterday_month, yesterday_day, ctx)
 		if err != nill {
 			logging.Error(s, err.Error(), nil, span)
 			return err
 		}
 
-		//store all birthdays
-
-		//loop through all new stored birthdays
-		for _, entBirthday := range entBirthday {
-			addBirthday(config.GuildID, entBirthday.Edges.User.ID, "birthdayID")
+		for _, entRemvBirthday := reange entRemvBirthday {
+			removeBirthday(config.GuildID, entRemvBirthday.Edges.User.ID, "birthdayID")
 		}
-			//for each user run addBirthday
+
+		//adds birthday roles
+		current_month := currentTime.Month()
+		current_day := currentTime.Day()
+
+		entAddBirthday, err := data.getBirthday(current_month, current_day, ctx)
+		if err != nill {
+			logging.Error(s, err.Error(), nil, span)
+			return err
+		}
+
+		for _, entAddBirthday := range entAddBirthday {
+			addBirthday(config.GuildID, entAddBirthday.Edges.User.ID, "birthdayID")
+		}
 	})
 	if err != nil {
 	logging.Error(s, err.Error(), nil, span)
