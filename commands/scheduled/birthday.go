@@ -1,10 +1,16 @@
 package scheduled
 
 import (
-	"github.com/bwmarrin/discordgo"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
-	"github.com/robfig/cron"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/robfig/cron"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+)
+
+var (
+	birthdayRoleID string = config.GetString("commands.birthday.role_id")
 )
 
 
@@ -35,7 +41,7 @@ func Birthday(s *discordgo.Session, quit chan interface{}) error {
 	defer span.Finish()
 
 	//Hal Williams
-	est, err := time.LoadLocation("America/New_York")\
+	est, err := time.LoadLocation("America/New_York")
 	if err != nil {
 		logging.Error(s, err.Error(), nil, span)
 		return err
@@ -58,7 +64,7 @@ func Birthday(s *discordgo.Session, quit chan interface{}) error {
 		}
 
 		for _, entRemvBirthday := reange entRemvBirthday {
-			removeBirthday(config.GuildID, entRemvBirthday.Edges.User.ID, "birthdayID")
+			removeBirthday(config.GuildID, entRemvBirthday.Edges.User.ID, birthdayRoleID)
 		}
 
 		//adds birthday roles
