@@ -126,6 +126,9 @@ func Birthday() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
+				if err != nil {
+					logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
 
 			} else {
 				// birthday does not exist create new one
@@ -147,6 +150,9 @@ func Birthday() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 						Flags:   discordgo.MessageFlagsEphemeral,
 					},
 				})
+				if err != nil {
+					logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
 			}
 		}
 }
