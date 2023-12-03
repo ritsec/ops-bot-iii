@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ritsec/ops-bot-iii/ent/birthday"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
@@ -113,6 +114,25 @@ func (uc *UserCreate) AddShitposts(s ...*Shitpost) *UserCreate {
 		ids[i] = s[i].ID
 	}
 	return uc.AddShitpostIDs(ids...)
+}
+
+// SetBirthdayID sets the "birthday" edge to the Birthday entity by ID.
+func (uc *UserCreate) SetBirthdayID(id int) *UserCreate {
+	uc.mutation.SetBirthdayID(id)
+	return uc
+}
+
+// SetNillableBirthdayID sets the "birthday" edge to the Birthday entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableBirthdayID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetBirthdayID(*id)
+	}
+	return uc
+}
+
+// SetBirthday sets the "birthday" edge to the Birthday entity.
+func (uc *UserCreate) SetBirthday(b *Birthday) *UserCreate {
+	return uc.SetBirthdayID(b.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -273,6 +293,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(shitpost.FieldID, field.TypeString),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.BirthdayIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.BirthdayTable,
+			Columns: []string{user.BirthdayColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
