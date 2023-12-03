@@ -172,6 +172,23 @@ func BirthdayRemove() (*discordgo.ApplicationCommand, func(s *discordgo.Session,
 			defer span.Finish()
 
 			// code here
+			exists, err := data.Birtday.Exists(i.Member.User.ID, ctx)
+				if err != nil {
+ 					logging.Error(...)
+				}
+
+				if exists {
+  					entBirthday, err := data.Birthday.Delete(i.Member.User.ID, ctx)
+  					if err != nil {
+    					logging.Error(s, "Birthday has been removed", i.Member.User, span)
+				
+  					}
+					 else {
+						logging.Debug(s,"No birthday found", i.Member.User, span)
+					}
+			// if birthday exists, delete and return
+			//else, return birthday dosnet exist 
+		
 
 		}
 }
