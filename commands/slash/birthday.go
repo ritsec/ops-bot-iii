@@ -167,11 +167,65 @@ func BirthdayRemove() (*discordgo.ApplicationCommand, func(s *discordgo.Session,
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			span := tracer.StartSpan(
 				"commands.slash.birthday:BirthdayRemove",
-				tracer.ResourceName("/birthday remove"),
+				tracer.ResourceName("/birthday_remove"),
 			)
 			defer span.Finish()
 
-			// code here
+			// check if birthday exists
+			exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
+			if err != nil {
+				logging.Error(s, "Birthday has been removed", i.Member.User, span)
+			}
+
+			if exists {
+				// birthday exists, remove it
+
+				// remove birthday
+				_, err = data.Birthday.Delete(i.Member.User.ID, span.Context())
+				if err != nil {
+					// respond to user that error occured when removing birthday
+					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content: "Error occured when removing birthday",
+							Flags:   discordgo.MessageFlagsEphemeral,
+						},
+					})
+					if err != nil {
+						logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+					}
+
+					logging.Error(s, "Birthday has been removed", i.Member.User, span)
+
+				}
+
+				// respond to user that birthday has been removed
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Birthday has been removed",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+				if err != nil {
+					logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
+
+			} else {
+				// birthday does not exist
+
+				// respond to user that birthday does not exist
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Birthday does not exist",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+				if err != nil {
+					logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+				}
+			}
 
 		}
 }
