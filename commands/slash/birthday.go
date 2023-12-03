@@ -94,6 +94,8 @@ func Birthday() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 			month := int(i.ApplicationCommandData().Options[0].IntValue())
 			day := int(i.ApplicationCommandData().Options[1].IntValue())
 
+			// TODO: check if birthday is current date and prevent edit
+
 			// check is birthday already exists
 			exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
 			if err != nil {
@@ -170,6 +172,8 @@ func BirthdayRemove() (*discordgo.ApplicationCommand, func(s *discordgo.Session,
 				tracer.ResourceName("/birthday_remove"),
 			)
 			defer span.Finish()
+
+			// TODO: check if birthday is current date and prevent removal
 
 			// check if birthday exists
 			exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
