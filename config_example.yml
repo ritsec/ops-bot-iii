@@ -27,7 +27,9 @@ commands:
     angry_react:
         emoji_id:
     message:
-        channel_id: 
+        channel_id:
+    birthday:
+        role_id:
     good_food:
         channel_id: 
         role_id: 
