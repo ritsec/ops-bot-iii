@@ -2,6 +2,7 @@ package slash
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
@@ -122,16 +123,49 @@ func birthdayDelete(s *discordgo.Session, i *discordgo.InteractionCreate, ctx dd
 	)
 	defer span.Finish()
 
-	// TODO: check if birthday is current date and prevent removal
-
 	// check if birthday exists
 	exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
 	if err != nil {
 		logging.Error(s, "Birthday has been removed", i.Member.User, span)
+
+		return
 	}
 
 	if exists {
 		// birthday exists, remove it
+
+		tx, err := time.LoadLocation("America/New_York")
+		if err != nil {
+			logging.Error(s, "encounted error when loading timezone", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
+		}
+
+		entBirthday, err := data.Birthday.Get(i.Member.User.ID, span.Context())
+		if err != nil {
+			logging.Error(s, "encounted error when getting birthday from user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
+		}
+
+		// check if birthday is today
+		now := time.Now().In(tx)
+		if int(entBirthday.Month) == int(now.Month()) && int(entBirthday.Day) == int(now.Day()) {
+			// respond to user that birthday cannot be today
+
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "You cannot remove your birthday today",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			if err != nil {
+				logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+			}
+
+			return
+		}
 
 		// remove birthday
 		_, err = data.Birthday.Delete(i.Member.User.ID, span.Context())
@@ -147,6 +181,8 @@ func birthdayDelete(s *discordgo.Session, i *discordgo.InteractionCreate, ctx dd
 			if err != nil {
 				logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
 			}
+
+			return
 		}
 
 		logging.Debug(s, "Birthday has been removed", i.Member.User, span)
@@ -161,6 +197,8 @@ func birthdayDelete(s *discordgo.Session, i *discordgo.InteractionCreate, ctx dd
 		})
 		if err != nil {
 			logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
 		}
 
 	} else {
@@ -176,7 +214,10 @@ func birthdayDelete(s *discordgo.Session, i *discordgo.InteractionCreate, ctx dd
 		})
 		if err != nil {
 			logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
 		}
+
 	}
 
 }
@@ -194,12 +235,38 @@ func birthdayAdd(s *discordgo.Session, i *discordgo.InteractionCreate, ctx ddtra
 	month := int(i.ApplicationCommandData().Options[0].Options[0].IntValue())
 	day := int(i.ApplicationCommandData().Options[0].Options[1].IntValue())
 
-	// TODO: check if birthday is current date and prevent edit
+	tz, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		logging.Error(s, "encounted error when loading timezone", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+		return
+	}
+
+	// check if birthday is today
+	now := time.Now().In(tz)
+	if month == int(now.Month()) && day == int(now.Day()) {
+		// respond to user that birthday cannot be today
+
+		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "You cannot set your birthday to be today",
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+		if err != nil {
+			logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+		}
+
+		return
+	}
 
 	// check is birthday already exists
 	exists, err := data.Birthday.Exists(i.Member.User.ID, span.Context())
 	if err != nil {
 		logging.Error(s, "encounted error when checking if birthday exists", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+		return
 	}
 
 	if exists {
@@ -209,12 +276,34 @@ func birthdayAdd(s *discordgo.Session, i *discordgo.InteractionCreate, ctx ddtra
 		entBirthday, err := data.Birthday.Get(i.Member.User.ID, span.Context())
 		if err != nil {
 			logging.Error(s, "encounted error when getting birthday from user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
+		}
+
+		// check if birthday is today
+		if int(entBirthday.Month) == int(now.Month()) && int(entBirthday.Day) == int(now.Day()) {
+			// respond to user that birthday cannot be today
+
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "You cannot change your birthday today",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			if err != nil {
+				logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+			}
+
+			return
 		}
 
 		// update birthday
 		_, err = entBirthday.Update().SetDay(day).SetMonth(month).Save(data.Ctx)
 		if err != nil {
 			logging.Error(s, "encounted error when updating birthday", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
 		}
 
 		// log that birthday has been updated
@@ -230,6 +319,8 @@ func birthdayAdd(s *discordgo.Session, i *discordgo.InteractionCreate, ctx ddtra
 		})
 		if err != nil {
 			logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
 		}
 
 	} else {
@@ -239,6 +330,8 @@ func birthdayAdd(s *discordgo.Session, i *discordgo.InteractionCreate, ctx ddtra
 		_, err = data.Birthday.Create(i.Member.User.ID, day, month, span.Context())
 		if err != nil {
 			logging.Error(s, "encounted error when creating birthday", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
 		}
 
 		// log that birthday has been updated
@@ -254,6 +347,8 @@ func birthdayAdd(s *discordgo.Session, i *discordgo.InteractionCreate, ctx ddtra
 		})
 		if err != nil {
 			logging.Error(s, "encounted error when responding to user", i.Member.User, span, logrus.Fields{"err": err.Error()})
+
+			return
 		}
 	}
 }
