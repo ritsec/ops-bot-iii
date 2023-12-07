@@ -174,7 +174,7 @@ func createFlows(fromRound Round, toRound Round, eliminated string, round int) [
 
 	for _, from := range fromRound.Choices {
 		for _, to := range toRound.Choices {
-			if from.Selection == to.Selection {
+			if from.Selection != to.Selection {
 				if from.Votes < to.Votes {
 					rows = append(rows, SanKeyRow{
 						From:   fmt.Sprintf("%v - Round %d", eliminated, round-1),
