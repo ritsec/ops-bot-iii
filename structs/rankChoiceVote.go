@@ -140,29 +140,22 @@ func (r RankChoiceVote) HTML() string {
 	var rows SanKeyRows
 
 	for i, round := range r.Rounds {
-		if i == 0 {
+		if i == len(r.Rounds)-1 {
 			continue
 		}
 		for _, choice := range round.Choices {
-			if choice.Selection == r.Eliminations[i-1] {
-				fromRound := Round{}
-				toRound := Round{}
-
-				fromRound.Choices = make([]Choice, len(r.Rounds[i-1].Choices))
-				copy(fromRound.Choices, r.Rounds[i-1].Choices)
-
-				toRound.Choices = make([]Choice, len(r.Rounds[i].Choices))
-				copy(toRound.Choices, r.Rounds[i].Choices)
-
-				rows.Rows = append(rows.Rows, createFlows(fromRound, toRound, choice.Selection, i)...)
-			} else {
-				rows.Rows = append(rows.Rows, SanKeyRow{
-					From:   fmt.Sprintf("%v - Round %d", choice.Selection, i-1),
-					To:     fmt.Sprintf("%v - Round %d", choice.Selection, i),
-					Weight: choice.Votes,
-				})
+			if choice.Selection == r.Eliminations[i] {
+				continue
 			}
+
+			rows.Rows = append(rows.Rows, SanKeyRow{
+				From:   fmt.Sprintf("%v - Round %d", choice.Selection, i),
+				To:     fmt.Sprintf("%v - Round %d", choice.Selection, i+1),
+				Weight: choice.Votes,
+			})
 		}
+
+		rows.Rows = append(rows.Rows, createFlows(r.Rounds[i], r.Rounds[i+1], r.Eliminations[i], i)...)
 	}
 
 	return fmt.Sprintf(HTML, rows.String())
@@ -174,11 +167,11 @@ func createFlows(fromRound Round, toRound Round, eliminated string, round int) [
 
 	for _, from := range fromRound.Choices {
 		for _, to := range toRound.Choices {
-			if from.Selection != to.Selection {
+			if from.Selection == to.Selection {
 				if from.Votes < to.Votes {
 					rows = append(rows, SanKeyRow{
-						From:   fmt.Sprintf("%v - Round %d", eliminated, round-1),
-						To:     fmt.Sprintf("%v - Round %d", to.Selection, round),
+						From:   fmt.Sprintf("%v - Round %d", eliminated, round),
+						To:     fmt.Sprintf("%v - Round %d", to.Selection, round+1),
 						Weight: to.Votes - from.Votes,
 					})
 				}
