@@ -208,7 +208,7 @@ func (r RankChoiceVote) HTML() string {
 		rows.Rows = append(rows.Rows, createFlows(r.Rounds[i], r.Rounds[i+1], r.Eliminations[i], i)...)
 	}
 
-	return fmt.Sprintf(HTML, r.Title, r.Title, rows.String())
+	return fmt.Sprintf(HTML, r.Title, r.Title, r.Winner, rows.String())
 }
 
 // createFlows creates the flows between rounds
