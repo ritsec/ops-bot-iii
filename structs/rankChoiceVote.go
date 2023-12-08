@@ -157,9 +157,7 @@ func (r RankChoiceVote) HTML() string {
 				data.addColumn('string', 'From');
 				data.addColumn('string', 'To');
 				data.addColumn('number', 'Weight');
-				data.addRows([
-					%s
-				]);
+				data.addRows(%s);
 
 				var options = {
 					width: 1000,
