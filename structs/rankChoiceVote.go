@@ -108,32 +108,82 @@ func (r RankChoiceVote) String() string {
 // ConvertToSanKeyRows converts a map of rounds to a SanKeyRowss
 func (r RankChoiceVote) HTML() string {
 	HTML := `
+	<!DOCTYPE html>
 	<html>
+	<head>
+		<title>%s</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 0;
+				padding: 0;
+				background-image: url("https://ritsec.club/assets/images/bg-dark.svg");
+				text-align: center;
+			}
+			.header {
+				background-color: #0d0d0f;
+				color: white;
+				padding: 10px 0;
+				margin-bottom: 20px;
+			}
+			.container {
+				width: 1000px;
+				margin: 20px auto;
+				margin-top: 150px;
+				padding: 30px;
+				color: white;
+				background-color: #222222;
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+		</style>
+	</head>
 	<body>
+
+		<div class="header">
+			<h1>%s</h1>
+		</div>
+
+		<div class="container">
+			<h1>Winner: %s</h1>
+			<div id="sankey_multiple"></div>
+		</div>
+
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+		<script type="text/javascript">
+			google.charts.load("current", {packages:["sankey"]});
+			google.charts.setOnLoadCallback(drawChart);
+			function drawChart() {
+				var data = new google.visualization.DataTable();
+				data.addColumn('string', 'From');
+				data.addColumn('string', 'To');
+				data.addColumn('number', 'Weight');
+				data.addRows([
+					%s
+				]);
 
-	<div id="sankey_multiple" style="width: 900px; height: 300px;"></div>
+				var options = {
+					width: 1000,
+					sankey: {
+						node: {
+							colors: ['#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613', '#ff7613'],
 
-	<script type="text/javascript">
-		google.charts.load("current", {packages:["sankey"]});
-		google.charts.setOnLoadCallback(drawChart);
-		function drawChart() {
-		var data = new google.visualization.DataTable();
-		data.addColumn('string', 'From');
-		data.addColumn('string', 'To');
-		data.addColumn('number', 'Weight');
-		data.addRows(%v);
+							label: {
+								color: '#ffffff',
+								fontSize: 14,
+							},
+						},
+						link: {
+							colors: ['#ff7613'],
 
-		// Set chart options
-		var options = {
-			width: 600,
-		};
+						},
+					},
+				};
 
-		// Instantiate and draw our chart, passing in some options.
-		var chart = new google.visualization.Sankey(document.getElementById('sankey_multiple'));
-		chart.draw(data, options);
-		}
-	</script>
+				var chart = new google.visualization.Sankey(document.getElementById('sankey_multiple'));
+				chart.draw(data, options);
+			}
+		</script>
+
 	</body>
 	</html>`
 
@@ -158,7 +208,7 @@ func (r RankChoiceVote) HTML() string {
 		rows.Rows = append(rows.Rows, createFlows(r.Rounds[i], r.Rounds[i+1], r.Eliminations[i], i)...)
 	}
 
-	return fmt.Sprintf(HTML, rows.String())
+	return fmt.Sprintf(HTML, r.Title, r.Title, rows.String())
 }
 
 // createFlows creates the flows between rounds
