@@ -199,7 +199,7 @@ func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discor
 					Data: &discordgo.InteractionResponseData{
 						Content: func() string {
 							response := fmt.Sprintf("Voting submitted for: **%s**\n", title)
-							response += "Results:\n"
+							response += "Choices:\n"
 							for _, option := range ranking {
 								response += fmt.Sprintf("- **%s**\n", option)
 							}
