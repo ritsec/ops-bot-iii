@@ -262,6 +262,29 @@ func HasShitpostsWith(preds ...predicate.Shitpost) predicate.User {
 	})
 }
 
+// HasBirthday applies the HasEdge predicate on the "birthday" edge.
+func HasBirthday() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, BirthdayTable, BirthdayColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBirthdayWith applies the HasEdge predicate on the "birthday" edge with a given conditions (other predicates).
+func HasBirthdayWith(preds ...predicate.Birthday) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newBirthdayStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

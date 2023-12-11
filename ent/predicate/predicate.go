@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Birthday is the predicate function for birthday builders.
+type Birthday func(*sql.Selector)
+
 // Shitpost is the predicate function for shitpost builders.
 type Shitpost func(*sql.Selector)
 
