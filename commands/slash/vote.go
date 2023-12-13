@@ -19,7 +19,7 @@ import (
 
 var (
 	// VoteURL is the URL for the vote page
-	VoteURL = config.GetString("vote.url")
+	VoteURL = config.GetString("commands.vote.url")
 )
 
 // Vote is a slash command that creates a vote
