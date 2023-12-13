@@ -264,7 +264,7 @@ func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discor
 				return
 			}
 
-			out := "```\n" + entVoteResults.Plain + "\n```" + "\nResults Graph:\nhttp://" + config.Web.Hostname + ":" + config.Web.Port + "/vote/" + voteSlug + "\n"
+			out := "```\n" + entVoteResults.Plain + "\n```" + "\nResults Graph:\n" + config.Web.Protocol + "://" + config.Web.Hostname + ":" + config.Web.Port + "/vote/" + voteSlug + "\n"
 
 			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content:    &out,

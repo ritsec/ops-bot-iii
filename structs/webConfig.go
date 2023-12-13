@@ -7,4 +7,7 @@ type WebConfig struct {
 
 	// Hostname is the hostname to listen on
 	Hostname string
+
+	// Protocol is the protocol to use
+	Protocol string
 }
