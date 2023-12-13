@@ -23,6 +23,7 @@ google:
 web:
     hostname: 
     port: 
+    protocol:
 commands:
     angry_react:
         emoji_id:
