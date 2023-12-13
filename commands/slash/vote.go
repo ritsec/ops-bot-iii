@@ -17,6 +17,11 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
+var (
+	// VoteURL is the URL for the vote page
+	VoteURL = config.GetString("commands.vote.url")
+)
+
 // Vote is a slash command that creates a vote
 func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
@@ -199,7 +204,7 @@ func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discor
 					Data: &discordgo.InteractionResponseData{
 						Content: func() string {
 							response := fmt.Sprintf("Voting submitted for: **%s**\n", title)
-							response += "Results:\n"
+							response += "Ranking:\n"
 							for _, option := range ranking {
 								response += fmt.Sprintf("- **%s**\n", option)
 							}
@@ -264,7 +269,7 @@ func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discor
 				return
 			}
 
-			out := "```\n" + entVoteResults.Plain + "\n```" + "\nResults Graph:\nhttp://" + config.Web.Hostname + ":" + config.Web.Port + "/vote/" + voteSlug + "\n"
+			out := "```\n" + entVoteResults.Plain + "\n```" + "\nResults Graph:\n" + VoteURL + "/vote/" + voteSlug + "\n"
 
 			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 				Content:    &out,
