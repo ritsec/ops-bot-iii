@@ -49,5 +49,5 @@ commands:
         staff_role_id: 
         alumni_role_id: 
     vote:
-        url: http(s)://example.com
+        url: http(s)://example.com(:port)
     
