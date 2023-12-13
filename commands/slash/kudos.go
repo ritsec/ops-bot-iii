@@ -39,6 +39,36 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					Description: "The user to send Kudos to",
 					Required:    true,
 				},
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "second user (optional)",
+					Description: "The second user to send Kudos to",
+					Required:    false,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "third user (optional)",
+					Description: "The third user to send Kudos to",
+					Required:    false,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "fourth user (optional)",
+					Description: "The fourth user to send Kudos to",
+					Required:    false,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "fifth user (optional)",
+					Description: "The fifth user to send Kudos to",
+					Required:    false,
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Name:        "sixth user (optional)",
+					Description: "The sixth user to send Kudos to",
+					Required:    false,
+				},
 			},
 			DefaultMemberPermissions: &permission.Member,
 		},
@@ -52,14 +82,47 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			logging.Debug(s, "Kudos command received", i.Member.User, span)
 
 			message := i.ApplicationCommandData().Options[0].StringValue()
-			user := i.ApplicationCommandData().Options[1].UserValue(s)
+			users := func() []*discordgo.User {
+				var u []*discordgo.User
+				for _, v := range i.ApplicationCommandData().Options[1:] {
+					u = append(u, v.UserValue(s))
+				}
+				return u
+			}()
 
-			logging.Debug(s, "Kudos sent to "+user.Username+" for \""+message+"\"", i.Member.User, span)
+			users_string := func() string {
+				var u string
+
+				if len(users) == 1 {
+					u = users[0].Username
+				} else if len(users) == 2 {
+					u = users[0].Username + " and " + users[1].Username
+				} else {
+					for i, v := range users {
+						if i == len(users)-1 {
+							u += "and " + v.Username
+						} else {
+							u += v.Username + ", "
+						}
+					}
+				}
+				return u
+			}()
+
+			users_at := func() string {
+				var u string
+				for _, v := range users {
+					u += helpers.AtUser(v.ID) + " "
+				}
+				return u
+			}()
+
+			logging.Debug(s, "Kudos sent to "+users_string+" for \""+message+"\"", i.Member.User, span)
 
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: "Kudoes sent to " + user.Username + " for \"" + message + "\"",
+					Content: "Kudoes sent to " + users_string + " for \"" + message + "\"",
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
@@ -88,7 +151,7 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				defer span_approveSlug.Finish()
 
 				_, err := s.ChannelMessageSendComplex(KudosChannelID, &discordgo.MessageSend{
-					Content: helpers.AtUser(user.ID),
+					Content: users_at,
 					Embeds: []*discordgo.MessageEmbed{
 						{
 							Title: "Kudos",
@@ -105,7 +168,7 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span_approveSlug, logrus.Fields{"error": err})
 				} else {
-					logging.Debug(s, "Kudos approved for "+user.Username+" for \""+message+"\"", i.Member.User, span_approveSlug)
+					logging.Debug(s, "Kudos approved for "+users_string+" for \""+message+"\"", i.Member.User, span_approveSlug)
 				}
 
 				wg.Done()
@@ -119,7 +182,7 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				)
 				defer span_denySlug.Finish()
 
-				logging.Debug(s, "Kudos denied for "+user.Username+" for \""+message+"\"", i.Member.User, span_denySlug)
+				logging.Debug(s, "Kudos denied for "+users_string+" for \""+message+"\"", i.Member.User, span_denySlug)
 
 				wg.Done()
 			}
