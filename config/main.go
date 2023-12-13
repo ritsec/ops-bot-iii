@@ -74,7 +74,6 @@ func web() structs.WebConfig {
 	return structs.WebConfig{
 		Port:     viper.GetString("web.port"),
 		Hostname: viper.GetString("web.hostname"),
-		Protocol: viper.GetString("web.protocol"),
 	}
 }
 
