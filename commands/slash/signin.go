@@ -142,6 +142,32 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				entSigninType = signin.TypeOther
 			}
 
+			// Check if sign-in creator has already signed in
+			recentSignin, err := data.Signin.RecentSignin(i.Member.User.ID, entSigninType, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
+			if !recentSignin {
+				// Create sign-in for sign-in creator
+				_, err = data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
+				}
+			}
+
+			if config.Google.Enabled {
+				// Backup sign-in to google sheet
+				err = google.SheetsAppendSignin(i.Member.User.ID, i.Member.User.Username, signinType, span.Context())
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
+				}
+			}
+
+			// Code Block that run when `Sign-in` button is pressed
 			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, j *discordgo.InteractionCreate) {
 				span_signinSlug := tracer.StartSpan(
 					"commands.slash.signin:Signin:signinSlug",
@@ -150,6 +176,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				)
 				defer span.Finish()
 
+				// Check if user signed in recently
 				recentSignin, err := data.Signin.RecentSignin(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
@@ -157,6 +184,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				}
 
 				if recentSignin {
+					// User has already signed in, notify and exit
 					err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
@@ -170,6 +198,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					return
 				}
 
+				// Create sign-in for user
 				_, err = data.Signin.Create(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
@@ -177,6 +206,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				}
 
 				if config.Google.Enabled {
+					// Backup sign-in to google sheet
 					err = google.SheetsAppendSignin(j.Member.User.ID, j.Member.User.Username, signinType, span.Context())
 					if err != nil {
 						logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
@@ -184,6 +214,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					}
 				}
 
+				// Notify user that they have signed in
 				err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
@@ -205,6 +236,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				delay = 2
 			}
 
+			// Send message with button to sign in
 			message, err := s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
 				Content: "Signins are open for **" + signinType + "** until **" + time.Now().In(location).Add(time.Duration(delay)*time.Hour).Format("3:04PM") + "**!",
 				Components: []discordgo.MessageComponent{
@@ -223,10 +255,11 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
+			// Notify sign-in creator that sign-in message was created
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf("Signin Message Created, it will close in %d hours!", delay),
+					Content: fmt.Sprintf("Signin Message Created, it will close in %d hours!\n%s", delay, signinMessage(i.Member.User.ID, entSigninType, span.Context())),
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
@@ -234,27 +267,33 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
+			// Wait for sign-in to close
 			time.Sleep(time.Duration(delay) * time.Hour)
 
+			// Delete sign-in message
 			err = s.ChannelMessageDelete(i.ChannelID, message.ID)
 			if err != nil {
 				logging.Error(s, "Error encounted while deleting message\n\n"+err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
+			// Get users who signed in
 			userPairs, err := data.Signin.Query(time.Duration(12)*time.Hour, entSigninType, span.Context())
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				return
 			}
 
+			// Build message to send to sign-in creator
 			msg := fmt.Sprintf("Signins for `%s`; %d users signed in:\n", signinType, len(userPairs))
 			for _, user := range userPairs {
 				msg += fmt.Sprintf("- %s\n", helpers.AtUser(user.Key))
 			}
 
 			if len(msg) <= 2000 {
+				// Send full message to sign-in creator
 				err = helpers.SendDirectMessageWithFile(s, i.Member.User.ID, msg, msg, span.Context())
 			} else {
+				// Send concatenated message to sign-in creator
 				trimmedMsg := msg[:2000]
 				trimmedMsg = trimmedMsg[:strings.LastIndex(trimmedMsg, "\n")]
 				err = helpers.SendDirectMessageWithFile(s, i.Member.User.ID, trimmedMsg, msg, span.Context())
@@ -275,17 +314,20 @@ func signinMessage(userID string, signinType signin.Type, ctx ddtrace.SpanContex
 	)
 	defer span.Finish()
 
+	// Get total signins and signins for type
 	totalSignins, err := data.Signin.GetSignins(userID, span.Context())
 	if err != nil {
 		logging.Error(nil, err.Error(), nil, span)
 		return fmt.Sprintf("You have sucessfully signed in for **%s**!", signinType)
 	}
 
+	// Get total signins and signins for type
 	signins, err := data.Signin.GetSigninsByType(userID, signinType, span.Context())
 	if err != nil {
 		logging.Error(nil, err.Error(), nil, span)
 		return fmt.Sprintf("You have sucessfully signed in for **%s**!\nYou have:\n\tTotal Signins: %d", signinType, totalSignins)
 	}
 
+	// Return full message
 	return fmt.Sprintf("You have sucessfully signed in for **%s**!\nYou have:\n\tTotal Signins: `%d`\n\t%s Signins: `%d`", signinType, totalSignins, signinType, signins)
 }
