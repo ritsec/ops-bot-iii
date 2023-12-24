@@ -149,24 +149,12 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				return
 			}
 
-			if recentSignin {
-				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: "You have already signed in for **" + signinType + "**!",
-						Flags:   discordgo.MessageFlagsEphemeral,
-					},
-				})
+			if !recentSignin {
+				_, err = data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
 				}
-				return
-			}
-
-			_, err = data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				return
 			}
 
 			if config.Google.Enabled {
@@ -175,18 +163,6 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 					return
 				}
-			}
-
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: signinMessage(i.Member.User.ID, entSigninType, span.Context()),
-					Flags:   discordgo.MessageFlagsEphemeral,
-				},
-			})
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				return
 			}
 
 			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, j *discordgo.InteractionCreate) {
@@ -273,7 +249,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf("Signin Message Created, it will close in %d hours!", delay),
+					Content: fmt.Sprintf("Signin Message Created, it will close in %d hours!\n%s", delay, signinMessage(i.Member.User.ID, entSigninType, span.Context())),
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
