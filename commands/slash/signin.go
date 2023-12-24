@@ -142,6 +142,53 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				entSigninType = signin.TypeOther
 			}
 
+			// 70-automatically-signin-user-who-creates-signin
+			recentSignin, err := data.Signin.RecentSignin(i.Member.User.ID, entSigninType, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
+			if recentSignin {
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "You have already signed in for **" + signinType + "**!",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
+				return
+			}
+
+			_, err = data.Signin.Create(i.Member.User.ID, entSigninType, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
+			if config.Google.Enabled {
+				err = google.SheetsAppendSignin(i.Member.User.ID, i.Member.User.Username, signinType, span.Context())
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
+				}
+			}
+
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: signinMessage(i.Member.User.ID, entSigninType, span.Context()),
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
 			(*ComponentHandlers)[signinSlug] = func(s *discordgo.Session, j *discordgo.InteractionCreate) {
 				span_signinSlug := tracer.StartSpan(
 					"commands.slash.signin:Signin:signinSlug",
