@@ -33,6 +33,9 @@ func Uwu(s *discordgo.Session, m *discordgo.MessageCreate) {
 					Label: "View Message",
 					URL:   helpers.JumpURL(message),
 					Style: discordgo.LinkButton,
+					Emoji: discordgo.ComponentEmoji{
+						Name: "👀",
+					},
 				},
 				m.Member.User,
 				span,

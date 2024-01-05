@@ -25,6 +25,9 @@ func MemberJoin(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 			Label: "View Profile",
 			URL:   fmt.Sprintf("https://discordapp.com/users/%v/", m.Member.User.ID),
 			Style: discordgo.LinkButton,
+			Emoji: discordgo.ComponentEmoji{
+				Name: "👀",
+			},
 		},
 		m.Member.User,
 		span,
@@ -51,6 +54,9 @@ func MemberLeave(s *discordgo.Session, m *discordgo.GuildMemberRemove) {
 			Label: "View Profile",
 			URL:   fmt.Sprintf("https://discordapp.com/users/%v/", m.Member.User.ID),
 			Style: discordgo.LinkButton,
+			Emoji: discordgo.ComponentEmoji{
+				Name: "👀",
+			},
 		},
 		m.Member.User,
 		span,
