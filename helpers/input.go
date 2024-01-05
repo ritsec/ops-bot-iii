@@ -24,12 +24,34 @@ func SelectButtons(s *discordgo.Session, i *discordgo.InteractionCreate, compone
 	defer close(selected)
 	defer close(interaction)
 
-	for _, option := range options {
+	emojis := []string{
+		"🟥",
+		"🟧",
+		"🟨",
+		"🟩",
+		"🟦",
+		"🟪",
+		"⬛",
+		"⬜",
+		"🟥",
+		"🟧",
+		"🟨",
+		"🟩",
+		"🟦",
+		"🟪",
+		"⬛",
+		"⬜",
+	}
+
+	for j, option := range options {
 		slug := uuid.New().String()
 		components = append(components, discordgo.Button{
 			Label:    option,
 			Style:    discordgo.PrimaryButton,
 			CustomID: slug,
+			Emoji: discordgo.ComponentEmoji{
+				Name: emojis[j],
+			},
 		})
 		slugs = append(slugs, slug)
 
@@ -79,12 +101,34 @@ func SelectButtonsEdit(s *discordgo.Session, i *discordgo.InteractionCreate, com
 	selected := make(chan string)
 	defer close(selected)
 
-	for _, option := range options {
+	emojis := []string{
+		"🟥",
+		"🟧",
+		"🟨",
+		"🟩",
+		"🟦",
+		"🟪",
+		"⬛",
+		"⬜",
+		"🟥",
+		"🟧",
+		"🟨",
+		"🟩",
+		"🟦",
+		"🟪",
+		"⬛",
+		"⬜",
+	}
+
+	for j, option := range options {
 		slug := uuid.New().String()
 		components = append(components, discordgo.Button{
 			Label:    option,
 			Style:    discordgo.PrimaryButton,
 			CustomID: slug,
+			Emoji: discordgo.ComponentEmoji{
+				Name: emojis[j],
+			},
 		})
 		slugs = append(slugs, slug)
 
