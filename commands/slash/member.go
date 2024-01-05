@@ -228,11 +228,17 @@ func tooManyAttempts(s *discordgo.Session, i *discordgo.InteractionCreate, attem
 							Label:    "Yes",
 							Style:    discordgo.SuccessButton,
 							CustomID: yesSlug,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✔️",
+							},
 						},
 						discordgo.Button{
 							Label:    "No",
 							Style:    discordgo.DangerButton,
 							CustomID: noSlug,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✖️",
+							},
 						},
 					},
 				},
@@ -303,11 +309,17 @@ func emailInUse(s *discordgo.Session, i *discordgo.InteractionCreate, userEmail 
 							Label:    "Yes",
 							Style:    discordgo.SuccessButton,
 							CustomID: yesSlug,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✔️",
+							},
 						},
 						discordgo.Button{
 							Label:    "No",
 							Style:    discordgo.DangerButton,
 							CustomID: noSlug,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✖️",
+							},
 						},
 					},
 				},
@@ -476,11 +488,17 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 							CustomID: recievedSlug,
 							Label:    "I recieved the code",
 							Style:    discordgo.SuccessButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✔️",
+							},
 						},
 						discordgo.Button{
 							CustomID: unrecievedSlug,
 							Label:    "I did not recieve the code",
 							Style:    discordgo.DangerButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✖️",
+							},
 						},
 					},
 				},
@@ -538,11 +556,17 @@ func invalidCode(s *discordgo.Session, i *discordgo.InteractionCreate, userEmail
 							CustomID: continueSlug,
 							Label:    "yes",
 							Style:    discordgo.SuccessButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✔️",
+							},
 						},
 						discordgo.Button{
 							CustomID: quitSlug,
 							Label:    "no",
 							Style:    discordgo.DangerButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✖️",
+							},
 						},
 					},
 				},
@@ -610,11 +634,17 @@ func invalidRITEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userE
 							CustomID: continueSlug,
 							Label:    "yes",
 							Style:    discordgo.SuccessButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✔️",
+							},
 						},
 						discordgo.Button{
 							CustomID: quitSlug,
 							Label:    "no",
 							Style:    discordgo.DangerButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✖️",
+							},
 						},
 					},
 				},
@@ -757,11 +787,17 @@ func hasRITEmail(s *discordgo.Session, i *discordgo.InteractionCreate, ctx ddtra
 							CustomID: yesSlug,
 							Label:    "Yes",
 							Style:    discordgo.SuccessButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✔️",
+							},
 						},
 						discordgo.Button{
 							CustomID: noSlug,
 							Label:    "No",
 							Style:    discordgo.DangerButton,
+							Emoji: discordgo.ComponentEmoji{
+								Name: "✖️",
+							},
 						},
 					},
 				},
@@ -924,26 +960,41 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 						CustomID: memberSlug,
 						Label:    "Member",
 						Style:    discordgo.SuccessButton,
+						Emoji: discordgo.ComponentEmoji{
+							Name: "✔️",
+						},
 					},
 					discordgo.Button{
 						CustomID: externalSlug,
 						Label:    "External",
 						Style:    discordgo.PrimaryButton,
+						Emoji: discordgo.ComponentEmoji{
+							Name: "❓",
+						},
 					},
 					discordgo.Button{
 						CustomID: prosectiveSlug,
 						Label:    "Prospective",
 						Style:    discordgo.PrimaryButton,
+						Emoji: discordgo.ComponentEmoji{
+							Name: "👶",
+						},
 					},
 					discordgo.Button{
 						CustomID: staffSlug,
 						Label:    "Staff",
 						Style:    discordgo.PrimaryButton,
+						Emoji: discordgo.ComponentEmoji{
+							Name: "👨‍🏫",
+						},
 					},
 					discordgo.Button{
 						CustomID: alumniSlug,
 						Label:    "Alumni",
 						Style:    discordgo.PrimaryButton,
+						Emoji: discordgo.ComponentEmoji{
+							Name: "🧓",
+						},
 					},
 				},
 			},
@@ -953,6 +1004,9 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 						CustomID: denySlug,
 						Label:    "Deny",
 						Style:    discordgo.DangerButton,
+						Emoji: discordgo.ComponentEmoji{
+							Name: "✖️",
+						},
 					},
 				},
 			},
