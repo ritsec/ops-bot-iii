@@ -44,6 +44,9 @@ func sendGoodFoodPing(s *discordgo.Session, location string, ctx ddtrace.SpanCon
 			Label: "View Message",
 			URL:   helpers.JumpURL(message),
 			Style: discordgo.LinkButton,
+			Emoji: discordgo.ComponentEmoji{
+				Name: "👀",
+			},
 		},
 		nil,
 		span,
