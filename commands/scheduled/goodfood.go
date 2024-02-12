@@ -76,7 +76,7 @@ func GoodFood(s *discordgo.Session, quit chan interface{}) error {
 	}
 
 	// 11:00 AM
-must(c.AddFunc("0 0 11 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))               // Monday
+	must(c.AddFunc("0 0 11 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))	// Monday
 	must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Tuesday
 	must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Wednesday
 	must(c.AddFunc("0 0 11 * * THU", func() {}))                                                    // Thursday
