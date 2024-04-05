@@ -447,10 +447,13 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 								CustomID: messageSlug,
 								Options: func() []discordgo.SelectMenuOption {
 									var innerOptions []discordgo.SelectMenuOption
-									for _, option := range options {
+									for j, option := range options {
 										innerOptions = append(innerOptions, discordgo.SelectMenuOption{
 											Label: option,
 											Value: option,
+											Emoji: &discordgo.ComponentEmoji{
+												Name: emojis[j],
+											},
 										})
 									}
 									return innerOptions
