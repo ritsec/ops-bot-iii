@@ -246,7 +246,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 								Label:    "Signin",
 								Style:    discordgo.SuccessButton,
 								CustomID: signinSlug,
-								Emoji: discordgo.ComponentEmoji{
+								Emoji: &discordgo.ComponentEmoji{
 									Name: "📝",
 								},
 							},
