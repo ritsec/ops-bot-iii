@@ -53,7 +53,7 @@ func AngryReact(s *discordgo.Session, m *discordgo.MessageCreate) {
 				Label: "View Message",
 				URL:   helpers.JumpURL(m.Message),
 				Style: discordgo.LinkButton,
-				Emoji: discordgo.ComponentEmoji{
+				Emoji: &discordgo.ComponentEmoji{
 					Name: "👀",
 				},
 			},

@@ -49,7 +49,7 @@ func SelectButtons(s *discordgo.Session, i *discordgo.InteractionCreate, compone
 			Label:    option,
 			Style:    discordgo.PrimaryButton,
 			CustomID: slug,
-			Emoji: discordgo.ComponentEmoji{
+			Emoji: &discordgo.ComponentEmoji{
 				Name: emojis[j],
 			},
 		})
@@ -126,7 +126,7 @@ func SelectButtonsEdit(s *discordgo.Session, i *discordgo.InteractionCreate, com
 			Label:    option,
 			Style:    discordgo.PrimaryButton,
 			CustomID: slug,
-			Emoji: discordgo.ComponentEmoji{
+			Emoji: &discordgo.ComponentEmoji{
 				Name: emojis[j],
 			},
 		})

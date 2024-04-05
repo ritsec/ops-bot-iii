@@ -44,7 +44,7 @@ func sendGoodFoodPing(s *discordgo.Session, location string, ctx ddtrace.SpanCon
 			Label: "View Message",
 			URL:   helpers.JumpURL(message),
 			Style: discordgo.LinkButton,
-			Emoji: discordgo.ComponentEmoji{
+			Emoji: &discordgo.ComponentEmoji{
 				Name: "👀",
 			},
 		},
@@ -76,7 +76,7 @@ func GoodFood(s *discordgo.Session, quit chan interface{}) error {
 	}
 
 	// 11:00 AM
-	must(c.AddFunc("0 0 11 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))	// Monday
+	must(c.AddFunc("0 0 11 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Monday
 	must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Tuesday
 	must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Wednesday
 	must(c.AddFunc("0 0 11 * * THU", func() {}))                                                    // Thursday
@@ -85,7 +85,7 @@ func GoodFood(s *discordgo.Session, quit chan interface{}) error {
 	must(c.AddFunc("0 0 11 * * SUN", func() {}))                                                    // Sunday
 
 	// 4:00 PM
-	must(c.AddFunc("0 0 16 * * MON", func() {}))       						// Monday
+	must(c.AddFunc("0 0 16 * * MON", func() {}))                                                    // Monday
 	must(c.AddFunc("0 0 16 * * TUE", func() {}))                                                    // Tuesday
 	must(c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Wednesday
 	must(c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Thursday

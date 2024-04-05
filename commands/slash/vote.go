@@ -242,7 +242,7 @@ func Vote() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discor
 									Label:    "Vote",
 									Style:    discordgo.SuccessButton,
 									CustomID: voteSlug,
-									Emoji: discordgo.ComponentEmoji{
+									Emoji: &discordgo.ComponentEmoji{
 										Name: "🗳️",
 									},
 								},
@@ -411,7 +411,7 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 									innerOptions = append(innerOptions, discordgo.SelectMenuOption{
 										Label: option,
 										Value: option,
-										Emoji: discordgo.ComponentEmoji{
+										Emoji: &discordgo.ComponentEmoji{
 											Name: emojis[j],
 										},
 									})
@@ -447,10 +447,13 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 								CustomID: messageSlug,
 								Options: func() []discordgo.SelectMenuOption {
 									var innerOptions []discordgo.SelectMenuOption
-									for _, option := range options {
+									for j, option := range options {
 										innerOptions = append(innerOptions, discordgo.SelectMenuOption{
 											Label: option,
 											Value: option,
+											Emoji: &discordgo.ComponentEmoji{
+												Name: emojis[j],
+											},
 										})
 									}
 									return innerOptions
