@@ -381,7 +381,6 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 	emojis := []string{
 		"🟥",
 		"🟧",
-		"🟨",
 		"🟩",
 		"🟦",
 		"🟪",
@@ -389,7 +388,6 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 		"⬜",
 		"🟥",
 		"🟧",
-		"🟨",
 		"🟩",
 		"🟦",
 		"🟪",
