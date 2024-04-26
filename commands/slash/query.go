@@ -111,6 +111,12 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					Required:    false,
 					MinValue:    &minValue,
 				},
+				{
+					Name:        "usernameinfileonly",
+					Description: "Returns usernames in csv format",
+					Type:        discordgo.ApplicationCommandOptionBoolean,
+					Required:    false,
+				},
 			},
 			DefaultMemberPermissions: &permission.IGLead,
 		},
@@ -124,9 +130,10 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			signinType := i.ApplicationCommandData().Options[0].StringValue()
 
 			var (
-				hours int
-				days  int
-				weeks int
+				hours              int
+				days               int
+				weeks              int
+				usernameinfileonly bool
 			)
 
 			if len(i.ApplicationCommandData().Options) > 1 {
@@ -138,6 +145,8 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 						days = int(option.IntValue())
 					case "weeks":
 						weeks = int(option.IntValue())
+					case "usernameinfileonly":
+						usernameinfileonly = bool(option.BoolValue())
 					}
 				}
 			}
@@ -190,48 +199,80 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			for _, signin := range signins {
 				sum += signin.Value
 			}
+			message := ""
+			if !usernameinfileonly {
+				message += fmt.Sprintf("Signin Type: `%s`\nTotal Signins: `%d`\nTime Delta: `hours=%d,days=%d,weeks=%d`\n", signinType, sum, hours, days, weeks)
 
-			message := fmt.Sprintf("Signin Type: `%s`\nTotal Signins: `%d`\nTime Delta: `hours=%d,days=%d,weeks=%d`\n", signinType, sum, hours, days, weeks)
+				for _, signin := range signins {
+					message += fmt.Sprintf("[%d] %s\n", signin.Value, helpers.AtUser(signin.Key))
+				}
 
-			for _, signin := range signins {
-				message += fmt.Sprintf("[%d] %s\n", signin.Value, helpers.AtUser(signin.Key))
-			}
-
-			if len(message) <= 2000 {
-				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: message,
-						Flags:   discordgo.MessageFlagsEphemeral,
-						Files: []*discordgo.File{
-							{
-								Name:        "query.txt",
-								ContentType: "text/plain",
-								Reader:      strings.NewReader(message),
+				if len(message) <= 2000 {
+					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content: message,
+							Flags:   discordgo.MessageFlagsEphemeral,
+							Files: []*discordgo.File{
+								{
+									Name:        "query.txt",
+									ContentType: "text/plain",
+									Reader:      strings.NewReader(message),
+								},
 							},
 						},
-					},
-				})
+					})
+				} else {
+					trimmedMessage := message[:2000]
+					trimmedMessage = trimmedMessage[:strings.LastIndex(trimmedMessage, "\n")]
+					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content: trimmedMessage,
+							Files: []*discordgo.File{
+								{
+									Name:        "query.txt",
+									ContentType: "text/plain",
+									Reader:      strings.NewReader(message),
+								},
+							},
+							Flags: discordgo.MessageFlagsEphemeral,
+						},
+					})
+				}
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
 			} else {
-				trimmedMessage := message[:2000]
-				trimmedMessage = trimmedMessage[:strings.LastIndex(trimmedMessage, "\n")]
+				for x, signin := range signins {
+					user, err := s.User(signin.Key)
+					if err != nil {
+						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+						return
+					}
+					if x == 0 {
+						message += user.Username
+					} else {
+						message += fmt.Sprintf(",%s", user.Username)
+					}
+				}
 				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
-						Content: trimmedMessage,
+						Flags: discordgo.MessageFlagsEphemeral,
 						Files: []*discordgo.File{
 							{
-								Name:        "query.txt",
-								ContentType: "text/plain",
+								Name:        "query.csv",
+								ContentType: "text/csv",
 								Reader:      strings.NewReader(message),
 							},
 						},
-						Flags: discordgo.MessageFlagsEphemeral,
 					},
 				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
 			}
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-			}
+
 		}
 }
