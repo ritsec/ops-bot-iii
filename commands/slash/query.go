@@ -133,7 +133,7 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				hours              int
 				days               int
 				weeks              int
-				usernameinFileOnly bool
+				usernameinfileonly bool
 			)
 
 			if len(i.ApplicationCommandData().Options) > 1 {
@@ -145,8 +145,8 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 						days = int(option.IntValue())
 					case "weeks":
 						weeks = int(option.IntValue())
-					case "usernameinFileOnly":
-						usernameinFileOnly = bool(option.BoolValue())
+					case "usernameinfileonly":
+						usernameinfileonly = bool(option.BoolValue())
 					}
 				}
 			}
@@ -200,7 +200,7 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				sum += signin.Value
 			}
 			message := ""
-			if !usernameinFileOnly {
+			if !usernameinfileonly {
 				message += fmt.Sprintf("Signin Type: `%s`\nTotal Signins: `%d`\nTime Delta: `hours=%d,days=%d,weeks=%d`\n", signinType, sum, hours, days, weeks)
 
 				for _, signin := range signins {
