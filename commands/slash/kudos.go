@@ -208,7 +208,7 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 								Label:    "Approve",
 								Style:    discordgo.SuccessButton,
 								CustomID: approve_slug,
-								Emoji: discordgo.ComponentEmoji{
+								Emoji: &discordgo.ComponentEmoji{
 									Name: "✔️",
 								},
 							},
@@ -216,7 +216,7 @@ func Kudos() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 								Label:    "Deny",
 								Style:    discordgo.DangerButton,
 								CustomID: deny_slug,
-								Emoji: discordgo.ComponentEmoji{
+								Emoji: &discordgo.ComponentEmoji{
 									Name: "✖️",
 								},
 							},
