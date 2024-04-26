@@ -244,29 +244,33 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				}
 			} else {
-				for _, signin := range signins {
+				for x, signin := range signins {
 					user, err := s.User(signin.Key)
 					if err != nil {
 						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 						return
 					}
-					message += fmt.Sprintf("%s,\n", user.Username)
-					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-						Type: discordgo.InteractionResponseChannelMessageWithSource,
-						Data: &discordgo.InteractionResponseData{
-							Flags: discordgo.MessageFlagsEphemeral,
-							Files: []*discordgo.File{
-								{
-									Name:        "query.csv",
-									ContentType: "text/csv",
-									Reader:      strings.NewReader(message),
-								},
+					if x == 0 {
+						message += user.Username
+					} else {
+						message += fmt.Sprintf(",%s", user.Username)
+					}
+				}
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags: discordgo.MessageFlagsEphemeral,
+						Files: []*discordgo.File{
+							{
+								Name:        "query.csv",
+								ContentType: "text/csv",
+								Reader:      strings.NewReader(message),
 							},
 						},
-					})
-					if err != nil {
-						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-					}
+					},
+				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				}
 			}
 
