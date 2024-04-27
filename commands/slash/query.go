@@ -246,6 +246,12 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			} else {
 				for x, signin := range signins {
 					user, err := s.User(signin.Key)
+
+					// wait 2s for every 10 users
+					if x > 0 && x%10 == 0 {
+						time.Sleep(2 * time.Second)
+					}
+
 					if err != nil {
 						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 						return
