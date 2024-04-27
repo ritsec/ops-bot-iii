@@ -244,39 +244,54 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				}
 			} else {
-				time.Sleep(4 * time.Second)
-				for x, signin := range signins {
-					user, err := s.User(signin.Key)
 
-					// wait 2s for every 10 users
-					//if x > 0 && x%10 == 0 {
-					//}
+				// Initial message
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "OBIII is processing...",
+					},
+				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
+
+				// Processing
+				for x, signin := range signins {
+
+					// Wait for 2 seconds after every 10 user's username is called
+					if x > 0 && x%10 == 0 {
+						time.Sleep(2 * time.Second)
+					}
+
+					user, err := s.User(signin.Key)
 
 					if err != nil {
 						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 						return
 					}
+
 					if x == 0 {
 						message += user.Username
 					} else {
 						message += fmt.Sprintf(",%s", user.Username)
 					}
 				}
-				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Flags: discordgo.MessageFlagsEphemeral,
-						Files: []*discordgo.File{
-							{
-								Name:        "query.csv",
-								ContentType: "text/csv",
-								Reader:      strings.NewReader(message),
-							},
+
+				// Followup message
+				_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+					Files: []*discordgo.File{
+						{
+							Name:        "query.csv",
+							ContentType: "text/csv",
+							Reader:      strings.NewReader(message),
 						},
 					},
 				})
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
 				}
 			}
 
