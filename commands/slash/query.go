@@ -280,7 +280,9 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				}
 
 				// Followup message
+				followUpMessage := "Done"
 				_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+					Content: &followUpMessage,
 					Files: []*discordgo.File{
 						{
 							Name:        "query.csv",
