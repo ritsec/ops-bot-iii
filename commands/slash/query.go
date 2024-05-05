@@ -111,12 +111,6 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					Required:    false,
 					MinValue:    &minValue,
 				},
-				{
-					Name:        "usernameinfileonly",
-					Description: "Returns usernames in csv format",
-					Type:        discordgo.ApplicationCommandOptionBoolean,
-					Required:    false,
-				},
 			},
 			DefaultMemberPermissions: &permission.IGLead,
 		},
