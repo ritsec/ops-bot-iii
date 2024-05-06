@@ -17,7 +17,7 @@ import (
 func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
 			Name:                     "dquery",
-			Description:              "Query users by signins on specific date and outputs to CSV file",
+			Description:              "Query usernames by signins on specific date and outputs to CSV file",
 			DefaultMemberPermissions: &permission.IGLead,
 			Options: []*discordgo.ApplicationCommandOption{
 				{
@@ -142,8 +142,21 @@ func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 			// Parsing the date as time.Time
 			dateToQuery, err := time.Parse("2006-01-02", dateRequested)
+
+			//Inform user that the date format is incorrect and exit
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "Date format is invalid. It needs to be YYYY-MM-DD, e.g., 2003-05-12.",
+					},
+				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					return
+				}
 				return
 			}
 
@@ -157,7 +170,6 @@ func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				return
 			}
 
-			message := ""
 			// Initial message
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -171,6 +183,7 @@ func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			}
 
 			// Processing
+			message := ""
 			for x, signin := range signins {
 
 				// Wait for 1 seconds after every 8 user's username is called
