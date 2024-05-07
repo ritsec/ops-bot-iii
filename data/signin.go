@@ -139,3 +139,64 @@ func (*signin_s) Query(delta time.Duration, signinType signin.Type, ctx ddtrace.
 
 	return pairList, nil
 }
+
+func (s *signin_s) DQuery(date time.Time, signinType signin.Type, ctx ddtrace.SpanContext) (structs.PairList[string], error) {
+	span := tracer.StartSpan(
+		"data.signin:Query",
+		tracer.ResourceName("Data.Signin.Query"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	var (
+		entSignins []*ent.Signin
+		err        error
+	)
+
+	// Calculate start and end of the specified date
+	// Make the time 00:00:00
+	startOfDay := date.Truncate(24 * time.Hour)
+	// Set end time to end of the day 11:59:59
+	endOfDay := startOfDay.Add(24 * time.Hour).Add(-time.Second)
+
+	if signinType == "All" {
+		entSignins, err = Client.Signin.Query().
+			Where(
+				signin.TimestampGTE(startOfDay),
+				signin.TimestampLTE(endOfDay),
+			).
+			WithUser().
+			All(Ctx)
+	} else {
+		entSignins, err = Client.Signin.Query().
+			Where(
+				signin.TypeEQ(signinType),
+				signin.TimestampGTE(startOfDay),
+				signin.TimestampLTE(endOfDay),
+			).
+			WithUser().
+			All(Ctx)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	userCount := make(map[string]int)
+
+	for _, entSignin := range entSignins {
+		userCount[entSignin.Edges.User.ID]++
+	}
+
+	pairList := make(structs.PairList[string], len(userCount))
+
+	i := 0
+	for userID, count := range userCount {
+		pairList[i] = structs.Pair[string]{Key: userID, Value: count}
+		i++
+	}
+
+	pairList.Sort()
+	pairList.Reverse()
+
+	return pairList, nil
+}

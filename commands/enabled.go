@@ -32,6 +32,7 @@ func populateSlashCommands(ctx ddtrace.SpanContext) {
 	SlashCommands["query"] = slash.Query
 	SlashCommands["scoreboard"] = slash.Scoreboard
 	SlashCommands["birthday"] = slash.Birthday
+	SlashCommands["dquery"] = slash.DQuery
 }
 
 // populateHandlers populates the Handlers map with all of the handlers
@@ -65,7 +66,7 @@ func populateScheduledEvents(ctx ddtrace.SpanContext) {
 	defer span.Finish()
 
 	// Populate the scheduled events
-	ScheduledEvents["goodfood"] = scheduled.GoodFood
+	// ScheduledEvents["goodfood"] = scheduled.GoodFood
 	ScheduledEvents["heartbeat"] = scheduled.Heartbeat
 	ScheduledEvents["status"] = scheduled.Status
 	ScheduledEvents["update"] = scheduled.Update
