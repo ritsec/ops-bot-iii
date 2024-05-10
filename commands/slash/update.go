@@ -23,6 +23,12 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					Type:        discordgo.ApplicationCommandOptionBoolean,
 					Required:    false,
 				},
+				{
+					Name:        "branch",
+					Description: "Switch to the remote branch",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    false,
+				},
 			},
 		},
 		func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -35,14 +41,43 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			logging.Debug(s, "Update command received", i.Member.User, span)
 
 			force := false
+			branch := "main"
 			if len(i.ApplicationCommandData().Options) != 0 {
 				force = i.ApplicationCommandData().Options[0].BoolValue()
+				branch = i.ApplicationCommandData().Options[1].StringValue()
 			}
 
-			update, err := helpers.UpdateMainBranch()
-			if err != nil {
-				logging.Error(s, "Error updating main branch", i.Member.User, span, logrus.Fields{"err": err.Error()})
-				return
+			var update bool
+			var err error
+
+			if branch == "main" {
+				update, err = helpers.UpdateMainBranch()
+				if err != nil {
+					logging.Error(s, "Error updating main branch", i.Member.User, span, logrus.Fields{"err": err.Error()})
+					return
+				}
+			} else {
+				// Soft lock the main server to main branch
+				// TODO change the id to main server id before merging
+				if i.GuildID == "1073013590702964856" {
+					err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content: "Cannot use the branch config option on the main server",
+							Flags:   discordgo.MessageFlagsEphemeral,
+						},
+					})
+					if err != nil {
+						logging.Error(s, "Error responding to interaction", i.Member.User, span, logrus.Fields{"err": err.Error()})
+						return
+					}
+					return
+				}
+				update, err = helpers.UpdateRemoteBranch(branch)
+				if err != nil {
+					logging.Error(s, "Error updating remote branch", i.Member.User, span, logrus.Fields{"err": err.Error()})
+					return
+				}
 			}
 
 			if !update {
