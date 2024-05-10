@@ -38,8 +38,6 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			)
 			defer span.Finish()
 
-			logging.Debug(s, "Update command received", i.Member.User, span)
-
 			force := false
 			branch := "main"
 			if len(i.ApplicationCommandData().Options) != 0 {
@@ -47,10 +45,14 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				branch = i.ApplicationCommandData().Options[1].StringValue()
 			}
 
+			debugMessage := fmt.Sprintf("Update command received with options: force=%v, branch=%s", force, branch)
+			logging.Debug(s, debugMessage, i.Member.User, span)
+
 			var update bool
 			var err error
 
 			if branch == "main" {
+				logging.Debug(s, "Following the Main branch update flow", i.Member.User, span)
 				update, err = helpers.UpdateMainBranch()
 				if err != nil {
 					logging.Error(s, "Error updating main branch", i.Member.User, span, logrus.Fields{"err": err.Error()})
@@ -60,7 +62,8 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				// Soft lock the main server to main branch
 				// TODO change the id to main server id before merging
 				if i.GuildID == "1073013590702964856" {
-					err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					logging.Warning(s, "Branch config option used with /update", i.Member.User, span)
+					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 						Type: discordgo.InteractionResponseChannelMessageWithSource,
 						Data: &discordgo.InteractionResponseData{
 							Content: "Cannot use the branch config option on the main server",
