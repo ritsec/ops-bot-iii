@@ -5,7 +5,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
-	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
@@ -47,7 +46,7 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			}
 
 			debugMessage := fmt.Sprintf("Update command received with options: force=%v, branch=%s", force, branch)
-			logging.Debug(s, debugMessage, i.Member.User, span)
+			logging.Info(s, debugMessage, i.Member.User, span)
 
 			var update bool
 			var err error
@@ -59,23 +58,6 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					return
 				}
 			} else {
-				// Soft lock the main server to main branch
-				// TODO change the id to main server id before merging
-				if config.GuildID == "1073013590702964856" {
-					logging.Warning(s, "Branch config option used with /update", i.Member.User, span)
-					err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-						Type: discordgo.InteractionResponseChannelMessageWithSource,
-						Data: &discordgo.InteractionResponseData{
-							Content: "Cannot use the branch config option on the main server",
-							Flags:   discordgo.MessageFlagsEphemeral,
-						},
-					})
-					if err != nil {
-						logging.Error(s, "Error responding to interaction", i.Member.User, span, logrus.Fields{"err": err.Error()})
-						return
-					}
-					return
-				}
 				update, err = helpers.UpdateRemoteBranch(branch)
 				if err != nil {
 					logging.Error(s, "Error updating remote branch", i.Member.User, span, logrus.Fields{"err": err.Error()})
