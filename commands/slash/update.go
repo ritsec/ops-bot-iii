@@ -46,6 +46,7 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			}
 
 			debugMessage := fmt.Sprintf("Update command received with options: force=%v, branch=%s", force, branch)
+			//TODO Change it to Debug
 			logging.Info(s, debugMessage, i.Member.User, span)
 
 			var update bool
@@ -58,7 +59,8 @@ func Update() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					return
 				}
 			} else {
-				update, err = helpers.UpdateRemoteBranch(branch)
+				// TODO REMOVE THE EXTRA PARAMETERS
+				update, err = helpers.UpdateRemoteBranch(branch, span, s, i)
 				if err != nil {
 					logging.Error(s, "Error updating remote branch", i.Member.User, span, logrus.Fields{"err": err.Error()})
 					return

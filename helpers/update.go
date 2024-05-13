@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
 
 // UpdateMainBranch switches to the main branch, fetches from origin, pulls from origin, and returns true if an update was pulled
@@ -59,7 +63,10 @@ func UpdateMainBranch() (bool, error) {
 }
 
 // UpdateRemoteBranch switches to the remote branch, fetches from origin, pulls from origin, and returns true if an update was pulled
-func UpdateRemoteBranch(branch string) (bool, error) {
+// TODO REMOVE THE EXTRA PARAMETERS
+func UpdateRemoteBranch(branch string, span ddtrace.Span, s *discordgo.Session, i *discordgo.InteractionCreate) (bool, error) {
+	// TODO REMOVE THIS
+	logging.Info(s, "It ran :D", i.Member.User, span)
 	switchCmd := exec.Command("git", "switch", branch)
 
 	stderr := &bytes.Buffer{}
