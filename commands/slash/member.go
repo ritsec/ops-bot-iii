@@ -926,7 +926,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 	}
 	defer delete(*ComponentHandlers, denySlug)
 
-	m, err := s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
+	_, err = s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
 		Embed: &discordgo.MessageEmbed{
 			Title: "Verification request",
 			Fields: []*discordgo.MessageEmbedField{
@@ -1106,11 +1106,5 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
 		}
-	}
-
-	err = s.ChannelMessageDelete(memberApprovalChannel, m.ID)
-	if err != nil {
-		logging.Error(s, "Error encounted while deleting channel message", user, span, logrus.Fields{"error": err})
-		return
 	}
 }
