@@ -1026,7 +1026,6 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
-
 		}
 
 		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Member role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
