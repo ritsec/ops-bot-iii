@@ -1026,9 +1026,22 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
+
+		}
+
+		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Member role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
 		}
 	case "external":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, externalRole)
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
+
+		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with External role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
@@ -1046,6 +1059,12 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			return
 		}
 
+		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Prospective role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
+
 		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as a prospective member of RITSEC. Welcome!", span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
@@ -1058,6 +1077,12 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			return
 		}
 
+		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Staff role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
+
 		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as a staff member of RIT. Welcome!", span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
@@ -1065,6 +1090,12 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		}
 	case "alumni":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, alumniRole)
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
+
+		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Alumni role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
