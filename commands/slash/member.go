@@ -1034,6 +1034,12 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
 		}
+
+		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as an external member of RITSEC. Welcome!", span.Context())
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
 	case "external":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, externalRole)
 		if err != nil {
