@@ -1113,9 +1113,44 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		}
 	}
 
+	// Delete the initial message and resend the initial message without the buttons
+
 	err = s.ChannelMessageDelete(memberApprovalChannel, m.ID)
 	if err != nil {
 		logging.Error(s, "Error encounted while deleting channel message", user, span, logrus.Fields{"error": err})
+		return
+	}
+
+	_, err = s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
+		Embed: &discordgo.MessageEmbed{
+			Title: "ARCHIVED RECORD OF THE Verification request",
+			Fields: []*discordgo.MessageEmbedField{
+				func() *discordgo.MessageEmbedField {
+					if userEmail == "" {
+						return &discordgo.MessageEmbedField{
+							Name:  "email",
+							Value: "Not provided",
+						}
+					} else {
+						return &discordgo.MessageEmbedField{
+							Name:  "email",
+							Value: userEmail,
+						}
+					}
+				}(),
+				{
+					Name:  "Discord",
+					Value: user.Mention(),
+				},
+				{
+					Name:  "Message",
+					Value: message,
+				},
+			},
+		},
+	})
+	if err != nil {
+		logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
 		return
 	}
 }
