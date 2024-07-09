@@ -2,6 +2,8 @@ package slash
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
@@ -53,8 +55,31 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
+			file := fmt.Sprintf("Record of the purge on %v", time.Now())
+			file += "-------------------------------"
+
 			for _, message := range raw_messages {
 				message_ids = append(message_ids, message.ID)
+				// Timestamp "may be" removed in a future API version. Too bad!
+				file += fmt.Sprintf("\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp, message.EditedTimestamp)
+				file += fmt.Sprintf("%v", message.Content)
+			}
+
+			con := fmt.Sprintf("PURGE INITIATED AT %v", time.Now())
+
+			_, err = s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
+				Content: con,
+				Files: []*discordgo.File{
+					{
+						Name:        "purge.txt",
+						ContentType: "text",
+						Reader:      strings.NewReader(file),
+					},
+				},
+			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
 			}
 
 			err = s.ChannelMessagesBulkDelete(i.ChannelID, message_ids)
