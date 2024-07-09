@@ -1111,6 +1111,12 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
 		}
+	case "deny":
+		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v denied %v!", helpers.AtUser(i.Member.User.ID), user.Mention()))
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
 	}
 
 	// Delete the initial message and resend the initial message without the buttons
