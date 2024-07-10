@@ -7,9 +7,15 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
+	"github.com/ritsec/ops-bot-iii/config"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+)
+
+var (
+	// Channel ID of the purge logs channel
+	purgeLogsChannel string = config.GetString("commands.purge.channel_id")
 )
 
 // Purge is the purge command
@@ -56,7 +62,8 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			}
 
 			file := fmt.Sprintf("Record of the purge on %v", time.Now())
-			file += "-------------------------------"
+			file += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!"
+			file += "------------------------------------------------------"
 
 			for _, message := range raw_messages {
 				message_ids = append(message_ids, message.ID)
@@ -66,8 +73,9 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			}
 
 			con := fmt.Sprintf("PURGE INITIATED AT %v", time.Now())
+			con += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!"
 
-			_, err = s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
+			_, err = s.ChannelMessageSendComplex(purgeLogsChannel, &discordgo.MessageSend{
 				Content: con,
 				Files: []*discordgo.File{
 					{
