@@ -65,8 +65,6 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			file += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!\n"
 			file += "------------------------------------------------------"
 
-			logging.Debug(s, "here", i.Member.User, span)
-
 			// For the file
 			// reverses the list of messages to make the file from oldest to newest
 			reversedMessages := make([]*discordgo.Message, len(raw_messages))
@@ -79,14 +77,10 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				message_ids = append(message_ids, message.ID)
 			}
 
-			logging.Debug(s, "here", i.Member.User, span)
-
 			err = s.ChannelMessagesBulkDelete(i.ChannelID, message_ids)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
-
-			logging.Debug(s, "here", i.Member.User, span)
 
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -96,14 +90,10 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				},
 			})
 
-			logging.Debug(s, "here", i.Member.User, span)
-
 			logging.Debug(s, "Purged "+fmt.Sprint(len(raw_messages))+" messages!", i.Member.User, span)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
-
-			logging.Debug(s, "here", i.Member.User, span)
 
 			// Putting this here so that it does not send the file if the ChannelMessagesBulkDelete fails for some reason
 
@@ -124,8 +114,5 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				return
 			}
-
-			logging.Debug(s, "here", i.Member.User, span)
-
 		}
 }
