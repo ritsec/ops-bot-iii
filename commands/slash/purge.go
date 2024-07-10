@@ -65,9 +65,11 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			file += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!\n"
 			file += "------------------------------------------------------"
 
-			// Reverse the order of the messages
-			for i, j := 0, len(raw_messages)-1; i < j; i, j = i+1, j-1 {
-				raw_messages[i], raw_messages[j] = raw_messages[j], raw_messages[i]
+			// For the file
+			// reverses the list of messages to make the file from oldest to newest
+			reversedMessages := make([]discordgo.Message, len(raw_messages))
+			for i, message := range raw_messages {
+				reversedMessages[len(raw_messages)-1-i] = *message
 			}
 
 			for _, message := range raw_messages {
