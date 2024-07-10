@@ -70,6 +70,9 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			reversedMessages := make([]*discordgo.Message, len(raw_messages))
 			for i, message := range raw_messages {
 				reversedMessages[len(raw_messages)-1-i] = message
+			}
+
+			for _, message := range reversedMessages {
 				// Timestamp "may be" removed in a future API version. Too bad!
 				file += fmt.Sprintf("\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp.Local().Format("2006-01-02 15:04:05-07:00"), message.EditedTimestamp.Local().Format("2006-01-02 15:04:05-07:00"))
 				file += fmt.Sprintf("\n%v", message.Content)
