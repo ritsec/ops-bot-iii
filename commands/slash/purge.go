@@ -112,7 +112,7 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 
 			// Putting this here so that it does not send the file if the ChannelMessagesBulkDelete fails for some reason
 
-			con := fmt.Sprintf("PURGE INITIATED AT %v", time.Now().Local().Format("2006-01-02 15:04:05-07:00"))
+			con := fmt.Sprintf("PURGE INITIATED AT %v\n", time.Now().In(timeloc).Format("2006-01-02 15:04:05"))
 			con += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!"
 
 			_, err = s.ChannelMessageSendComplex(purgeLogsChannel, &discordgo.MessageSend{
