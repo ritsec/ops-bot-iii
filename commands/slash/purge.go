@@ -68,7 +68,7 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			file := fmt.Sprintf("Record of the purge on %v\n", time.Now().In(timeloc).Format(" 15:04:05"))
+			file := fmt.Sprintf("Record of the purge on %v\n", time.Now().In(timeloc).Format("2006-01-02 15:04:05"))
 			file += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!\n"
 			file += "------------------------------------------------"
 
