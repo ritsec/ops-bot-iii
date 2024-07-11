@@ -74,30 +74,31 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			// For the file
 			// reverses the list of messages to make the file from oldest to newest
 			reversedMessages := make([]*discordgo.Message, len(raw_messages))
-			logging.Debug(s, fmt.Sprintf("initial raw_messages: %v", raw_messages), i.Member.User, span)
-			logging.Debug(s, fmt.Sprintf("initial reversedMessages: %v", reversedMessages), i.Member.User, span)
 			for j, message := range raw_messages {
-				logging.Debug(s, fmt.Sprintf("loop count: %v", j), i.Member.User, span)
-				logging.Debug(s, fmt.Sprintf("message in range loop: %v", message), i.Member.User, span)
 				reversedMessages[len(raw_messages)-1-j] = message
-				logging.Debug(s, fmt.Sprintf("range raw_messages: %v", raw_messages), i.Member.User, span)
-				logging.Debug(s, fmt.Sprintf("range reversedMessages: %v", reversedMessages), i.Member.User, span)
+
 			}
 
 			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
-			for _, message := range raw_messages {
+			for _, message := range reversedMessages {
 				// Timestamp "may be" removed in a future API version. Too bad!
+				logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 				file += fmt.Sprintf("\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp.Local().Format("2006-01-02 15:04:05-07:00"), message.EditedTimestamp.Local().Format("2006-01-02 15:04:05-07:00"))
 				file += fmt.Sprintf("\n%v", message.Content)
+				logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
 				message_ids = append(message_ids, message.ID)
 			}
+
+			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
 			err = s.ChannelMessagesBulkDelete(i.ChannelID, message_ids)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
+
+			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
