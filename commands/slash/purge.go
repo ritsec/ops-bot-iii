@@ -73,10 +73,18 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 
 			// For the file
 			// reverses the list of messages to make the file from oldest to newest
-			reversedMessages := make([]discordgo.Message, len(raw_messages))
-			for i, message := range raw_messages {
-				reversedMessages[len(raw_messages)-1-i] = *message
+			reversedMessages := make([]*discordgo.Message, len(raw_messages))
+			logging.Debug(s, fmt.Sprintf("initial raw_messages: %v", raw_messages), i.Member.User, span)
+			logging.Debug(s, fmt.Sprintf("initial reversedMessages: %v", reversedMessages), i.Member.User, span)
+			for j, message := range raw_messages {
+				logging.Debug(s, fmt.Sprintf("loop count: %v", j), i.Member.User, span)
+				logging.Debug(s, fmt.Sprintf("message in range loop: %v", message), i.Member.User, span)
+				reversedMessages[len(raw_messages)-1-j] = message
+				logging.Debug(s, fmt.Sprintf("range raw_messages: %v", raw_messages), i.Member.User, span)
+				logging.Debug(s, fmt.Sprintf("range reversedMessages: %v", reversedMessages), i.Member.User, span)
 			}
+
+			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
 			for _, message := range raw_messages {
 				// Timestamp "may be" removed in a future API version. Too bad!
