@@ -65,40 +65,30 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			file += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!\n"
 			file += "------------------------------------------------------"
 
-			defer func() {
-				if r := recover(); r != nil {
-					logging.Error(s, fmt.Sprintf("Error: %v", r), i.Member.User, span)
-				}
-			}()
-
 			// For the file
 			// reverses the list of messages to make the file from oldest to newest
 			reversedMessages := make([]*discordgo.Message, len(raw_messages))
 			for j, message := range raw_messages {
 				reversedMessages[len(raw_messages)-1-j] = message
-
 			}
 
-			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
-
 			for _, message := range reversedMessages {
-				// Timestamp "may be" removed in a future API version. Too bad!
-				logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
-				file += fmt.Sprintf("\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp.Local().Format("2006-01-02 15:04:05-07:00"), message.EditedTimestamp.Local().Format("2006-01-02 15:04:05-07:00"))
-				file += fmt.Sprintf("\n%v", message.Content)
-				logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
+				// Check to see if message is edited
+				if message.EditedTimestamp == nil {
+					file += fmt.Sprintf("\n%v SENT AT %v", message.Author, message.Timestamp.Local().Format("2006-01-02 15:04:05-07:00"))
+					file += fmt.Sprintf("\n%v", message.Content)
+				} else {
+					file += fmt.Sprintf("\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp.Local().Format("2006-01-02 15:04:05-07:00"), message.EditedTimestamp.Local().Format("2006-01-02 15:04:05-07:00"))
+					file += fmt.Sprintf("\n%v", message.Content)
+				}
 
 				message_ids = append(message_ids, message.ID)
 			}
-
-			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
 			err = s.ChannelMessagesBulkDelete(i.ChannelID, message_ids)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
-
-			logging.Debug(s, "THIS LINEEEEEE", i.Member.User, span)
 
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
