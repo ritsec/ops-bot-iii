@@ -48,7 +48,14 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 			var (
 				message_ids []string
 				messages    int64
+				timeloc     *time.Location
 			)
+
+			timeloc, err := time.LoadLocation("EST")
+
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 
 			if len(i.ApplicationCommandData().Options) != 0 {
 				messages = i.ApplicationCommandData().Options[0].IntValue()
@@ -61,18 +68,26 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			file := fmt.Sprintf("Record of the purge on %v\n", time.Now().Local().Format("2006-01-02 15:04:05-07:00"))
+			file := fmt.Sprintf("Record of the purge on %v\n", time.Now().In(timeloc).Format("2006-01-02 15:04:05"))
 			file += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!\n"
-			file += "------------------------------------------------------"
+			file += "------------------------------------------------"
 
 			// For the file
 			// reverses the list of messages to make the file from oldest to newest
 			reversedMessages := make([]*discordgo.Message, len(raw_messages))
-			for i, message := range raw_messages {
-				reversedMessages[len(raw_messages)-1-i] = message
-				// Timestamp "may be" removed in a future API version. Too bad!
-				file += fmt.Sprintf("\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp.Local().Format("2006-01-02 15:04:05-07:00"), message.EditedTimestamp.Local().Format("2006-01-02 15:04:05-07:00"))
-				file += fmt.Sprintf("\n%v", message.Content)
+			for j, message := range raw_messages {
+				reversedMessages[len(raw_messages)-1-j] = message
+			}
+
+			for _, message := range reversedMessages {
+				// Check to see if message is edited
+				if message.EditedTimestamp == nil {
+					file += fmt.Sprintf("\n\n%v SENT AT %v", message.Author, message.Timestamp.In(timeloc).Format("2006-01-02 15:04:05"))
+					file += fmt.Sprintf("\n%v", message.Content)
+				} else {
+					file += fmt.Sprintf("\n\n%v SENT AT %v (EDITED AT %v)", message.Author, message.Timestamp.In(timeloc).Format("2006-01-02 15:04:05"), message.EditedTimestamp.In(timeloc).Format("2006-01-02 15:04:05"))
+					file += fmt.Sprintf("\n%v", message.Content)
+				}
 
 				message_ids = append(message_ids, message.ID)
 			}
@@ -97,7 +112,7 @@ func Purge() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 
 			// Putting this here so that it does not send the file if the ChannelMessagesBulkDelete fails for some reason
 
-			con := fmt.Sprintf("PURGE INITIATED AT %v", time.Now().Local().Format("2006-01-02 15:04:05-07:00"))
+			con := fmt.Sprintf("PURGE INITIATED AT %v\n", time.Now().In(timeloc).Format("2006-01-02 15:04:05"))
 			con += "Purged " + fmt.Sprint(len(raw_messages)) + " messages!"
 
 			_, err = s.ChannelMessageSendComplex(purgeLogsChannel, &discordgo.MessageSend{
