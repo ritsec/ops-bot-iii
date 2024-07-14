@@ -41,8 +41,8 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 							Value: "Contagion",
 						},
 						{
-							Name:  "DFIR",
-							Value: "DFIR",
+							Name:  "IR",
+							Value: "IR",
 						},
 						{
 							Name:  "Ops",
@@ -147,8 +147,8 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					entSigninType = signin.TypeGeneralMeeting
 				case "Contagion":
 					entSigninType = signin.TypeContagion
-				case "DFIR":
-					entSigninType = signin.TypeDFIR
+				case "IR":
+					entSigninType = signin.TypeIR
 				case "Ops":
 					entSigninType = signin.TypeOps
 				case "Ops IG":
