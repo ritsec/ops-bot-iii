@@ -30,7 +30,7 @@ func (Signin) Fields() []ent.Field {
 				"Contagion",
 				"Physical",
 				"Wireless",
-				"DFIR",
+				"IR",
 				"WiCyS",
 				"Ops",
 				"Ops IG",
