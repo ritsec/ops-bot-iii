@@ -13,13 +13,16 @@ import (
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/ritsec/ops-bot-iii/mail"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 var (
-	// Channel ID of the member approval channel
-	memberApprovalChannel string = config.GetString("commands.member.channel_id")
+	// Channel ID of the member approval channel and history channel
+	memberApprovalChannel string = config.GetString("commands.member.approval_channel_id")
+	memberHistoryChannel  string = config.GetString("commands.member.history_channel_id")
 
 	// Role ID of the member role
 	memberRole string = config.GetString("commands.member.member_role_id")
@@ -926,9 +929,18 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 	}
 	defer delete(*ComponentHandlers, denySlug)
 
+	author := &discordgo.MessageEmbedAuthor{}
+
+	if user != nil {
+		author.Name = user.Username
+		author.IconURL = user.AvatarURL("")
+	}
+
+	// Verification Request
 	m, err := s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
 		Embed: &discordgo.MessageEmbed{
-			Title: "Verification request",
+			Author: author,
+			Title:  "Verification request",
 			Fields: []*discordgo.MessageEmbedField{
 				func() *discordgo.MessageEmbedField {
 					if userEmail == "" {
@@ -945,7 +957,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 				}(),
 				{
 					Name:  "Discord",
-					Value: user.Mention(),
+					Value: fmt.Sprintf("ID: %v, Name: %v", user.Mention(), user.Username),
 				},
 				{
 					Name:  "Message",
@@ -1028,12 +1040,6 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			return
 		}
 
-		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Member role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
-		if err != nil {
-			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
-			return
-		}
-
 		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as a member of RITSEC. Welcome!", span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
@@ -1041,12 +1047,6 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		}
 	case "external":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, externalRole)
-		if err != nil {
-			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
-			return
-		}
-
-		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with External role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
@@ -1064,12 +1064,6 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			return
 		}
 
-		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Prospective role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
-		if err != nil {
-			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
-			return
-		}
-
 		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as a prospective member of RITSEC. Welcome!", span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
@@ -1077,12 +1071,6 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		}
 	case "staff":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, staffRole)
-		if err != nil {
-			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
-			return
-		}
-
-		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Staff role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
@@ -1100,19 +1088,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			return
 		}
 
-		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v verified %v with Alumni role!", helpers.AtUser(i.Member.User.ID), user.Mention()))
-		if err != nil {
-			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
-			return
-		}
-
 		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as an alumni of RITSEC. Welcome!", span.Context())
-		if err != nil {
-			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
-			return
-		}
-	case "deny":
-		_, err = s.ChannelMessageSend(memberApprovalChannel, fmt.Sprintf("%v denied %v!", helpers.AtUser(i.Member.User.ID), user.Mention()))
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
@@ -1120,43 +1096,92 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 	}
 
 	// Delete the initial message and resend the initial message without the buttons
-
 	err = s.ChannelMessageDelete(memberApprovalChannel, m.ID)
 	if err != nil {
 		logging.Error(s, "Error encounted while deleting channel message", user, span, logrus.Fields{"error": err})
 		return
 	}
 
-	_, err = s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
-		Embed: &discordgo.MessageEmbed{
-			Title: "ARCHIVED RECORD OF THE Verification request",
-			Fields: []*discordgo.MessageEmbedField{
-				func() *discordgo.MessageEmbedField {
-					if userEmail == "" {
-						return &discordgo.MessageEmbedField{
-							Name:  "email",
-							Value: "Not provided",
+	// Log the Verification Request
+	if memberType != "deny" {
+		_, err = s.ChannelMessageSendComplex(memberHistoryChannel, &discordgo.MessageSend{
+			Embed: &discordgo.MessageEmbed{
+				Author: author,
+				Title:  "Verification request",
+				Fields: []*discordgo.MessageEmbedField{
+					func() *discordgo.MessageEmbedField {
+						if userEmail == "" {
+							return &discordgo.MessageEmbedField{
+								Name:  "email",
+								Value: "Not provided",
+							}
+						} else {
+							return &discordgo.MessageEmbedField{
+								Name:  "email",
+								Value: userEmail,
+							}
 						}
-					} else {
-						return &discordgo.MessageEmbedField{
-							Name:  "email",
-							Value: userEmail,
-						}
-					}
-				}(),
-				{
-					Name:  "Discord",
-					Value: user.Mention(),
-				},
-				{
-					Name:  "Message",
-					Value: message,
+					}(),
+					{
+						Name:  "Discord",
+						Value: fmt.Sprintf("ID: %v, Name: %v", user.Mention(), user.Username),
+					},
+					{
+						Name:  "Message",
+						Value: message,
+					},
+					{
+						Name:  "Role given",
+						Value: cases.Title(language.Und).String(memberType),
+					},
+					{
+						Name:  "Approved by",
+						Value: helpers.AtUser(i.Member.User.ID),
+					},
 				},
 			},
-		},
-	})
-	if err != nil {
-		logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
-		return
+		})
+		if err != nil {
+			logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
+			return
+		}
+	} else {
+		_, err = s.ChannelMessageSendComplex(memberHistoryChannel, &discordgo.MessageSend{
+			Embed: &discordgo.MessageEmbed{
+				Author: author,
+				Title:  "Verification request",
+				Fields: []*discordgo.MessageEmbedField{
+					func() *discordgo.MessageEmbedField {
+						if userEmail == "" {
+							return &discordgo.MessageEmbedField{
+								Name:  "email",
+								Value: "Not provided",
+							}
+						} else {
+							return &discordgo.MessageEmbedField{
+								Name:  "email",
+								Value: userEmail,
+							}
+						}
+					}(),
+					{
+						Name:  "Discord",
+						Value: fmt.Sprintf("ID: %v, Name: %v", user.Mention(), user.Username),
+					},
+					{
+						Name:  "Message",
+						Value: message,
+					},
+					{
+						Name:  "Denied by",
+						Value: helpers.AtUser(i.Member.User.ID),
+					},
+				},
+			},
+		})
+		if err != nil {
+			logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
+			return
+		}
 	}
 }
