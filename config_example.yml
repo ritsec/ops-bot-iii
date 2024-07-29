@@ -48,6 +48,8 @@ commands:
         prospective_role_id: 
         staff_role_id: 
         alumni_role_id: 
+    purge:
+        channel_id:
     vote:
         url: http(s)://example.com(:port)
     
