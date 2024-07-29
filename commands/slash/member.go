@@ -21,8 +21,7 @@ import (
 
 var (
 	// Channel ID of the member approval channel and history channel
-	memberApprovalChannel string = config.GetString("commands.member.approval_channel_id")
-	memberHistoryChannel  string = config.GetString("commands.member.history_channel_id")
+	memberApprovalChannel string = config.GetString("commands.member.channel_id")
 
 	// Role ID of the member role
 	memberRole string = config.GetString("commands.member.member_role_id")
@@ -1103,85 +1102,54 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 	}
 
 	// Log the Verification Request
-	if memberType != "deny" {
-		_, err = s.ChannelMessageSendComplex(memberHistoryChannel, &discordgo.MessageSend{
-			Embed: &discordgo.MessageEmbed{
-				Author: author,
-				Title:  "Verification request",
-				Fields: []*discordgo.MessageEmbedField{
-					func() *discordgo.MessageEmbedField {
-						if userEmail == "" {
-							return &discordgo.MessageEmbedField{
-								Name:  "email",
-								Value: "Not provided",
-							}
-						} else {
-							return &discordgo.MessageEmbedField{
-								Name:  "email",
-								Value: userEmail,
-							}
+	_, err = s.ChannelMessageSendComplex(memberApprovalChannel, &discordgo.MessageSend{
+		Embed: &discordgo.MessageEmbed{
+			Author: author,
+			Title:  "Verification Request Log",
+			Fields: []*discordgo.MessageEmbedField{
+				func() *discordgo.MessageEmbedField {
+					if userEmail == "" {
+						return &discordgo.MessageEmbedField{
+							Name:  "email",
+							Value: "Not provided",
 						}
-					}(),
-					{
-						Name:  "Discord",
-						Value: fmt.Sprintf("ID: %v, Name: %v", user.Mention(), user.Username),
-					},
-					{
-						Name:  "Message",
-						Value: message,
-					},
-					{
-						Name:  "Role given",
-						Value: cases.Title(language.Und).String(memberType),
-					},
-					{
-						Name:  "Approved by",
-						Value: helpers.AtUser(i.Member.User.ID),
-					},
-				},
-			},
-		})
-		if err != nil {
-			logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
-			return
-		}
-	} else {
-		_, err = s.ChannelMessageSendComplex(memberHistoryChannel, &discordgo.MessageSend{
-			Embed: &discordgo.MessageEmbed{
-				Author: author,
-				Title:  "Verification request",
-				Fields: []*discordgo.MessageEmbedField{
-					func() *discordgo.MessageEmbedField {
-						if userEmail == "" {
-							return &discordgo.MessageEmbedField{
-								Name:  "email",
-								Value: "Not provided",
-							}
-						} else {
-							return &discordgo.MessageEmbedField{
-								Name:  "email",
-								Value: userEmail,
-							}
+					} else {
+						return &discordgo.MessageEmbedField{
+							Name:  "email",
+							Value: userEmail,
 						}
-					}(),
-					{
-						Name:  "Discord",
-						Value: fmt.Sprintf("ID: %v, Name: %v", user.Mention(), user.Username),
-					},
-					{
-						Name:  "Message",
-						Value: message,
-					},
-					{
-						Name:  "Denied by",
-						Value: helpers.AtUser(i.Member.User.ID),
-					},
+					}
+				}(),
+				{
+					Name:  "Discord",
+					Value: fmt.Sprintf("ID: %v,\nUsername: %v\nClickable: %v", user.ID, user.Username, user.Mention()),
 				},
+				{
+					Name:  "Message",
+					Value: message,
+				},
+				{
+					Name:  "Role given",
+					Value: cases.Title(language.Und).String(memberType),
+				},
+				func() *discordgo.MessageEmbedField {
+					if memberType != "deny" {
+						return &discordgo.MessageEmbedField{
+							Name:  "Approved by",
+							Value: helpers.AtUser(i.Member.User.ID),
+						}
+					} else {
+						return &discordgo.MessageEmbedField{
+							Name:  "Denied by",
+							Value: helpers.AtUser(i.Member.User.ID),
+						}
+					}
+				}(),
 			},
-		})
-		if err != nil {
-			logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
-			return
-		}
+		},
+	})
+	if err != nil {
+		logging.Error(s, "Error encounted while sending channel message", user, span, logrus.Fields{"error": err})
+		return
 	}
 }
