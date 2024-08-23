@@ -360,6 +360,7 @@ func addMemberRole(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	if err != nil {
 		return err
 	}
+	logging.Debug(s, "Given member role to user", i.Member.User, span)
 
 	// add email to user
 	_, err = data.User.SetEmail(i.Member.User.ID, userEmail, span.Context())
