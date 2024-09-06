@@ -375,23 +375,6 @@ func addMemberRole(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	}
 
 	logging.Debug(s, fmt.Sprintf("User successfully verified:\n Email:`%v`\nAttempts:`%d`", userEmail, attempts), i.Member.User, span)
-
-	// if firstMessage {
-	// 	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-	// 		Type: discordgo.InteractionResponseChannelMessageWithSource,
-	// 		Data: &discordgo.InteractionResponseData{
-	// 			Flags:   discordgo.MessageFlagsEphemeral,
-	// 			Content: "You have been verified as a member of RITSEC. Welcome!",
-	// 		},
-	// 	})
-	// } else {
-	// 	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-	// 		Type: discordgo.InteractionResponseUpdateMessage,
-	// 		Data: &discordgo.InteractionResponseData{
-	// 			Content: "You have been verified as a member of RITSEC. Welcome!",
-	// 		},
-	// 	})
-	// }
 	return nil
 }
 
@@ -495,7 +478,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseUpdateMessage,
 		Data: &discordgo.InteractionResponseData{
-			Content: "A verification code has been sent to \"" + userEmail + "\". This could take up to 10 minutes. **Do not close discord or this window will be closed**.",
+			Content: "A verification code has been sent to \"" + userEmail + "\". This could take up to 10 minutes and could be in your spam. Please check your spam! **Do not close discord or this window will be closed**.",
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
