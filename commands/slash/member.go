@@ -870,9 +870,10 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		return
 	}
 
+	originalInteraction := i
+
 	message := <-verifyChan
 	i = <-interactionCreateChan
-	orginalInteraction := i
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseUpdateMessage,
@@ -1036,7 +1037,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 
 	switch memberType {
 	case "member":
-		err = addMemberRole(s, orginalInteraction, userEmail, attempts, false, span.Context())
+		err = addMemberRole(s, originalInteraction, userEmail, attempts, false, span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
