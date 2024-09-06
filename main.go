@@ -47,6 +47,8 @@ func main() {
 	// start scheduled tasks
 	commands.StartScheduledTasks(span.Context())
 
+	logging.Debug(bot.Session, "Finished init", nil, span)
+
 	// create stop channel
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)

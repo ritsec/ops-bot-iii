@@ -58,7 +58,6 @@ func Init(ctx ddtrace.SpanContext) {
 	// Attach events to bot
 	addSlashCommands(span.Context())
 	addHandlers(span.Context())
-	logging.Debug(bot.Session, "Finished init", nil, span)
 }
 
 // addSlashCommands adds all slash commands to the bot
