@@ -176,6 +176,15 @@ func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 						return
 					}
 
+					msg := "You have been verified as a member of RITSEC. Welcome!"
+					_, err = s.InteractionResponseEdit(originalInteraction.Interaction, &discordgo.WebhookEdit{
+						Content: &msg,
+					})
+					if err != nil {
+						logging.Error(s, err.Error(), originalInteraction.User, span, logrus.Fields{"error": err})
+						return
+					}
+
 				} else {
 					manualVerification(s, i, userEmail, attempts, span.Context())
 					return
