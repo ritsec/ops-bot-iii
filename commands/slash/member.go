@@ -170,7 +170,7 @@ func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					}
 
 					// add member role
-					err = addMemberRole(s, i, userEmail, attempts, span.Context())
+					err = addMemberRole(s, originalInteraction, userEmail, attempts, span.Context())
 					if err != nil {
 						logging.Error(s, err.Error(), originalInteraction.Member.User, span, logrus.Fields{"error": err})
 						return
