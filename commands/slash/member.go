@@ -1050,6 +1050,15 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
 		}
+
+		msg := "You have been verified as a member of RITSEC. Welcome!"
+		_, err = s.InteractionResponseEdit(originalInteraction.Interaction, &discordgo.WebhookEdit{
+			Content: &msg,
+		})
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
 	case "external":
 		err = s.GuildMemberRoleAdd(i.GuildID, user.ID, externalRole)
 		if err != nil {
