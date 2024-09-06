@@ -449,6 +449,16 @@ func getVerificationCode(s *discordgo.Session, i *discordgo.InteractionCreate, c
 	verificationCode := <-verifyChan
 	i = <-interactionCreateChan
 
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseUpdateMessage,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Verification code received. Please wait while we verify...",
+		},
+	})
+	if err != nil {
+		return "", nil, err
+	}
+
 	return verificationCode, i, nil
 }
 
