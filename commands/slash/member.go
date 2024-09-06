@@ -872,6 +872,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 
 	message := <-verifyChan
 	i = <-interactionCreateChan
+	orginalInteraction := i
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseUpdateMessage,
@@ -922,6 +923,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		memberChan <- "alumni"
 		interactionCreateChan <- i
 	}
+	defer delete(*ComponentHandlers, alumniSlug)
 
 	(*ComponentHandlers)[denySlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		memberChan <- "deny"
@@ -1034,7 +1036,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 
 	switch memberType {
 	case "member":
-		err = addMemberRole(s, i, userEmail, attempts, false, span.Context())
+		err = addMemberRole(s, orginalInteraction, userEmail, attempts, false, span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
