@@ -38,7 +38,8 @@ func (Signin) Fields() []ent.Field {
 				"Other",
 			),
 		field.Bool("deprecated").
-			Comment("Indicates whether the signin is deprecated"),
+			Comment("Indicates whether the signin is deprecated").
+			Default(false),
 	}
 }
 

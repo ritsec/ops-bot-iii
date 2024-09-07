@@ -55,7 +55,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"General Meeting", "Red Team", "Red Team Recruiting", "Reversing", "RVAPT", "Contagion", "Physical", "Wireless", "IR", "WiCyS", "Ops", "Ops IG", "Vulnerability Research", "Other"}},
-		{Name: "deprecated", Type: field.TypeBool},
+		{Name: "deprecated", Type: field.TypeBool, Default: false},
 		{Name: "user_signins", Type: field.TypeString},
 	}
 	// SigninsTable holds the schema information for the "signins" table.

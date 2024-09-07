@@ -55,6 +55,14 @@ func (su *SigninUpdate) SetDeprecated(b bool) *SigninUpdate {
 	return su
 }
 
+// SetNillableDeprecated sets the "deprecated" field if the given value is not nil.
+func (su *SigninUpdate) SetNillableDeprecated(b *bool) *SigninUpdate {
+	if b != nil {
+		su.SetDeprecated(*b)
+	}
+	return su
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (su *SigninUpdate) SetUserID(id string) *SigninUpdate {
 	su.mutation.SetUserID(id)
@@ -210,6 +218,14 @@ func (suo *SigninUpdateOne) SetType(s signin.Type) *SigninUpdateOne {
 // SetDeprecated sets the "deprecated" field.
 func (suo *SigninUpdateOne) SetDeprecated(b bool) *SigninUpdateOne {
 	suo.mutation.SetDeprecated(b)
+	return suo
+}
+
+// SetNillableDeprecated sets the "deprecated" field if the given value is not nil.
+func (suo *SigninUpdateOne) SetNillableDeprecated(b *bool) *SigninUpdateOne {
+	if b != nil {
+		suo.SetDeprecated(*b)
+	}
 	return suo
 }
 

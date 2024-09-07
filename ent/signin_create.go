@@ -47,6 +47,14 @@ func (sc *SigninCreate) SetDeprecated(b bool) *SigninCreate {
 	return sc
 }
 
+// SetNillableDeprecated sets the "deprecated" field if the given value is not nil.
+func (sc *SigninCreate) SetNillableDeprecated(b *bool) *SigninCreate {
+	if b != nil {
+		sc.SetDeprecated(*b)
+	}
+	return sc
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (sc *SigninCreate) SetUserID(id string) *SigninCreate {
 	sc.mutation.SetUserID(id)
@@ -96,6 +104,10 @@ func (sc *SigninCreate) defaults() {
 	if _, ok := sc.mutation.Timestamp(); !ok {
 		v := signin.DefaultTimestamp()
 		sc.mutation.SetTimestamp(v)
+	}
+	if _, ok := sc.mutation.Deprecated(); !ok {
+		v := signin.DefaultDeprecated
+		sc.mutation.SetDeprecated(v)
 	}
 }
 
