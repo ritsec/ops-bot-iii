@@ -60,6 +60,11 @@ func Timestamp(v time.Time) predicate.Signin {
 	return predicate.Signin(sql.FieldEQ(FieldTimestamp, v))
 }
 
+// Deprecated applies equality check predicate on the "deprecated" field. It's identical to DeprecatedEQ.
+func Deprecated(v bool) predicate.Signin {
+	return predicate.Signin(sql.FieldEQ(FieldDeprecated, v))
+}
+
 // TimestampEQ applies the EQ predicate on the "timestamp" field.
 func TimestampEQ(v time.Time) predicate.Signin {
 	return predicate.Signin(sql.FieldEQ(FieldTimestamp, v))
@@ -118,6 +123,16 @@ func TypeIn(vs ...Type) predicate.Signin {
 // TypeNotIn applies the NotIn predicate on the "type" field.
 func TypeNotIn(vs ...Type) predicate.Signin {
 	return predicate.Signin(sql.FieldNotIn(FieldType, vs...))
+}
+
+// DeprecatedEQ applies the EQ predicate on the "deprecated" field.
+func DeprecatedEQ(v bool) predicate.Signin {
+	return predicate.Signin(sql.FieldEQ(FieldDeprecated, v))
+}
+
+// DeprecatedNEQ applies the NEQ predicate on the "deprecated" field.
+func DeprecatedNEQ(v bool) predicate.Signin {
+	return predicate.Signin(sql.FieldNEQ(FieldDeprecated, v))
 }
 
 // HasUser applies the HasEdge predicate on the "user" edge.

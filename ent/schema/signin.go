@@ -37,6 +37,8 @@ func (Signin) Fields() []ent.Field {
 				"Vulnerability Research",
 				"Other",
 			),
+		field.Bool("deprecated").
+			Comment("Indicates whether the signin is deprecated"),
 	}
 }
 

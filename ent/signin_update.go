@@ -49,6 +49,12 @@ func (su *SigninUpdate) SetType(s signin.Type) *SigninUpdate {
 	return su
 }
 
+// SetDeprecated sets the "deprecated" field.
+func (su *SigninUpdate) SetDeprecated(b bool) *SigninUpdate {
+	su.mutation.SetDeprecated(b)
+	return su
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (su *SigninUpdate) SetUserID(id string) *SigninUpdate {
 	su.mutation.SetUserID(id)
@@ -129,6 +135,9 @@ func (su *SigninUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.GetType(); ok {
 		_spec.SetField(signin.FieldType, field.TypeEnum, value)
 	}
+	if value, ok := su.mutation.Deprecated(); ok {
+		_spec.SetField(signin.FieldDeprecated, field.TypeBool, value)
+	}
 	if su.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -195,6 +204,12 @@ func (suo *SigninUpdateOne) SetNillableTimestamp(t *time.Time) *SigninUpdateOne 
 // SetType sets the "type" field.
 func (suo *SigninUpdateOne) SetType(s signin.Type) *SigninUpdateOne {
 	suo.mutation.SetType(s)
+	return suo
+}
+
+// SetDeprecated sets the "deprecated" field.
+func (suo *SigninUpdateOne) SetDeprecated(b bool) *SigninUpdateOne {
+	suo.mutation.SetDeprecated(b)
 	return suo
 }
 
@@ -307,6 +322,9 @@ func (suo *SigninUpdateOne) sqlSave(ctx context.Context) (_node *Signin, err err
 	}
 	if value, ok := suo.mutation.GetType(); ok {
 		_spec.SetField(signin.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := suo.mutation.Deprecated(); ok {
+		_spec.SetField(signin.FieldDeprecated, field.TypeBool, value)
 	}
 	if suo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

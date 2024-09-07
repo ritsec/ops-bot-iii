@@ -22,6 +22,8 @@ type Signin struct {
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Type of signin
 	Type signin.Type `json:"type,omitempty"`
+	// Indicates whether the signin is deprecated
+	Deprecated bool `json:"deprecated,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SigninQuery when eager-loading is set.
 	Edges        SigninEdges `json:"edges"`
@@ -56,6 +58,8 @@ func (*Signin) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case signin.FieldDeprecated:
+			values[i] = new(sql.NullBool)
 		case signin.FieldID:
 			values[i] = new(sql.NullInt64)
 		case signin.FieldType:
@@ -96,6 +100,12 @@ func (s *Signin) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
 				s.Type = signin.Type(value.String)
+			}
+		case signin.FieldDeprecated:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field deprecated", values[i])
+			} else if value.Valid {
+				s.Deprecated = value.Bool
 			}
 		case signin.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -150,6 +160,9 @@ func (s *Signin) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", s.Type))
+	builder.WriteString(", ")
+	builder.WriteString("deprecated=")
+	builder.WriteString(fmt.Sprintf("%v", s.Deprecated))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -1050,6 +1050,7 @@ type SigninMutation struct {
 	id            *int
 	timestamp     *time.Time
 	_type         *signin.Type
+	deprecated    *bool
 	clearedFields map[string]struct{}
 	user          *string
 	cleareduser   bool
@@ -1228,6 +1229,42 @@ func (m *SigninMutation) ResetType() {
 	m._type = nil
 }
 
+// SetDeprecated sets the "deprecated" field.
+func (m *SigninMutation) SetDeprecated(b bool) {
+	m.deprecated = &b
+}
+
+// Deprecated returns the value of the "deprecated" field in the mutation.
+func (m *SigninMutation) Deprecated() (r bool, exists bool) {
+	v := m.deprecated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeprecated returns the old "deprecated" field's value of the Signin entity.
+// If the Signin object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SigninMutation) OldDeprecated(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeprecated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeprecated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeprecated: %w", err)
+	}
+	return oldValue.Deprecated, nil
+}
+
+// ResetDeprecated resets all changes to the "deprecated" field.
+func (m *SigninMutation) ResetDeprecated() {
+	m.deprecated = nil
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *SigninMutation) SetUserID(id string) {
 	m.user = &id
@@ -1301,12 +1338,15 @@ func (m *SigninMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SigninMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.timestamp != nil {
 		fields = append(fields, signin.FieldTimestamp)
 	}
 	if m._type != nil {
 		fields = append(fields, signin.FieldType)
+	}
+	if m.deprecated != nil {
+		fields = append(fields, signin.FieldDeprecated)
 	}
 	return fields
 }
@@ -1320,6 +1360,8 @@ func (m *SigninMutation) Field(name string) (ent.Value, bool) {
 		return m.Timestamp()
 	case signin.FieldType:
 		return m.GetType()
+	case signin.FieldDeprecated:
+		return m.Deprecated()
 	}
 	return nil, false
 }
@@ -1333,6 +1375,8 @@ func (m *SigninMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldTimestamp(ctx)
 	case signin.FieldType:
 		return m.OldType(ctx)
+	case signin.FieldDeprecated:
+		return m.OldDeprecated(ctx)
 	}
 	return nil, fmt.Errorf("unknown Signin field %s", name)
 }
@@ -1355,6 +1399,13 @@ func (m *SigninMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetType(v)
+		return nil
+	case signin.FieldDeprecated:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeprecated(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Signin field %s", name)
@@ -1410,6 +1461,9 @@ func (m *SigninMutation) ResetField(name string) error {
 		return nil
 	case signin.FieldType:
 		m.ResetType()
+		return nil
+	case signin.FieldDeprecated:
+		m.ResetDeprecated()
 		return nil
 	}
 	return fmt.Errorf("unknown Signin field %s", name)

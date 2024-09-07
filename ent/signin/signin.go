@@ -19,6 +19,8 @@ const (
 	FieldTimestamp = "timestamp"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
+	// FieldDeprecated holds the string denoting the deprecated field in the database.
+	FieldDeprecated = "deprecated"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the signin in the database.
@@ -37,6 +39,7 @@ var Columns = []string{
 	FieldID,
 	FieldTimestamp,
 	FieldType,
+	FieldDeprecated,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "signins"
@@ -116,6 +119,11 @@ func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
 // ByType orders the results by the type field.
 func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
+}
+
+// ByDeprecated orders the results by the deprecated field.
+func ByDeprecated(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDeprecated, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.

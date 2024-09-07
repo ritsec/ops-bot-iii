@@ -41,6 +41,12 @@ func (sc *SigninCreate) SetType(s signin.Type) *SigninCreate {
 	return sc
 }
 
+// SetDeprecated sets the "deprecated" field.
+func (sc *SigninCreate) SetDeprecated(b bool) *SigninCreate {
+	sc.mutation.SetDeprecated(b)
+	return sc
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (sc *SigninCreate) SetUserID(id string) *SigninCreate {
 	sc.mutation.SetUserID(id)
@@ -106,6 +112,9 @@ func (sc *SigninCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Signin.type": %w`, err)}
 		}
 	}
+	if _, ok := sc.mutation.Deprecated(); !ok {
+		return &ValidationError{Name: "deprecated", err: errors.New(`ent: missing required field "Signin.deprecated"`)}
+	}
 	if _, ok := sc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Signin.user"`)}
 	}
@@ -142,6 +151,10 @@ func (sc *SigninCreate) createSpec() (*Signin, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.GetType(); ok {
 		_spec.SetField(signin.FieldType, field.TypeEnum, value)
 		_node.Type = value
+	}
+	if value, ok := sc.mutation.Deprecated(); ok {
+		_spec.SetField(signin.FieldDeprecated, field.TypeBool, value)
+		_node.Deprecated = value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
