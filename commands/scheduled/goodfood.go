@@ -76,18 +76,18 @@ func GoodFood(s *discordgo.Session, quit chan interface{}) error {
 	}
 
 	// 11:00 AM
-	must(c.AddFunc("0 0 11 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Monday
+	must(c.AddFunc("0 0 11 * * MON", func() {}))                                                    // Monday
 	must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Tuesday
 	must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Wednesday
 	must(c.AddFunc("0 0 11 * * THU", func() {}))                                                    // Thursday
-	must(c.AddFunc("0 0 11 * * FRI", func() {}))                                                    // Friday
+	must(c.AddFunc("0 0 11 * * FRI", func() { sendGoodFoodPing(s, "Brick City", span.Context()) })) // Friday
 	must(c.AddFunc("0 0 11 * * SAT", func() {}))                                                    // Saturday
 	must(c.AddFunc("0 0 11 * * SUN", func() {}))                                                    // Sunday
 
 	// 4:00 PM
 	must(c.AddFunc("0 0 16 * * MON", func() {}))                                                    // Monday
 	must(c.AddFunc("0 0 16 * * TUE", func() {}))                                                    // Tuesday
-	must(c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Wednesday
+	must(c.AddFunc("0 0 16 * * WED", func() {}))                                                    // Wednesday
 	must(c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Thursday
 	must(c.AddFunc("0 0 16 * * FRI", func() {}))                                                    // Friday
 	must(c.AddFunc("0 0 16 * * SAT", func() {}))                                                    // Saturday
