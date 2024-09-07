@@ -56,7 +56,7 @@ func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 			// check if user is already a member
 			if data.User.IsVerified(i.Member.User.ID, span.Context()) {
-				err := addMemberRole(s, i, "", 0, true, span.Context())
+				err := addMemberRole(s, i, "", 0, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 					return
@@ -170,9 +170,18 @@ func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					}
 
 					// add member role
-					err = addMemberRole(s, i, userEmail, attempts, false, span.Context())
+					err = addMemberRole(s, originalInteraction, userEmail, attempts, span.Context())
 					if err != nil {
 						logging.Error(s, err.Error(), originalInteraction.Member.User, span, logrus.Fields{"error": err})
+						return
+					}
+
+					msg := "You have been verified as a member of RITSEC. Welcome!"
+					_, err = s.InteractionResponseEdit(originalInteraction.Interaction, &discordgo.WebhookEdit{
+						Content: &msg,
+					})
+					if err != nil {
+						logging.Error(s, err.Error(), originalInteraction.User, span, logrus.Fields{"error": err})
 						return
 					}
 
@@ -348,7 +357,7 @@ func emailInUse(s *discordgo.Session, i *discordgo.InteractionCreate, userEmail 
 }
 
 // addMemberRole adds the member role to the user and marks them as verified
-func addMemberRole(s *discordgo.Session, i *discordgo.InteractionCreate, userEmail string, attempts int, firstMessage bool, ctx ddtrace.SpanContext) error {
+func addMemberRole(s *discordgo.Session, i *discordgo.InteractionCreate, userEmail string, attempts int, ctx ddtrace.SpanContext) error {
 	span := tracer.StartSpan(
 		"commands.slash.member:addMemberRole",
 		tracer.ResourceName("/member:addMemberRole"),
@@ -375,22 +384,7 @@ func addMemberRole(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	}
 
 	logging.Debug(s, fmt.Sprintf("User successfully verified:\n Email:`%v`\nAttempts:`%d`", userEmail, attempts), i.Member.User, span)
-	if firstMessage {
-		return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: "You have been verified as a member of RITSEC. Welcome!",
-			},
-		})
-	} else {
-		return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseUpdateMessage,
-			Data: &discordgo.InteractionResponseData{
-				Content: "You have been verified as a member of RITSEC. Welcome!",
-			},
-		})
-	}
+	return nil
 }
 
 // getVerificationCode sends the user a verification code and waits for them to respond with it
@@ -447,6 +441,16 @@ func getVerificationCode(s *discordgo.Session, i *discordgo.InteractionCreate, c
 	verificationCode := <-verifyChan
 	i = <-interactionCreateChan
 
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseUpdateMessage,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Verification code received. Please wait while we verify...",
+		},
+	})
+	if err != nil {
+		return "", nil, err
+	}
+
 	return verificationCode, i, nil
 }
 
@@ -483,7 +487,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseUpdateMessage,
 		Data: &discordgo.InteractionResponseData{
-			Content: "A verification code has been sent to \"" + userEmail + "\". This could take up to 10 minutes. **Do not close discord or this window will be closed**.",
+			Content: "A verification code has been sent to \"" + userEmail + "\". This could take up to 10 minutes and could be in your spam. Please check your spam! **Do not close discord or this window will be closed**.",
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
@@ -870,6 +874,8 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		return
 	}
 
+	originalInteraction := i
+
 	message := <-verifyChan
 	i = <-interactionCreateChan
 
@@ -922,6 +928,7 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 		memberChan <- "alumni"
 		interactionCreateChan <- i
 	}
+	defer delete(*ComponentHandlers, alumniSlug)
 
 	(*ComponentHandlers)[denySlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		memberChan <- "deny"
@@ -1034,13 +1041,22 @@ func manualVerification(s *discordgo.Session, i *discordgo.InteractionCreate, us
 
 	switch memberType {
 	case "member":
-		err = addMemberRole(s, i, userEmail, attempts, false, span.Context())
+		err = addMemberRole(s, originalInteraction, userEmail, attempts, span.Context())
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
 		}
 
 		err = helpers.SendDirectMessage(s, user.ID, "You have been verified as a member of RITSEC. Welcome!", span.Context())
+		if err != nil {
+			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
+			return
+		}
+
+		msg := "You have been verified as a member of RITSEC. Welcome!"
+		_, err = s.InteractionResponseEdit(originalInteraction.Interaction, &discordgo.WebhookEdit{
+			Content: &msg,
+		})
 		if err != nil {
 			logging.Error(s, err.Error(), user, span, logrus.Fields{"error": err})
 			return
