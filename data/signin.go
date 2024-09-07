@@ -34,6 +34,25 @@ func (*signin_s) Create(userID string, signinType signin.Type, ctx ddtrace.SpanC
 		Save(Ctx)
 }
 
+// DeprecateSignins marks all signins deprecated
+func (*signin_s) DeprecateSignins(ctx ddtrace.SpanContext) error {
+	span := tracer.StartSpan(
+		"data.signin:DeprecateSignins",
+		tracer.ResourceName("Data.Signin.DeprecateSignins"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	_, err := Client.Signin.Update().
+		SetDeprecated(true).
+		Save(Ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetSignins gets all signins for a user
 func (*signin_s) GetSignins(id string, ctx ddtrace.SpanContext) (int, error) {
 	span := tracer.StartSpan(
@@ -44,7 +63,10 @@ func (*signin_s) GetSignins(id string, ctx ddtrace.SpanContext) (int, error) {
 	defer span.Finish()
 
 	return Client.Signin.Query().
-		Where(signin.HasUserWith(user.IDEQ(id))).
+		Where(
+			signin.HasUserWith(user.IDEQ(id)),
+			signin.DeprecatedEQ(false),
+		).
 		Count(Ctx)
 }
 
@@ -61,6 +83,7 @@ func (*signin_s) GetSigninsByType(id string, signinType signin.Type, ctx ddtrace
 		Where(
 			signin.HasUserWith(user.IDEQ(id)),
 			signin.TypeEQ(signinType),
+			signin.DeprecatedEQ(false),
 		).
 		Count(Ctx)
 }
