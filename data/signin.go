@@ -110,6 +110,7 @@ func (*signin_s) RecentSignin(userID string, signinType signin.Type, ctx ddtrace
 	return ok, nil
 }
 
+// Query gets all signins including deprecated signins
 func (*signin_s) Query(delta time.Duration, signinType signin.Type, ctx ddtrace.SpanContext) (structs.PairList[string], error) {
 	span := tracer.StartSpan(
 		"data.signin:Query",
@@ -163,6 +164,7 @@ func (*signin_s) Query(delta time.Duration, signinType signin.Type, ctx ddtrace.
 	return pairList, nil
 }
 
+// DQuery gets all signins including deprecated signins on a specific date
 func (s *signin_s) DQuery(date time.Time, signinType signin.Type, ctx ddtrace.SpanContext) (structs.PairList[string], error) {
 	span := tracer.StartSpan(
 		"data.signin:Query",
