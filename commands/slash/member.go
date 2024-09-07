@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
@@ -404,14 +403,11 @@ func getVerificationCode(s *discordgo.Session, i *discordgo.InteractionCreate, c
 	verifyChan := make(chan string)
 	defer close(verifyChan)
 
-	done := make(chan bool)
-	defer close(done)
-
 	verifySlug := uuid.New().String()
 
 	(*ComponentHandlers)[verifySlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		data := i.ModalSubmitData()
-		done <- true
+
 		verifyChan <- data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
 		interactionCreateChan <- i
 	}
@@ -442,38 +438,20 @@ func getVerificationCode(s *discordgo.Session, i *discordgo.InteractionCreate, c
 		return "", nil, err
 	}
 
-	// verificationCode := <-verifyChan
-	// i = <-interactionCreateChan
+	verificationCode := <-verifyChan
+	i = <-interactionCreateChan
 
-	// err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-	// 	Type: discordgo.InteractionResponseUpdateMessage,
-	// 	Data: &discordgo.InteractionResponseData{
-	// 		Content: "Verification code received. Please wait while we verify...",
-	// 	},
-	// })
-	// if err != nil {
-	// 	return "", nil, err
-	// }
-
-	// return verificationCode, i, nil
-	for {
-		select {
-		case verificationCode := <-verifyChan:
-			i = <-interactionCreateChan
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseUpdateMessage,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Verification code received. Please wait while we verify...",
-				},
-			})
-			if err != nil {
-				return "", nil, err
-			}
-			return verificationCode, i, nil
-		case <-time.After(1 * time.Minute): // Adjust timeout as needed
-			return "", nil, fmt.Errorf("interaction timed out")
-		}
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseUpdateMessage,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Verification code received. Please wait while we verify...",
+		},
+	})
+	if err != nil {
+		return "", nil, err
 	}
+
+	return verificationCode, i, nil
 }
 
 // recievedEmail will prompt a user to check if they recieved an email
