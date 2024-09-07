@@ -1,6 +1,8 @@
 package slash
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
@@ -9,6 +11,8 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
+
+// TODO: Enable the command
 
 var (
 	// TODO: update config and get config
@@ -65,8 +69,10 @@ func secondUserApproval(s *discordgo.Session, i *discordgo.InteractionCreate, ct
 	}
 	defer delete(*ComponentHandlers, denySlug)
 
+	msg := fmt.Sprintf("%s requested approval for deprecating the signins, approve it?", i.Member.User)
+
 	m, err := s.ChannelMessageSendComplex(deprecateSigninsChannel, &discordgo.MessageSend{
-		Content: "Approve deprecating the signins?",
+		Content: msg,
 		Components: []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
@@ -99,6 +105,11 @@ func secondUserApproval(s *discordgo.Session, i *discordgo.InteractionCreate, ct
 
 	if response {
 		// TODO: Deprecate Signins here
+		msg = fmt.Sprintf("Deprecate signins approved by %s", i.Member.User)
+		_, err = s.ChannelMessageEdit(deprecateSigninsChannel, m.ID, msg)
+		if err != nil {
+			return err
+		}
 		return nil
 	} else {
 		_, err = s.ChannelMessageEdit(deprecateSigninsChannel, m.ID, "Deprecate signins denied")
