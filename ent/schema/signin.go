@@ -35,6 +35,7 @@ func (Signin) Fields() []ent.Field {
 				"Ops",
 				"Ops IG",
 				"Vulnerability Research",
+				"Mentorship",
 				"Other",
 			),
 	}
