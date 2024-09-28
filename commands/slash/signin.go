@@ -320,14 +320,14 @@ func signinMessage(userID string, signinType signin.Type, ctx ddtrace.SpanContex
 	// Get total signins and signins for type
 	totalSignins, err := data.Signin.GetSignins(userID, span.Context())
 	if err != nil {
-		logging.Error(nil, err.Error(), nil, span)
+		logging.Error(nil, err.Error()+": Error happened in GetSignins function", nil, span, logrus.Fields{"userID": userID, "signinType": signinType})
 		return fmt.Sprintf("You have sucessfully signed in for **%s**!", signinType)
 	}
 
 	// Get total signins and signins for type
 	signins, err := data.Signin.GetSigninsByType(userID, signinType, span.Context())
 	if err != nil {
-		logging.Error(nil, err.Error(), nil, span)
+		logging.Error(nil, err.Error()+": Error happened in GetSigninsByType function", nil, span, logrus.Fields{"userID": userID, "signinType": signinType})
 		return fmt.Sprintf("You have sucessfully signed in for **%s**!\nYou have:\n\tTotal Signins: %d", signinType, totalSignins)
 	}
 
