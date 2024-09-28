@@ -79,6 +79,10 @@ func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 							Value: "Wireless",
 						},
 						{
+							Name:  "Mentorship",
+							Value: "Mentorship",
+						},
+						{
 							Name:  "WiCyS",
 							Value: "WiCyS",
 						},
@@ -134,6 +138,8 @@ func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				entSigninType = signin.TypeWiCyS
 			case "Vulnerability Research":
 				entSigninType = signin.TypeVulnerabilityResearch
+			case "Mentorship":
+				entSigninType = signin.TypeMentorship
 			case "Other":
 				entSigninType = signin.TypeOther
 			case "All":
