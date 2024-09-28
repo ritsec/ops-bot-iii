@@ -173,6 +173,8 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					entSigninType = signin.TypeWiCyS
 				case "Vulnerability Research":
 					entSigninType = signin.TypeVulnerabilityResearch
+				case "Mentorshipp":
+					entSigninType = signin.TypeMentorship
 				case "Other":
 					entSigninType = signin.TypeOther
 				case "All":
