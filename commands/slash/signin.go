@@ -340,3 +340,38 @@ func signinMessage(userID string, signinType signin.Type, ctx ddtrace.SpanContex
 	// Return full message
 	return fmt.Sprintf("You have sucessfully signed in for **%s**!\nYou have:\n\tTotal Signins: `%d`\n\t%s Signins: `%d`", signinType, totalSignins, signinType, signins)
 }
+
+func Signins() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+	return &discordgo.ApplicationCommand {
+		Name: 		 			  "signins",
+		Description: 			  "Get signing history",
+		DefaultMemberPermissions: &permission.Member,
+	},
+	func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		span := tracer.StartSpan(
+			"commands.slash.signin:Signins",
+			tracer.ResourceName("/signins"),
+		)
+		defer span.Finish()
+
+		logging.Debug(s, "Signings command received", i.Member.User, span)
+
+		err := s.InteractionRespond(
+			i.Interaction,
+			&discordgo.InteractionResponse {
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData {
+					Content: (
+
+					),
+					Flags: discordgo.MessageFlagsEphemeral,
+				},
+			},
+		)
+		if err != nil {
+			logging.Error(s, err.Error(), i.Member.User, span)
+		} else {
+			logging.Debug(s, "Signin History Given", i.Member.User, span)
+		}
+	}
+}
