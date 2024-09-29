@@ -19,21 +19,21 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
-//Signins slash command
-func Signins() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
+//Attendance slash command
+func Attendance() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand {
-		Name: 		 			  "signins",
-		Description: 			  "Get signing history",
+		Name: 		 			  "attendance",
+		Description: 			  "Get signin history",
 		DefaultMemberPermissions: &permission.Member,
 	},
 	func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		span := tracer.StartSpan(
-			"commands.slash.signin:Signins",
-			tracer.ResourceName("/signins"),
+			"commands.slash.attendance:Attendance",
+			tracer.ResourceName("/attendance"),
 		)
 		defer span.Finish()
 
-		logging.Debug(s, "Signings command received", i.Member.User, span)
+		logging.Debug(s, "Attendance command received", i.Member.User, span)
 
 		err := s.InteractionRespond(
 			i.Interaction,
