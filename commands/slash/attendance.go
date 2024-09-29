@@ -40,9 +40,7 @@ func Attendance() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *
 			&discordgo.InteractionResponse {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData {
-					Content: (
-
-					),
+					Content: attendanceMessage(i.Member.User.ID, span.Context())
 					Flags: discordgo.MessageFlagsEphemeral,
 				},
 			},
@@ -135,5 +133,4 @@ func attendanceMessage(userID string, ctx ddtrace.SpanContext) (message string) 
 	}
 
 	return message
-
 }
