@@ -55,7 +55,7 @@ func attendanceMessage(userID string, ctx ddtrace.SpanContext) (message string) 
 	)
 	defer span.Finish()
 
-	message := "**Your Signins:**"
+	message = "**Your Signins:**"
 	signinTypes := [...]string{
 		"General Meeting",
 		"Contagion",
