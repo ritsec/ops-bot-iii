@@ -64,5 +64,59 @@ func attendanceMessage(userID string, ctx ddtrace.SpanContext) string {
 	)
 	defer span.Finish()
 
-	
+	message := "**Your Signins**\n"
+	signinTypes := map[string]int {
+		"General Meeting": 0,
+		"Contagion": 0,
+		"IR": 0,
+		"Ops": 0,
+		"Ops IG": 0,
+		"Red Team": 0,
+		"Red Team Recruiting": 0,
+		"RVAPT": 0,
+		"Reversing": 0,
+		"Physical": 0,
+		"Wireless": 0,
+		"WiCyS": 0,
+		"Vulnerability Research": 0,
+		"Mentorship": 0,
+		"Other": 0
+	}
+
+	for signinType, signinCount := range signinTypes
+
+	var entSigninType signin.Type
+			switch signinType {
+			case "General Meeting":
+				entSigninType = signin.TypeGeneralMeeting
+			case "Contagion":
+				entSigninType = signin.TypeContagion
+			case "IR":
+				entSigninType = signin.TypeIR
+			case "Ops":
+				entSigninType = signin.TypeOps
+			case "Ops IG":
+				entSigninType = signin.TypeOpsIG
+			case "Red Team":
+				entSigninType = signin.TypeRedTeam
+			case "Red Team Recruiting":
+				entSigninType = signin.TypeRedTeamRecruiting
+			case "RVAPT":
+				entSigninType = signin.TypeRVAPT
+			case "Reversing":
+				entSigninType = signin.TypeReversing
+			case "Physical":
+				entSigninType = signin.TypePhysical
+			case "Wireless":
+				entSigninType = signin.TypeWireless
+			case "WiCyS":
+				entSigninType = signin.TypeWiCyS
+			case "Vulnerability Research":
+				entSigninType = signin.TypeVulnerabilityResearch
+			case "Mentorship":
+				entSigninType = signin.TypeMentorship
+			case "Other":
+				entSigninType = signin.TypeOther
+			}
+
 }
