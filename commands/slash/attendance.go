@@ -56,7 +56,7 @@ func Attendance() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *
 }
 
 //returns the message sent to the user by the Attendance command
-func attendanceMessage(userID string, ctx ddtrace.SpanContext) string {
+func attendanceMessage(userID string, ctx ddtrace.SpanContext) (message string) {
 	span := tracer.StartSpan(
 		"commands.slash.attendance:attendanceMessage",
 		tracer.ResourceName("/attendance:attendanceMessage"),
@@ -64,28 +64,34 @@ func attendanceMessage(userID string, ctx ddtrace.SpanContext) string {
 	)
 	defer span.Finish()
 
-	message := "**Your Signins**\n"
-	signinTypes := map[string]int {
-		"General Meeting": 0,
-		"Contagion": 0,
-		"IR": 0,
-		"Ops": 0,
-		"Ops IG": 0,
-		"Red Team": 0,
-		"Red Team Recruiting": 0,
-		"RVAPT": 0,
-		"Reversing": 0,
-		"Physical": 0,
-		"Wireless": 0,
-		"WiCyS": 0,
-		"Vulnerability Research": 0,
-		"Mentorship": 0,
-		"Other": 0
+	message := "**Your Signins:**"
+	signinTypes := [...]string{
+		"General Meeting",
+		"Contagion",
+		"IR",
+		"Ops",
+		"Ops IG",
+		"Red Team",
+		"Red Team Recruiting",
+		"RVAPT",
+		"Reversing",
+		"Physical",
+		"Wireless",
+		"WiCyS",
+		"Vulnerability Research",
+		"Mentorship",
+		"Other",
 	}
 
-	for signinType, signinCount := range signinTypes
+	totalSignins, err := data.Signin.GetSignins(userID, span.Context())
+	if err != nil {
+		logging.Error(nil, err.Error(), nil, span)
+		totalSignins = 0
+	}
+	message += fmt.Sprintf("\n\tTotal Signins: `%d`", totalSignins)
 
-	var entSigninType signin.Type
+	for _, signinType := range signinTypes {
+		var entSigninType signin.Type
 			switch signinType {
 			case "General Meeting":
 				entSigninType = signin.TypeGeneralMeeting
@@ -118,5 +124,16 @@ func attendanceMessage(userID string, ctx ddtrace.SpanContext) string {
 			case "Other":
 				entSigninType = signin.TypeOther
 			}
+		signins, err := data.Signin.GetSigninsByType(userID, entSigninType, span.Context())
+		if err != nil {
+			logging.Error(nil, err.Error(), nil, span)
+			signins = 0
+		}
+		if signins != 0 {
+			message += fmt.Sprintf("\n\t%s: `%d`", signinType, signins)
+		}
+	}
+
+	return message
 
 }
