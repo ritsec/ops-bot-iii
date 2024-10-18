@@ -1,15 +1,9 @@
 package slash
 
 import (
-	"fmt"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
-	"github.com/ritsec/ops-bot-iii/data"
-	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/logging"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
-	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 //Attendanceof slash command
@@ -34,7 +28,7 @@ func Attendanceof() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i
 		)
 		defer span.Finish()
 
-		u := i.ApplicationCommandData().Options[0].userValue(s)
+		u := i.ApplicationCommandData().Options[0].UserValue(s)
 
 		logging.Debug(s, "Attendanceof command received for " + u.Username, i.Member.User, span)
 
