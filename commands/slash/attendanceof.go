@@ -3,7 +3,8 @@ package slash
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
-	"github.com/ritsec/ops-bot-iii/logging"
+	"github.com/ritsec/ops-bot-iii/logging"	
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 //Attendanceof slash command
