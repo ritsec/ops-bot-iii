@@ -65,7 +65,7 @@ func attendanceofMessage(u *discordgo.User, ctx ddtrace.SpanContext) (message st
 	)
 	defer span.Finish()
 
-	message = ("**" + u.Username + "Signins:**")
+	message = ("**Signins for " + u.Username + "**")
 	signinTypes := [...]string{
 		"General Meeting",
 		"Contagion",
