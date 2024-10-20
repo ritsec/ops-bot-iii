@@ -57,7 +57,7 @@ func Attendanceof() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i
 }
 
 //returns the message sent to the user by the Attendanceof command
-func attendanceofMessage(u discordgo.User, ctx ddtrace.SpanContext) (message string) {
+func attendanceofMessage(u *discordgo.User, ctx ddtrace.SpanContext) (message string) {
 	span := tracer.StartSpan(
 		"commands.slash.attendanceof:attendanceofMessage",
 		tracer.ResourceName("/attendanceof:attendanceofMessage"),
