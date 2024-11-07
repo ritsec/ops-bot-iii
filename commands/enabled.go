@@ -33,6 +33,8 @@ func populateSlashCommands(ctx ddtrace.SpanContext) {
 	SlashCommands["scoreboard"] = slash.Scoreboard
 	SlashCommands["birthday"] = slash.Birthday
 	SlashCommands["dquery"] = slash.DQuery
+	SlashCommands["attendance"] = slash.Attendance
+	SlashCommands["attendanceof"] = slash.Attendanceof
 }
 
 // populateHandlers populates the Handlers map with all of the handlers

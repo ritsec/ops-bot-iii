@@ -83,6 +83,7 @@ const (
 	TypeOps                   Type = "Ops"
 	TypeOpsIG                 Type = "Ops IG"
 	TypeVulnerabilityResearch Type = "Vulnerability Research"
+	TypeMentorship            Type = "Mentorship"
 	TypeOther                 Type = "Other"
 )
 
@@ -93,7 +94,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeGeneralMeeting, TypeRedTeam, TypeRedTeamRecruiting, TypeReversing, TypeRVAPT, TypeContagion, TypePhysical, TypeWireless, TypeIR, TypeWiCyS, TypeOps, TypeOpsIG, TypeVulnerabilityResearch, TypeOther:
+	case TypeGeneralMeeting, TypeRedTeam, TypeRedTeamRecruiting, TypeReversing, TypeRVAPT, TypeContagion, TypePhysical, TypeWireless, TypeIR, TypeWiCyS, TypeOps, TypeOpsIG, TypeVulnerabilityResearch, TypeMentorship, TypeOther:
 		return nil
 	default:
 		return fmt.Errorf("signin: invalid enum value for type field: %q", _type)

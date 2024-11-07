@@ -84,6 +84,10 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 							Value: "WiCyS",
 						},
 						{
+							Name:  "Mentorship",
+							Value: "Mentorship",
+						},
+						{
 							Name:  "Other",
 							Value: "Other",
 						},
@@ -138,6 +142,8 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				entSigninType = signin.TypeWiCyS
 			case "Vulnerability Research":
 				entSigninType = signin.TypeVulnerabilityResearch
+			case "Mentorship":
+				entSigninType = signin.TypeMentorship
 			case "Other":
 				entSigninType = signin.TypeOther
 			}
