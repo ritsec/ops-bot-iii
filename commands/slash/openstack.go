@@ -44,14 +44,10 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 
 			ssOption := i.ApplicationCommandData().Options[0].StringValue()
 
-			// err := helpers.SourceOpenRC()
-			err := helpers.DebugSourceOpenRC(s, i.Member.User, span)
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span)
-			}
+			helpers.SetOpenstackRC()
 
 			// CHECK IF USER IS DM'ABLE
-			err = helpers.SendDirectMessage(s, i.Member.User.ID, "Checking to see if your DMs are open... your openstack account username and password will be sent here!", span.Context())
+			err := helpers.SendDirectMessage(s, i.Member.User.ID, "Checking to see if your DMs are open... your openstack account username and password will be sent here!", span.Context())
 			if err != nil {
 				logging.Debug(s, "User's DMs are not open", i.Member.User, span)
 				err = s.InteractionRespond(
@@ -101,6 +97,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 			}
 
 			if ssOption == "Create" {
+				// USER TRYING TO CREATE ACCOUNT WHEN ALREADY HAS ONE
 				if exists {
 					logging.Debug(s, "User already has an openstack account and is trying to create one", i.Member.User, span)
 					err = s.InteractionRespond(
