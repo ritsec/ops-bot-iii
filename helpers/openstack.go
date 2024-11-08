@@ -2,9 +2,41 @@ package helpers
 
 import (
 	"bytes"
+	"io"
 	"os/exec"
 	"strings"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
+
+func DebugCreate(s *discordgo.Session, user *discordgo.User, span ddtrace.Span, email string) (username string, password string, error error) {
+	createCmd := exec.Command("/root/automated_new_member.sh", email)
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	createCmd.Stdout = stdout
+	createCmd.Stderr = stderr
+
+	combinedOutput := &bytes.Buffer{}
+	createCmd.Stdout = io.MultiWriter(stdout, combinedOutput)
+	createCmd.Stderr = io.MultiWriter(stderr, combinedOutput)
+
+	err := createCmd.Run()
+	if err != nil {
+		logging.Error(s, combinedOutput.String(), user, span)
+		return "", "", err
+	}
+
+	logging.Debug(s, combinedOutput.String(), user, span)
+	output := strings.Fields(stdout.String())
+
+	username = output[0]
+	password = output[1]
+
+	return username, password, nil
+}
 
 func Create(email string) (username string, password string, error error) {
 	createCmd := exec.Command("/root/automated_new_member.sh", email)
