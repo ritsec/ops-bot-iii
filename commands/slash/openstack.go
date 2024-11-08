@@ -119,7 +119,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 				}
 
 				// CREATE THE ACCOUNT
-				username, password, err := helpers.DebugCreate(s, i.Member.User, span, email)
+				username, password, err := helpers.Create(email)
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span)
 					return

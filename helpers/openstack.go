@@ -2,12 +2,10 @@ package helpers
 
 import (
 	"bytes"
-	"io"
 	"os/exec"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/ritsec/ops-bot-iii/logging"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 )
 
@@ -19,17 +17,11 @@ func DebugCreate(s *discordgo.Session, user *discordgo.User, span ddtrace.Span, 
 	createCmd.Stdout = stdout
 	createCmd.Stderr = stderr
 
-	combinedOutput := &bytes.Buffer{}
-	createCmd.Stdout = io.MultiWriter(stdout, combinedOutput)
-	createCmd.Stderr = io.MultiWriter(stderr, combinedOutput)
-
-	err := createCmd.Run()
+	err := createCmd.Start()
 	if err != nil {
-		logging.Error(s, combinedOutput.String(), user, span)
 		return "", "", err
 	}
 
-	logging.Debug(s, combinedOutput.String(), user, span)
 	output := strings.Fields(stdout.String())
 
 	username = output[0]
@@ -46,7 +38,11 @@ func Create(email string) (username string, password string, error error) {
 	createCmd.Stdout = stdout
 	createCmd.Stderr = stderr
 
-	err := createCmd.Run()
+	err := createCmd.Start()
+	if err != nil {
+		return "", "", err
+	}
+	err = createCmd.Wait()
 	if err != nil {
 		return "", "", err
 	}
