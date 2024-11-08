@@ -7,7 +7,7 @@ import (
 )
 
 func Create(email string) (username string, password string, error error) {
-	createCmd := exec.Command("root/automated_new_member.sh", email)
+	createCmd := exec.Command("/root/automated_new_member.sh", email)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -27,7 +27,7 @@ func Create(email string) (username string, password string, error error) {
 }
 
 func Reset(email string) (username string, password string, error error) {
-	resetCmd := exec.Command("root/automated_reset_password.sh", email)
+	resetCmd := exec.Command("/root/automated_reset_password.sh", email)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -47,7 +47,7 @@ func Reset(email string) (username string, password string, error error) {
 }
 
 func CheckIfExists(email string) (result bool, error error) {
-	resetCmd := exec.Command("root/automated_check_if_exists.sh", email)
+	resetCmd := exec.Command("/root/automated_check_if_exists.sh", email)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
