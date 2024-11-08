@@ -2,6 +2,7 @@ package helpers
 
 import "github.com/ritsec/ops-bot-iii/ent/signin"
 
+//Converts signin type string to signin type
 func StringToType(signinString string) signin.Type {
 	var entSigninType signin.Type
 	switch signinString {
@@ -41,7 +42,7 @@ func StringToType(signinString string) signin.Type {
 	return entSigninType
 }
 
-
+//Return array of all signin types (update return array length)
 func SigninTypeArray() [15]string {
 	return [...]string{
 		"General Meeting",
