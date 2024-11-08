@@ -167,3 +167,19 @@ func (*user_s) GetVerificationAttempts(id string, ctx ddtrace.SpanContext) (int,
 
 	return int(entUser.VerificationAttempts), nil
 }
+
+func (*user_s) GetEmail(id string, ctx ddtrace.SpanContext) (string, error) {
+	span := tracer.StartSpan(
+		"data.user:GetEmail",
+		tracer.ResourceName("Data.User.GetEmail"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	entUser, err := User.Get(id, span.Context())
+	if err != nil {
+		return "", err
+	}
+
+	return entUser.Email, nil
+}
