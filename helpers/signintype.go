@@ -35,6 +35,8 @@ func StringToType(signinString string) signin.Type {
 		entSigninType = signin.TypeMentorship
 	case "Other":
 		entSigninType = signin.TypeOther
+	case "All":
+		entSigninType = "All"
 	}
 	return entSigninType
 }
