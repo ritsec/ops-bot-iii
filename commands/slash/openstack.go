@@ -13,7 +13,7 @@ import (
 
 func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
-			Name:                     "openstack self service",
+			Name:                     "openstack",
 			Description:              "Create or reset your openstack account",
 			DefaultMemberPermissions: &permission.Member,
 			Options: []*discordgo.ApplicationCommandOption{
