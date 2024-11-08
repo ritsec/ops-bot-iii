@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func Create(email string) (error error, username string, password string) {
+func Create(email string) (username string, password string, error error) {
 	createCmd := exec.Command("root/automated_new_member.sh", email)
 
 	stdout := &bytes.Buffer{}
@@ -16,17 +16,17 @@ func Create(email string) (error error, username string, password string) {
 
 	err := createCmd.Run()
 	if err != nil {
-		return err, "", ""
+		return "", "", err
 	}
 	output := strings.Fields(stdout.String())
 
 	username = output[0]
 	password = output[1]
 
-	return nil, username, password
+	return username, password, nil
 }
 
-func Reset(email string) (error error, username string, password string) {
+func Reset(email string) (username string, password string, error error) {
 	resetCmd := exec.Command("root/automated_reset_password.sh", email)
 
 	stdout := &bytes.Buffer{}
@@ -36,18 +36,18 @@ func Reset(email string) (error error, username string, password string) {
 
 	err := resetCmd.Run()
 	if err != nil {
-		return err, "", ""
+		return "", "", err
 	}
 	output := strings.Fields(stdout.String())
 
 	username = output[0]
 	password = output[1]
 
-	return nil, username, password
+	return username, password, nil
 }
 
-func CheckIfExists(email string) (error error, result bool) {
-	resetCmd := exec.Command("root/automated_reset_password.sh", email)
+func CheckIfExists(email string) (result bool, error error) {
+	resetCmd := exec.Command("root/automated_check_if_exists.sh", email)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -56,13 +56,13 @@ func CheckIfExists(email string) (error error, result bool) {
 
 	err := resetCmd.Run()
 	if err != nil {
-		return err, false
+		return false, err
 	}
 	output := stdout.String()
 
 	if output == "1" {
-		return nil, true
+		return true, nil
 	} else {
-		return nil, false
+		return false, nil
 	}
 }
