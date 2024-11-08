@@ -66,3 +66,16 @@ func CheckIfExists(email string) (result bool, error error) {
 		return false, nil
 	}
 }
+
+func SourceOpenRC() error {
+	sourceCmd := exec.Command("source", "/root/ops-openrc.sh")
+
+	stderr := &bytes.Buffer{}
+	sourceCmd.Stderr = stderr
+
+	err := sourceCmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
