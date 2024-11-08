@@ -8,7 +8,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/data"
-	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
@@ -145,41 +144,7 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 					}
 				}
 
-				var entSigninType signin.Type
-				switch signinType {
-				case "General Meeting":
-					entSigninType = signin.TypeGeneralMeeting
-				case "Contagion":
-					entSigninType = signin.TypeContagion
-				case "IR":
-					entSigninType = signin.TypeIR
-				case "Ops":
-					entSigninType = signin.TypeOps
-				case "Ops IG":
-					entSigninType = signin.TypeOpsIG
-				case "Red Team":
-					entSigninType = signin.TypeRedTeam
-				case "Red Team Recruiting":
-					entSigninType = signin.TypeRedTeamRecruiting
-				case "RVAPT":
-					entSigninType = signin.TypeRVAPT
-				case "Reversing":
-					entSigninType = signin.TypeReversing
-				case "Physical":
-					entSigninType = signin.TypePhysical
-				case "Wireless":
-					entSigninType = signin.TypeWireless
-				case "WiCyS":
-					entSigninType = signin.TypeWiCyS
-				case "Vulnerability Research":
-					entSigninType = signin.TypeVulnerabilityResearch
-				case "Mentorship":
-					entSigninType = signin.TypeMentorship
-				case "Other":
-					entSigninType = signin.TypeOther
-				case "All":
-					entSigninType = "All"
-				}
+				entSigninType := helpers.StringToType(signinType)
 
 				signins, err := data.Signin.Query(
 					time.Duration(hours)*time.Hour+time.Duration(days)*24*time.Hour+time.Duration(weeks)*7*24*time.Hour,

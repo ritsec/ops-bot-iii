@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/data"
-	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -66,23 +66,7 @@ func attendanceofMessage(u *discordgo.User, ctx ddtrace.SpanContext) (message st
 	defer span.Finish()
 
 	message = ("**Signins for " + u.Username + "**")
-	signinTypes := [...]string{
-		"General Meeting",
-		"Contagion",
-		"IR",
-		"Ops",
-		"Ops IG",
-		"Red Team",
-		"Red Team Recruiting",
-		"RVAPT",
-		"Reversing",
-		"Physical",
-		"Wireless",
-		"WiCyS",
-		"Vulnerability Research",
-		"Mentorship",
-		"Other",
-	}
+	signinTypes := helpers.SigninTypeArray()
 
 	totalSignins, err := data.Signin.GetSignins(u.ID, span.Context())
 	if err != nil {
@@ -92,39 +76,7 @@ func attendanceofMessage(u *discordgo.User, ctx ddtrace.SpanContext) (message st
 	message += fmt.Sprintf("\n\tTotal Signins: `%d`", totalSignins)
 
 	for _, signinType := range signinTypes {
-		var entSigninType signin.Type
-			switch signinType {
-			case "General Meeting":
-				entSigninType = signin.TypeGeneralMeeting
-			case "Contagion":
-				entSigninType = signin.TypeContagion
-			case "IR":
-				entSigninType = signin.TypeIR
-			case "Ops":
-				entSigninType = signin.TypeOps
-			case "Ops IG":
-				entSigninType = signin.TypeOpsIG
-			case "Red Team":
-				entSigninType = signin.TypeRedTeam
-			case "Red Team Recruiting":
-				entSigninType = signin.TypeRedTeamRecruiting
-			case "RVAPT":
-				entSigninType = signin.TypeRVAPT
-			case "Reversing":
-				entSigninType = signin.TypeReversing
-			case "Physical":
-				entSigninType = signin.TypePhysical
-			case "Wireless":
-				entSigninType = signin.TypeWireless
-			case "WiCyS":
-				entSigninType = signin.TypeWiCyS
-			case "Vulnerability Research":
-				entSigninType = signin.TypeVulnerabilityResearch
-			case "Mentorship":
-				entSigninType = signin.TypeMentorship
-			case "Other":
-				entSigninType = signin.TypeOther
-			}
+		entSigninType := helpers.StringToType(signinType)
 		signins, err := data.Signin.GetSigninsByType(u.ID, entSigninType, span.Context())
 		if err != nil {
 			logging.Error(nil, err.Error(), nil, span)

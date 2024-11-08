@@ -8,7 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/data"
-	"github.com/ritsec/ops-bot-iii/ent/signin"
+	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -110,41 +110,7 @@ func DQuery() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			signinType := i.ApplicationCommandData().Options[0].StringValue()
 			dateRequested := i.ApplicationCommandData().Options[1].StringValue()
 
-			var entSigninType signin.Type
-			switch signinType {
-			case "General Meeting":
-				entSigninType = signin.TypeGeneralMeeting
-			case "Contagion":
-				entSigninType = signin.TypeContagion
-			case "IR":
-				entSigninType = signin.TypeIR
-			case "Ops":
-				entSigninType = signin.TypeOps
-			case "Ops IG":
-				entSigninType = signin.TypeOpsIG
-			case "Red Team":
-				entSigninType = signin.TypeRedTeam
-			case "Red Team Recruiting":
-				entSigninType = signin.TypeRedTeamRecruiting
-			case "RVAPT":
-				entSigninType = signin.TypeRVAPT
-			case "Reversing":
-				entSigninType = signin.TypeReversing
-			case "Physical":
-				entSigninType = signin.TypePhysical
-			case "Wireless":
-				entSigninType = signin.TypeWireless
-			case "WiCyS":
-				entSigninType = signin.TypeWiCyS
-			case "Vulnerability Research":
-				entSigninType = signin.TypeVulnerabilityResearch
-			case "Mentorship":
-				entSigninType = signin.TypeMentorship
-			case "Other":
-				entSigninType = signin.TypeOther
-			case "All":
-				entSigninType = "All"
-			}
+			entSigninType := helpers.StringToType(signinType)
 
 			// Parsing the date as time.Time
 			dateToQuery, err := time.Parse("2006-01-02", dateRequested)
