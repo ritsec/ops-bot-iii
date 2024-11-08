@@ -68,7 +68,7 @@ func CheckIfExists(email string) (result bool, error error) {
 }
 
 func SourceOpenRC() error {
-	sourceCmd := exec.Command("sh", "-c", "source /root/ops-openrc.sh")
+	sourceCmd := exec.Command("bash", "-c", "source /root/ops-openrc.sh")
 
 	stderr := &bytes.Buffer{}
 	sourceCmd.Stderr = stderr
