@@ -166,8 +166,6 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 					return
 				}
 			} else {
-				// GRACEFULLY CLOSE
-				logging.Error(s, "User somehow got here?", i.Member.User, span)
 				return
 			}
 		}
