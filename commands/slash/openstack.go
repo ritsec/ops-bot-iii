@@ -44,7 +44,8 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 
 			ssOption := i.ApplicationCommandData().Options[0].StringValue()
 
-			err := helpers.SourceOpenRC()
+			// err := helpers.SourceOpenRC()
+			err := helpers.DebugSourceOpenRC(s, i.Member.User, span)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
 			}
@@ -93,7 +94,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 			}
 
 			// CHECK IF USER EXISTS ON OPENSTACK ALREADY
-			exists, err := helpers.CheckIfExists(email)
+			exists, err := helpers.DebugCheckIfExists(s, i.Member.User, span, email)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
 				return
@@ -119,7 +120,8 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 				}
 
 				// CREATE THE ACCOUNT
-				username, password, err := helpers.Create(email)
+				// username, password, err := helpers.Create(email)
+				username, password, err := helpers.DebugCreate(s, i.Member.User, span, email)
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span)
 					return
