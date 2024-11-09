@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -127,11 +126,9 @@ func DebugCheckIfExists(s *discordgo.Session, user *discordgo.User, span ddtrace
 	}
 
 	logging.Debug(s, combinedOutput.String(), user, span)
-	logging.Debug(s, fmt.Sprintf("combinedOutput type: %T", combinedOutput.String()), user, span)
-	output := stdout.String()
-	logging.Debug(s, fmt.Sprintf("Output type: %T", output), user, span)
+	output := strings.TrimSpace(stdout.String())
 
-	if string(output) == "0" {
+	if output == "0" {
 		return false, nil
 	} else {
 		return true, nil
