@@ -106,7 +106,7 @@ func Reset(email string) (username string, password string, error error) {
 }
 
 func DebugCheckIfExists(s *discordgo.Session, user *discordgo.User, span ddtrace.Span, email string) (result bool, error error) {
-	checkIfExistsCmd := exec.Command(reset_password, email)
+	checkIfExistsCmd := exec.Command(check_if_exists, email)
 
 	logging.Debug(s, checkIfExistsCmd.String(), user, span)
 
