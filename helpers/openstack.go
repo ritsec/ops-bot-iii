@@ -128,10 +128,10 @@ func DebugCheckIfExists(s *discordgo.Session, user *discordgo.User, span ddtrace
 	logging.Debug(s, combinedOutput.String(), user, span)
 	output := stdout.String()
 
-	if output == "1" {
-		return true, nil
-	} else {
+	if output == "0" {
 		return false, nil
+	} else {
+		return true, nil
 	}
 }
 

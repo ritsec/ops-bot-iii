@@ -91,6 +91,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 
 			// CHECK IF USER EXISTS ON OPENSTACK ALREADY
 			exists, err := helpers.DebugCheckIfExists(s, i.Member.User, span, email)
+			logging.Debug(s, fmt.Sprintf("Email: %s\nExists: %t", email, exists), i.Member.User, span)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
 				return
@@ -126,6 +127,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 
 				// SEND THE USERNAME AND PASSWORD TO THE USER VIA DM
 				message := fmt.Sprintf("Thank you for reaching out to us!\nHere are your credentials for RITSEC's Openstack:\n\nUsername: %s\nTemporary Password: %s\n\nPlease change the password\nOpenstack link: stack.ritsec.cloud", username, password)
+				logging.Debug(s, "Sent username and password to member", i.Member.User, span)
 				err = helpers.SendDirectMessage(s, i.Member.User.ID, message, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span)
