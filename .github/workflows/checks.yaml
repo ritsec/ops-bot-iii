@@ -15,6 +15,8 @@ jobs:
         with:
           go-version: '1.23.0'
           cache: false
+      - name: Go get
+        run: go get -t -v ./...
       - name: Compile
         run: go build main.go
       - name: Unit Tests
