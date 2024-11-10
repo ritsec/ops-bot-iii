@@ -20,7 +20,7 @@ var (
 func init() {
 	if OBIIIConfig.OpenstackEnabled {
 		ctx := context.Background()
-		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"))
+		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
 		if err != nil {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
