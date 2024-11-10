@@ -114,10 +114,6 @@ func mailgun() structs.MailGunConfig {
 	}
 }
 
-func openstack() {
-
-}
-
 // SetLoggingLevel sets the logging level
 func SetLoggingLevel(level string) {
 	viper.Set("logging.level", level)
