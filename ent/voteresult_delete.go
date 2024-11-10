@@ -27,7 +27,7 @@ func (vrd *VoteResultDelete) Where(ps ...predicate.VoteResult) *VoteResultDelete
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (vrd *VoteResultDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks[int, VoteResultMutation](ctx, vrd.sqlExec, vrd.mutation, vrd.hooks)
+	return withHooks(ctx, vrd.sqlExec, vrd.mutation, vrd.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.

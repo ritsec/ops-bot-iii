@@ -34,10 +34,26 @@ func (su *ShitpostUpdate) SetChannelID(s string) *ShitpostUpdate {
 	return su
 }
 
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (su *ShitpostUpdate) SetNillableChannelID(s *string) *ShitpostUpdate {
+	if s != nil {
+		su.SetChannelID(*s)
+	}
+	return su
+}
+
 // SetCount sets the "count" field.
 func (su *ShitpostUpdate) SetCount(i int) *ShitpostUpdate {
 	su.mutation.ResetCount()
 	su.mutation.SetCount(i)
+	return su
+}
+
+// SetNillableCount sets the "count" field if the given value is not nil.
+func (su *ShitpostUpdate) SetNillableCount(i *int) *ShitpostUpdate {
+	if i != nil {
+		su.SetCount(*i)
+	}
 	return su
 }
 
@@ -79,7 +95,7 @@ func (su *ShitpostUpdate) ClearUser() *ShitpostUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *ShitpostUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, ShitpostMutation](ctx, su.sqlSave, su.mutation, su.hooks)
+	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -190,10 +206,26 @@ func (suo *ShitpostUpdateOne) SetChannelID(s string) *ShitpostUpdateOne {
 	return suo
 }
 
+// SetNillableChannelID sets the "channel_id" field if the given value is not nil.
+func (suo *ShitpostUpdateOne) SetNillableChannelID(s *string) *ShitpostUpdateOne {
+	if s != nil {
+		suo.SetChannelID(*s)
+	}
+	return suo
+}
+
 // SetCount sets the "count" field.
 func (suo *ShitpostUpdateOne) SetCount(i int) *ShitpostUpdateOne {
 	suo.mutation.ResetCount()
 	suo.mutation.SetCount(i)
+	return suo
+}
+
+// SetNillableCount sets the "count" field if the given value is not nil.
+func (suo *ShitpostUpdateOne) SetNillableCount(i *int) *ShitpostUpdateOne {
+	if i != nil {
+		suo.SetCount(*i)
+	}
 	return suo
 }
 
@@ -248,7 +280,7 @@ func (suo *ShitpostUpdateOne) Select(field string, fields ...string) *ShitpostUp
 
 // Save executes the query and returns the updated Shitpost entity.
 func (suo *ShitpostUpdateOne) Save(ctx context.Context) (*Shitpost, error) {
-	return withHooks[*Shitpost, ShitpostMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
+	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
