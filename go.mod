@@ -2,8 +2,6 @@ module github.com/ritsec/ops-bot-iii
 
 go 1.22
 
-toolchain go1.23.1
-
 require (
 	entgo.io/ent v0.12.1
 	github.com/bwmarrin/discordgo v0.28.1
