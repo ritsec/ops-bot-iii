@@ -20,12 +20,12 @@ var (
 func init() {
 	if OBIIIConfig.OpenstackEnabled {
 		ctx := context.Background()
-		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
+		ao, eo, _, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
 		if err != nil {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
 
-		providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
+		providerClient, err := config.NewProviderClient(ctx, ao)
 		if err != nil {
 			log.Fatalf("Failed to make providerClient with NewProviderClient: %v", err)
 		}
