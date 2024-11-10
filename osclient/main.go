@@ -25,11 +25,9 @@ func init() {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
 
-		log.Printf("Woah: %s", tlsConfig.ServerName)
-
 		providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
 		if err != nil {
-			log.Fatalf("Failed to make providerClient with NewProviderClient: %v", err)
+			log.Fatalf("Failed to make providerClient with NewProviderClient: %v\ntlsConfig: %#v\n", err, tlsConfig)
 		}
 
 		_identityClient, err := openstack.NewIdentityV3(providerClient, eo)
