@@ -22,7 +22,7 @@ func init() {
 	if OBIIIConfig.OpenstackEnabled {
 		log.Print("In the init after bool")
 		ctx := context.Background()
-		ao, eo, tlsConfig, err := clouds.Parse()
+		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"))
 		if err != nil {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
