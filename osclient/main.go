@@ -25,6 +25,8 @@ func init() {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
 
+		tlsConfig.InsecureSkipVerify = true
+
 		providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
 		if err != nil {
 			log.Fatalf("Failed to make providerClient with NewProviderClient: %v\ntlsConfig: %#v\n", err, tlsConfig)
