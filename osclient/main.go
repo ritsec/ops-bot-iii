@@ -18,9 +18,7 @@ var (
 )
 
 func init() {
-	log.Print("In the init before bool")
 	if OBIIIConfig.OpenstackEnabled {
-		log.Print("In the init after bool")
 		ctx := context.Background()
 		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"))
 		if err != nil {
