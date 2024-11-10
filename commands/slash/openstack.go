@@ -44,12 +44,15 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 			defer span.Finish()
 
 			ssOption := i.ApplicationCommandData().Options[0].StringValue()
-			helpers.InitialMessage(s, i, fmt.Sprintf("You ran the /openstack command to %s your account!", strings.ToLower(ssOption)))
+			err := helpers.InitialMessage(s, i, fmt.Sprintf("You ran the /openstack command to %s your account!", strings.ToLower(ssOption)))
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span)
+			}
 
 			// Initialize the environment variables for Openstack CLI
 			helpers.SetOpenstackRC()
 
-			err := helpers.UpdateMessage(s, i, "Checking if your DMs are open...")
+			err = helpers.UpdateMessage(s, i, "Checking if your DMs are open...")
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
 			}
