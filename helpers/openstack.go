@@ -45,9 +45,12 @@ func DebugCreate(s *discordgo.Session, user *discordgo.User, span ddtrace.Span, 
 	createCmd.Stdout = io.MultiWriter(stdout, combinedOutput)
 	createCmd.Stderr = io.MultiWriter(stderr, combinedOutput)
 
-	err := createCmd.Run()
+	err := createCmd.Start()
 	if err != nil {
-		logging.Debug(s, combinedOutput.String(), user, span)
+		return "", "", err
+	}
+	err = createCmd.Wait()
+	if err != nil {
 		return "", "", err
 	}
 
@@ -77,8 +80,8 @@ func Create(email string) (username string, password string, error error) {
 	if err != nil {
 		return "", "", err
 	}
-	output := strings.Fields(stdout.String())
 
+	output := strings.Fields(stdout.String())
 	username = output[0]
 	password = output[1]
 
@@ -93,12 +96,16 @@ func Reset(email string) (username string, password string, error error) {
 	resetCmd.Stdout = stdout
 	resetCmd.Stderr = stderr
 
-	err := resetCmd.Run()
+	err := resetCmd.Start()
 	if err != nil {
 		return "", "", err
 	}
-	output := strings.Fields(stdout.String())
+	err = resetCmd.Wait()
+	if err != nil {
+		return "", "", err
+	}
 
+	output := strings.Fields(stdout.String())
 	username = output[0]
 	password = output[1]
 
@@ -136,23 +143,23 @@ func DebugCheckIfExists(s *discordgo.Session, user *discordgo.User, span ddtrace
 }
 
 func CheckIfExists(email string) (result bool, error error) {
-	resetCmd := exec.Command(check_if_exists, email)
+	checkIfExistsCmd := exec.Command(check_if_exists, email)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	resetCmd.Stdout = stdout
-	resetCmd.Stderr = stderr
+	checkIfExistsCmd.Stdout = stdout
+	checkIfExistsCmd.Stderr = stderr
 
-	err := resetCmd.Run()
+	err := checkIfExistsCmd.Run()
 	if err != nil {
 		return false, err
 	}
-	output := stdout.String()
 
-	if output == "1" {
-		return true, nil
-	} else {
+	output := strings.TrimSpace(stdout.String())
+	if output == "0" {
 		return false, nil
+	} else {
+		return true, nil
 	}
 }
 

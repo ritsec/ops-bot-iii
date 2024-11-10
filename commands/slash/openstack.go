@@ -90,7 +90,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 			}
 
 			// CHECK IF USER EXISTS ON OPENSTACK ALREADY
-			exists, err := helpers.DebugCheckIfExists(s, i.Member.User, span, email)
+			exists, err := helpers.CheckIfExists(email)
 			logging.Debug(s, fmt.Sprintf("Email: %s\nExists: %t", email, exists), i.Member.User, span)
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
@@ -118,8 +118,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 				}
 
 				// CREATE THE ACCOUNT
-				// username, password, err := helpers.Create(email)
-				username, password, err := helpers.DebugCreate(s, i.Member.User, span, email)
+				username, password, err := helpers.Create(email)
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span)
 					return
@@ -160,7 +159,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 					return
 				}
 
-				message := fmt.Sprintf("Thank you for reaching out to us!\nHere are your credentials for RITSEC's Openstack:\n\nUsername: %s\nTemporary Password: %s\n\nPlease change the password\nOpenstack link: stack.ritsec.cloud", username, password)
+				message := fmt.Sprintf("Thank you for reaching out to us!\n Here are your credentials for RITSEC's Openstack:\n\nUsername: %s\nTemporary Password: %s\n\nPlease change the password\nOpenstack link: stack.ritsec.cloud", username, password)
 				err = helpers.SendDirectMessage(s, i.Member.User.ID, message, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span)
