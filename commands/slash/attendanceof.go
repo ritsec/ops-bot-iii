@@ -1,9 +1,14 @@
 package slash
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
-	"github.com/ritsec/ops-bot-iii/logging"	
+	"github.com/ritsec/ops-bot-iii/data"
+	"github.com/ritsec/ops-bot-iii/helpers"
+	"github.com/ritsec/ops-bot-iii/logging"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
@@ -38,7 +43,7 @@ func Attendanceof() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i
 			&discordgo.InteractionResponse {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData {
-					Content: attendanceMessage(u.ID, span.Context()),
+					Content: attendanceofMessage(u, span.Context()),
 					Flags: discordgo.MessageFlagsEphemeral,
 				},
 			},
@@ -49,4 +54,38 @@ func Attendanceof() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i
 			logging.Debug(s, "Signin History Given for " + u.Username, i.Member.User, span)
 		}
 	}
+}
+
+//returns the message sent to the user by the Attendanceof command
+func attendanceofMessage(u *discordgo.User, ctx ddtrace.SpanContext) (message string) {
+	span := tracer.StartSpan(
+		"commands.slash.attendanceof:attendanceofMessage",
+		tracer.ResourceName("/attendanceof:attendanceofMessage"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	message = ("**Signins for " + u.Username + "**")
+	signinTypes := helpers.SigninTypeArray()
+
+	totalSignins, err := data.Signin.GetSignins(u.ID, span.Context())
+	if err != nil {
+		logging.Error(nil, err.Error(), nil, span)
+		totalSignins = 0
+	}
+	message += fmt.Sprintf("\n\tTotal Signins: `%d`", totalSignins)
+
+	for _, signinType := range signinTypes {
+		entSigninType := helpers.StringToType(signinType)
+		signins, err := data.Signin.GetSigninsByType(u.ID, entSigninType, span.Context())
+		if err != nil {
+			logging.Error(nil, err.Error(), nil, span)
+			signins = 0
+		}
+		if signins != 0 {
+			message += fmt.Sprintf("\n\t%s: `%d`", signinType, signins)
+		}
+	}
+
+	return message
 }
