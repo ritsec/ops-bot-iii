@@ -33,6 +33,9 @@ var (
 
 	// Environment is the environment the application is running in
 	Environment string
+
+	// Openstack is the boolean option for openstack configuration
+	OpenstackEnabled bool
 )
 
 func init() {
@@ -63,6 +66,7 @@ func UpdateConfigs() {
 	GuildID = viper.GetString("guild_id")
 	ServiceName = viper.GetString("name")
 	Environment = viper.GetString("env")
+	OpenstackEnabled = viper.GetBool("openstack.enabled")
 	Logging = logging()
 	Google = google()
 	Web = web()
@@ -108,6 +112,10 @@ func mailgun() structs.MailGunConfig {
 		APIKey: viper.GetString("mailgun.api_key"),
 		Domain: viper.GetString("mailgun.domain"),
 	}
+}
+
+func openstack() {
+
 }
 
 // SetLoggingLevel sets the logging level

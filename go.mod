@@ -1,6 +1,8 @@
 module github.com/ritsec/ops-bot-iii
 
-go 1.20
+go 1.22
+
+toolchain go1.23.1
 
 require (
 	entgo.io/ent v0.12.1
@@ -15,9 +17,12 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.15.0
 	golang.org/x/oauth2 v0.7.0
+	golang.org/x/text v0.16.0
 	google.golang.org/api v0.121.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.52.0
 )
+
+require gopkg.in/yaml.v2 v2.4.0 // indirect
 
 require (
 	ariga.io/atlas v0.10.0 // indirect
@@ -54,6 +59,8 @@ require (
 	github.com/google/s2a-go v0.1.3 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.8.0 // indirect
+	github.com/gophercloud/gophercloud v1.14.1
+	github.com/gophercloud/gophercloud/v2 v2.2.0
 	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.13.0 // indirect
@@ -93,7 +100,6 @@ require (
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

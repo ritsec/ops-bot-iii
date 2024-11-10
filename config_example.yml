@@ -53,19 +53,5 @@ commands:
     vote:
         url: http(s)://example.com(:port)
 openstack:
-    ENV:
-        OS_AUTH_URL:
-        OS_PROJECT_ID:
-        OS_PROJECT_NAME:
-        OS_USER_DOMAIN_NAME:
-        OS_PROJECT_DOMAIN_ID:
-        OS_USERNAME:
-        OS_PASSWORD:
-        OS_REGION_NAME:
-        OS_INTERFACE:
-        OS_IDENTITY_API_VERSION:
-    # Absolute paths
-    SCRIPTS:
-        new_member:
-        reset_password:
-        check_if_exists:
+    # Must have a clouds.yaml if set to true, otherwise it will crash
+    enabled: false
