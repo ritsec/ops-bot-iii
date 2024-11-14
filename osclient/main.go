@@ -19,17 +19,17 @@ var (
 func init() {
 	if OBIIIConfig.OpenstackEnabled {
 		ctx := context.Background()
-		ao, eo, _, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
+		authOptions, EndpointOpts, _, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
 		if err != nil {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
 
-		pc, err := openstack.AuthenticatedClient(ctx, ao)
+		pc, err := openstack.AuthenticatedClient(ctx, authOptions)
 		if err != nil {
 			log.Fatalf("Failed to make providerClient with AuthenticatedClient: %v", err)
 		}
 
-		_identityClient, err := openstack.NewIdentityV3(pc, eo)
+		_identityClient, err := openstack.NewIdentityV3(pc, EndpointOpts)
 		if err != nil {
 			log.Fatalf("Failed to make _networkClient with NewNetworkV2: %v", err)
 		}
