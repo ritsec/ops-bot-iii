@@ -2,11 +2,21 @@ package osclient
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/users"
 )
+
+// Returns the username portion of the email
+func extractUsername(email string) string {
+	parts := strings.Split(email, "@")
+	if len(parts) > 0 {
+		return strings.ToLower(parts[0])
+	}
+	return ""
+}
 
 func CheckUserExists(email string) (bool, error) {
 	username := extractUsername(email)
@@ -14,8 +24,7 @@ func CheckUserExists(email string) (bool, error) {
 	ctx := context.Background()
 	_, err := users.Get(ctx, identityClient, username).Extract()
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrDefault404); ok {
-			// User not found
+		if errors.Is(err, gophercloud.ErrDefault404{}) {
 			return false, nil
 		}
 		return false, err
@@ -30,15 +39,6 @@ func CheckUserExists(email string) (bool, error) {
 // 	ctx := context.Background()
 
 // }
-
-// Returns the username portion of the email
-func extractUsername(email string) string {
-	parts := strings.Split(email, "@")
-	if len(parts) > 0 {
-		return strings.ToLower(parts[0])
-	}
-	return ""
-}
 
 // Returns a randomly generated password
 // func generateTempPassworod() string {
