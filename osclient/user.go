@@ -2,6 +2,7 @@ package osclient
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
@@ -23,6 +24,7 @@ func CheckUserExists(email string) (bool, error) {
 	ctx := context.Background()
 	_, err := users.Get(ctx, identityClient, username).Extract()
 	if err != nil {
+		log.Printf("%#v", err)
 		if Is(err, 404) {
 			return true, nil
 		}
