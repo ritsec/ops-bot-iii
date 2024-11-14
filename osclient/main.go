@@ -6,7 +6,6 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack"
-	"github.com/gophercloud/gophercloud/v2/openstack/config"
 	"github.com/gophercloud/gophercloud/v2/openstack/config/clouds"
 
 	OBIIIConfig "github.com/ritsec/ops-bot-iii/config"
@@ -25,12 +24,12 @@ func init() {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
 
-		providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
+		pc, err := openstack.AuthenticatedClient(ctx, ao)
 		if err != nil {
-			log.Fatalf("Failed to make providerClient with NewProviderClient: %v\ntlsConfig: %#v\n", err, tlsConfig)
+			log.Fatalf("Failed to make providerClient with AuthenticatedClient: %v", err)
 		}
 
-		_identityClient, err := openstack.NewIdentityV3(providerClient, eo)
+		_identityClient, err := openstack.NewIdentityV3(pc, eo)
 		if err != nil {
 			log.Fatalf("Failed to make _networkClient with NewNetworkV2: %v", err)
 		}
