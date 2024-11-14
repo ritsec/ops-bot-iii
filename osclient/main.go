@@ -6,6 +6,7 @@ import (
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack"
+	"github.com/gophercloud/gophercloud/v2/openstack/config"
 	"github.com/gophercloud/gophercloud/v2/openstack/config/clouds"
 
 	OBIIIConfig "github.com/ritsec/ops-bot-iii/config"
@@ -19,17 +20,17 @@ var (
 func init() {
 	if OBIIIConfig.OpenstackEnabled {
 		ctx := context.Background()
-		authOptions, EndpointOpts, _, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
+		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations("/etc/openstack/clouds.yaml"))
 		if err != nil {
 			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
 		}
 
-		pc, err := openstack.AuthenticatedClient(ctx, authOptions)
+		providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
 		if err != nil {
-			log.Fatalf("Failed to make providerClient with AuthenticatedClient: %v", err)
+			log.Fatalf("Failed to make providerClient with NewProviderClient: %v\ntlsConfig: %#v\n", err, tlsConfig)
 		}
 
-		_identityClient, err := openstack.NewIdentityV3(pc, EndpointOpts)
+		_identityClient, err := openstack.NewIdentityV3(providerClient, eo)
 		if err != nil {
 			log.Fatalf("Failed to make _networkClient with NewNetworkV2: %v", err)
 		}
