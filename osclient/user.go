@@ -23,7 +23,7 @@ func CheckUserExists(email string) (bool, error) {
 	ctx := context.Background()
 	_, err := users.Get(ctx, identityClient, username).Extract()
 	if err != nil {
-		if ue, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok && ue.Actual == 404 {
+		if ue, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok && ue.GetStatusCode() == 404 {
 			// User does not exist
 			return false, nil
 		}
