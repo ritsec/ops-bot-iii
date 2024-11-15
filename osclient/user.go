@@ -24,13 +24,17 @@ func CheckUserExists(email string) (bool, error) {
 	ctx := context.Background()
 	_, err := users.Get(ctx, identityClient, username).Extract()
 	if err != nil {
-		if _, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
-			// User does not exist
-			log.Print("\nInside the assert type\n")
-			return false, nil
-		}
+		ae, ok := err.(gophercloud.ErrUnexpectedResponseCode)
+		log.Printf("\nOk?:%t \n", ok)
+		log.Printf("\nError:%#v \n", ae)
+
+		// if _, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
+		// 	// User does not exist
+		// 	return false, nil
+		// }
 		// A different error happened
-		log.Print("Outside the assert type")
+		log.Print("\nOutside the assert type\n")
+		log.Printf("\nType:%T\n", err)
 		return false, err
 	}
 	// User exists
