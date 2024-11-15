@@ -2,6 +2,7 @@ package osclient
 
 import (
 	"context"
+	"log"
 	"strings"
 
 	"github.com/gophercloud/gophercloud"
@@ -25,9 +26,11 @@ func CheckUserExists(email string) (bool, error) {
 	if err != nil {
 		if _, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
 			// User does not exist
+			log.Print("\nInside the assert type\n")
 			return false, nil
 		}
 		// A different error happened
+		log.Print("Outside the assert type")
 		return false, err
 	}
 	// User exists
