@@ -35,6 +35,7 @@ func CheckUserExists(email string) (bool, error) {
 		// A different error happened
 		log.Print("\nOutside the assert type\n")
 		log.Printf("\nType:%T\n", err)
+		log.Printf("\nType:%#v\n", err)
 		return false, err
 	}
 	// User exists
