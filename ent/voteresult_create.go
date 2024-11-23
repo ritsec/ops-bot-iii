@@ -44,7 +44,7 @@ func (vrc *VoteResultCreate) Mutation() *VoteResultMutation {
 
 // Save creates the VoteResult in the database.
 func (vrc *VoteResultCreate) Save(ctx context.Context) (*VoteResult, error) {
-	return withHooks[*VoteResult, VoteResultMutation](ctx, vrc.sqlSave, vrc.mutation, vrc.hooks)
+	return withHooks(ctx, vrc.sqlSave, vrc.mutation, vrc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -129,11 +129,15 @@ func (vrc *VoteResultCreate) createSpec() (*VoteResult, *sqlgraph.CreateSpec) {
 // VoteResultCreateBulk is the builder for creating many VoteResult entities in bulk.
 type VoteResultCreateBulk struct {
 	config
+	err      error
 	builders []*VoteResultCreate
 }
 
 // Save creates the VoteResult entities in the database.
 func (vrcb *VoteResultCreateBulk) Save(ctx context.Context) ([]*VoteResult, error) {
+	if vrcb.err != nil {
+		return nil, vrcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(vrcb.builders))
 	nodes := make([]*VoteResult, len(vrcb.builders))
 	mutators := make([]Mutator, len(vrcb.builders))

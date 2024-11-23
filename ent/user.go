@@ -75,12 +75,10 @@ func (e UserEdges) ShitpostsOrErr() ([]*Shitpost, error) {
 // BirthdayOrErr returns the Birthday value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e UserEdges) BirthdayOrErr() (*Birthday, error) {
-	if e.loadedTypes[3] {
-		if e.Birthday == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: birthday.Label}
-		}
+	if e.Birthday != nil {
 		return e.Birthday, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: birthday.Label}
 	}
 	return nil, &NotLoadedError{edge: "birthday"}
 }

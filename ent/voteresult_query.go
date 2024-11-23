@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -60,7 +61,7 @@ func (vrq *VoteResultQuery) Order(o ...voteresult.OrderOption) *VoteResultQuery 
 // First returns the first VoteResult entity from the query.
 // Returns a *NotFoundError when no VoteResult was found.
 func (vrq *VoteResultQuery) First(ctx context.Context) (*VoteResult, error) {
-	nodes, err := vrq.Limit(1).All(setContextOp(ctx, vrq.ctx, "First"))
+	nodes, err := vrq.Limit(1).All(setContextOp(ctx, vrq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func (vrq *VoteResultQuery) FirstX(ctx context.Context) *VoteResult {
 // Returns a *NotFoundError when no VoteResult ID was found.
 func (vrq *VoteResultQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vrq.Limit(1).IDs(setContextOp(ctx, vrq.ctx, "FirstID")); err != nil {
+	if ids, err = vrq.Limit(1).IDs(setContextOp(ctx, vrq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -106,7 +107,7 @@ func (vrq *VoteResultQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one VoteResult entity is found.
 // Returns a *NotFoundError when no VoteResult entities are found.
 func (vrq *VoteResultQuery) Only(ctx context.Context) (*VoteResult, error) {
-	nodes, err := vrq.Limit(2).All(setContextOp(ctx, vrq.ctx, "Only"))
+	nodes, err := vrq.Limit(2).All(setContextOp(ctx, vrq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +135,7 @@ func (vrq *VoteResultQuery) OnlyX(ctx context.Context) *VoteResult {
 // Returns a *NotFoundError when no entities are found.
 func (vrq *VoteResultQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vrq.Limit(2).IDs(setContextOp(ctx, vrq.ctx, "OnlyID")); err != nil {
+	if ids, err = vrq.Limit(2).IDs(setContextOp(ctx, vrq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -159,7 +160,7 @@ func (vrq *VoteResultQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of VoteResults.
 func (vrq *VoteResultQuery) All(ctx context.Context) ([]*VoteResult, error) {
-	ctx = setContextOp(ctx, vrq.ctx, "All")
+	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryAll)
 	if err := vrq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -181,7 +182,7 @@ func (vrq *VoteResultQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if vrq.ctx.Unique == nil && vrq.path != nil {
 		vrq.Unique(true)
 	}
-	ctx = setContextOp(ctx, vrq.ctx, "IDs")
+	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryIDs)
 	if err = vrq.Select(voteresult.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -199,7 +200,7 @@ func (vrq *VoteResultQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (vrq *VoteResultQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, vrq.ctx, "Count")
+	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryCount)
 	if err := vrq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -217,7 +218,7 @@ func (vrq *VoteResultQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (vrq *VoteResultQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, vrq.ctx, "Exist")
+	ctx = setContextOp(ctx, vrq.ctx, ent.OpQueryExist)
 	switch _, err := vrq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -449,7 +450,7 @@ func (vrgb *VoteResultGroupBy) Aggregate(fns ...AggregateFunc) *VoteResultGroupB
 
 // Scan applies the selector query and scans the result into the given value.
 func (vrgb *VoteResultGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vrgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, vrgb.build.ctx, ent.OpQueryGroupBy)
 	if err := vrgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -497,7 +498,7 @@ func (vrs *VoteResultSelect) Aggregate(fns ...AggregateFunc) *VoteResultSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (vrs *VoteResultSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vrs.ctx, "Select")
+	ctx = setContextOp(ctx, vrs.ctx, ent.OpQuerySelect)
 	if err := vrs.prepareQuery(ctx); err != nil {
 		return err
 	}
