@@ -55,3 +55,5 @@ commands:
 openstack:
     # Must have a clouds.yaml if set to true, otherwise it will crash
     enabled: false
+    member_id: 
+    clouds_path: 
