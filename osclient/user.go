@@ -2,11 +2,19 @@ package osclient
 
 import (
 	"context"
-	"log"
+	"crypto/md5"
+	"fmt"
+	"math/rand"
 	"strings"
 
-	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/v2"
+	blockstorage "github.com/gophercloud/gophercloud/v2/openstack/blockstorage/v2/quotasets"
+	compute "github.com/gophercloud/gophercloud/v2/openstack/compute/v2/quotasets"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/projects"
+	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/roles"
 	"github.com/gophercloud/gophercloud/v2/openstack/identity/v3/users"
+	network "github.com/gophercloud/gophercloud/v2/openstack/networking/v2/extensions/quotas"
+	OBIIIConfig "github.com/ritsec/ops-bot-iii/config"
 )
 
 // Returns the username portion of the email
@@ -18,54 +26,179 @@ func extractUsername(email string) string {
 	return ""
 }
 
+// Checks to see if the user exists on openstack
 func CheckUserExists(email string) (bool, error) {
 	username := extractUsername(email)
 
 	ctx := context.Background()
-	_, err := users.Get(ctx, identityClient, username).Extract()
-	if err != nil {
-		ae, ok := err.(gophercloud.ErrUnexpectedResponseCode)
-		log.Printf("\nOk?:%t \n", ok)
-		log.Printf("\nError:%#v \n", ae)
 
-		// if _, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
-		// 	// User does not exist
-		// 	return false, nil
-		// }
-		// A different error happened
-		log.Print("\nOutside the assert type\n")
-		log.Printf("\nType:%T\n", err)
-		log.Printf("\nType:%#v\n", err)
+	listOpts := users.ListOpts{
+		DomainID: "default",
+	}
+
+	allPages, err := users.List(identityClient, listOpts).AllPages(ctx)
+	if err != nil {
 		return false, err
 	}
-	// User exists
-	return true, nil
+
+	allUsers, err := users.ExtractUsers(allPages)
+	if err != nil {
+		return false, err
+	}
+
+	for _, user := range allUsers {
+		if user.Name == username {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
-// func Createuser(email string) {
-// 	username := extractUsername(email)
+// Returns a password that should be used temporary to create the account or resetting the account
+func tempPass() string {
+	randomNumber := rand.Int()
+	hash := md5.Sum([]byte(fmt.Sprint(randomNumber)))
+	return fmt.Sprintf("%x", hash)[:24]
+}
 
-// 	ctx := context.Background()
+// Creats the account on openstack and returns username and password for the user to get
+func Create(email string) (string, string, error) {
+	ctx := context.Background()
+	username := extractUsername(email)
 
-// }
+	// Create Project
+	createOpts := projects.CreateOpts{
+		DomainID: "default",
+		Enabled:  gophercloud.Enabled,
+		Name:     username,
+	}
 
-// Returns a randomly generated password
-// func generateTempPassworod() string {
-// 	// Generate random bytes
-// 	b := make([]byte, 16) // 16 bytes = 128 bits
-// 	_, err := io.ReadFull(rand.Reader, b)
-// 	if err != nil {
-// 		panic(err)
-// 	}
+	project, err := projects.Create(ctx, identityClient, createOpts).Extract()
+	if err != nil {
+		return "", "", err
+	}
 
-// 	// Compute MD5 hash
-// 	hash := md5.New()
-// 	hash.Write(b)
-// 	md5sum := hex.EncodeToString(hash.Sum(nil))
+	networkOpts := network.UpdateOpts{
+		FloatingIP:        gophercloud.IntToPointer(0),
+		Network:           gophercloud.IntToPointer(10),
+		Port:              gophercloud.IntToPointer(50),
+		Router:            gophercloud.IntToPointer(1),
+		Subnet:            gophercloud.IntToPointer(20),
+		SecurityGroup:     gophercloud.IntToPointer(10),
+		SecurityGroupRule: gophercloud.IntToPointer(-1),
+	}
 
-// 	// Return first 24 characters of the hash
-// 	if len(md5sum) > 24 {
-// 		return md5sum[:24]
-// 	}
-// 	return md5sum
-// }
+	projectID := project.ID
+	_, err = network.Update(ctx, networkClient, projectID, networkOpts).Extract()
+	if err != nil {
+		return "", "", err
+	}
+
+	quotaOpts := compute.UpdateOpts{
+		InjectedFileContentBytes: gophercloud.IntToPointer(10240),
+		InjectedFilePathBytes:    gophercloud.IntToPointer(255),
+		InjectedFiles:            gophercloud.IntToPointer(5),
+		KeyPairs:                 gophercloud.IntToPointer(10),
+		RAM:                      gophercloud.IntToPointer(51200),
+		Cores:                    gophercloud.IntToPointer(20),
+		Instances:                gophercloud.IntToPointer(10),
+		ServerGroups:             gophercloud.IntToPointer(10),
+		ServerGroupMembers:       gophercloud.IntToPointer(10),
+	}
+
+	_, err = compute.Update(ctx, computeClient, projectID, quotaOpts).Extract()
+	if err != nil {
+		return "", "", err
+	}
+
+	storageOpts := blockstorage.UpdateOpts{
+		Volumes:   gophercloud.IntToPointer(10),
+		Snapshots: gophercloud.IntToPointer(10),
+		Gigabytes: gophercloud.IntToPointer(250),
+	}
+
+	_, err = blockstorage.Update(ctx, storageClient, projectID, storageOpts).Extract()
+	if err != nil {
+		return "", "", err
+	}
+
+	password := tempPass()
+	userOpts := users.CreateOpts{
+		Name:             username,
+		DefaultProjectID: projectID,
+		Description:      "",
+		DomainID:         "default",
+		Enabled:          gophercloud.Enabled,
+		Password:         password,
+		Extra: map[string]any{
+			"email": email,
+		},
+	}
+
+	user, err := users.Create(ctx, identityClient, userOpts).Extract()
+	if err != nil {
+		return "", "", err
+	}
+
+	userID := user.ID
+	err = roles.Assign(ctx, identityClient, OBIIIConfig.Openstack.MemberID, roles.AssignOpts{
+		UserID:    userID,
+		ProjectID: projectID,
+	}).ExtractErr()
+	if err != nil {
+		return "", "", err
+	}
+
+	return username, password, nil
+}
+
+// Resets the account's password and returns the new temporary password for the user to login and change
+func Reset(email string) (string, string, error) {
+	ctx := context.Background()
+
+	userID, err := GetUserID(email)
+	if err != nil {
+		return "", "", err
+	}
+
+	newPassword := tempPass()
+
+	changePasswordOpts := users.UpdateOpts{
+		Password: newPassword,
+	}
+
+	_, err = users.Update(ctx, identityClient, userID, changePasswordOpts).Extract()
+	if err != nil {
+		return "", "", err
+	}
+
+	return extractUsername(email), newPassword, nil
+}
+
+func GetUserID(email string) (string, error) {
+	ctx := context.Background()
+	username := extractUsername(email)
+
+	listOpts := users.ListOpts{
+		DomainID: "default",
+	}
+
+	allPages, err := users.List(identityClient, listOpts).AllPages(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	allUsers, err := users.ExtractUsers(allPages)
+	if err != nil {
+		return "", err
+	}
+
+	for _, user := range allUsers {
+		if user.Name == username {
+			return user.ID, nil
+		}
+	}
+
+	return "", fmt.Errorf("User ID not found")
+}
