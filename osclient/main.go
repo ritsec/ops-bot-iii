@@ -20,40 +20,44 @@ var (
 	computeClient  *gophercloud.ServiceClient
 )
 
+// Init() will make the clients during the compile
 func init() {
-	ctx := context.Background()
-	ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations(OBIIIConfig.Openstack.CloudsPath))
-	if err != nil {
-		log.Fatalf("Failed to parse the clouds.yaml: %v", err)
-	}
+	// Checks to see if the config has the Openstack enabled option enabled
+	if OBIIIConfig.Openstack.Enabled {
+		ctx := context.Background()
+		ao, eo, tlsConfig, err := clouds.Parse(clouds.WithCloudName("openstack"), clouds.WithLocations(OBIIIConfig.Openstack.CloudsPath))
+		if err != nil {
+			log.Fatalf("Failed to parse the clouds.yaml: %v", err)
+		}
 
-	providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
-	if err != nil {
-		log.Fatalf("Failed to make providerClient with NewProviderClient: %v", err)
-	}
+		providerClient, err := config.NewProviderClient(ctx, ao, config.WithTLSConfig(tlsConfig))
+		if err != nil {
+			log.Fatalf("Failed to make providerClient with NewProviderClient: %v", err)
+		}
 
-	_identityClient, err := openstack.NewIdentityV3(providerClient, eo)
-	if err != nil {
-		log.Fatalf("Failed to make _identityClient with NewIdentityV3: %v", err)
-	}
+		_identityClient, err := openstack.NewIdentityV3(providerClient, eo)
+		if err != nil {
+			log.Fatalf("Failed to make _identityClient with NewIdentityV3: %v", err)
+		}
 
-	_networkClient, err := openstack.NewNetworkV2(providerClient, eo)
-	if err != nil {
-		log.Fatalf("Failed to make _networkClient with NewNetworkV2: %v", err)
-	}
+		_networkClient, err := openstack.NewNetworkV2(providerClient, eo)
+		if err != nil {
+			log.Fatalf("Failed to make _networkClient with NewNetworkV2: %v", err)
+		}
 
-	_storageClient, err := openstack.NewBlockStorageV3(providerClient, eo)
-	if err != nil {
-		log.Fatalf("Failed to make _storageClient with NewBlockStorageV3: %v", err)
-	}
+		_storageClient, err := openstack.NewBlockStorageV3(providerClient, eo)
+		if err != nil {
+			log.Fatalf("Failed to make _storageClient with NewBlockStorageV3: %v", err)
+		}
 
-	_computeClient, err := openstack.NewComputeV2(providerClient, eo)
-	if err != nil {
-		log.Fatalf("Failed to make _computeClient with NewComputeV2: %v", err)
-	}
+		_computeClient, err := openstack.NewComputeV2(providerClient, eo)
+		if err != nil {
+			log.Fatalf("Failed to make _computeClient with NewComputeV2: %v", err)
+		}
 
-	identityClient = _identityClient
-	networkClient = _networkClient
-	storageClient = _storageClient
-	computeClient = _computeClient
+		identityClient = _identityClient
+		networkClient = _networkClient
+		storageClient = _storageClient
+		computeClient = _computeClient
+	}
 }
