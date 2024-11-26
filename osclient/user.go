@@ -200,5 +200,5 @@ func GetUserID(email string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("User ID not found")
+	return "", fmt.Errorf("user id not found")
 }
