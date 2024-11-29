@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/user"
 )
 
@@ -40,9 +41,11 @@ type UserEdges struct {
 	Shitposts []*Shitpost `json:"shitposts,omitempty"`
 	// Birthdays of the user
 	Birthday *Birthday `json:"birthday,omitempty"`
+	// Openstacks Info of the user
+	Openstack *Openstack `json:"openstack,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // SigninsOrErr returns the Signins value or an error if the edge
@@ -81,6 +84,17 @@ func (e UserEdges) BirthdayOrErr() (*Birthday, error) {
 		return nil, &NotFoundError{label: birthday.Label}
 	}
 	return nil, &NotLoadedError{edge: "birthday"}
+}
+
+// OpenstackOrErr returns the Openstack value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) OpenstackOrErr() (*Openstack, error) {
+	if e.Openstack != nil {
+		return e.Openstack, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: openstack.Label}
+	}
+	return nil, &NotLoadedError{edge: "openstack"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -164,6 +178,11 @@ func (u *User) QueryShitposts() *ShitpostQuery {
 // QueryBirthday queries the "birthday" edge of the User entity.
 func (u *User) QueryBirthday() *BirthdayQuery {
 	return NewUserClient(u.config).QueryBirthday(u)
+}
+
+// QueryOpenstack queries the "openstack" edge of the User entity.
+func (u *User) QueryOpenstack() *OpenstackQuery {
+	return NewUserClient(u.config).QueryOpenstack(u)
 }
 
 // Update returns a builder for updating this User.

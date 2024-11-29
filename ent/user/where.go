@@ -285,6 +285,29 @@ func HasBirthdayWith(preds ...predicate.Birthday) predicate.User {
 	})
 }
 
+// HasOpenstack applies the HasEdge predicate on the "openstack" edge.
+func HasOpenstack() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, OpenstackTable, OpenstackColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOpenstackWith applies the HasEdge predicate on the "openstack" edge with a given conditions (other predicates).
+func HasOpenstackWith(preds ...predicate.Openstack) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newOpenstackStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(sql.AndPredicates(predicates...))

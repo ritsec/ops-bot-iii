@@ -9,6 +9,9 @@ import (
 // Birthday is the predicate function for birthday builders.
 type Birthday func(*sql.Selector)
 
+// Openstack is the predicate function for openstack builders.
+type Openstack func(*sql.Selector)
+
 // Shitpost is the predicate function for shitpost builders.
 type Shitpost func(*sql.Selector)
 

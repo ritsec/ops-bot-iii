@@ -21,6 +21,18 @@ func (f BirthdayFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BirthdayMutation", m)
 }
 
+// The OpenstackFunc type is an adapter to allow the use of ordinary
+// function as Openstack mutator.
+type OpenstackFunc func(context.Context, *ent.OpenstackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OpenstackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OpenstackMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OpenstackMutation", m)
+}
+
 // The ShitpostFunc type is an adapter to allow the use of ordinary
 // function as Shitpost mutator.
 type ShitpostFunc func(context.Context, *ent.ShitpostMutation) (ent.Value, error)

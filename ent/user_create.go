@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
@@ -133,6 +134,25 @@ func (uc *UserCreate) SetNillableBirthdayID(id *int) *UserCreate {
 // SetBirthday sets the "birthday" edge to the Birthday entity.
 func (uc *UserCreate) SetBirthday(b *Birthday) *UserCreate {
 	return uc.SetBirthdayID(b.ID)
+}
+
+// SetOpenstackID sets the "openstack" edge to the Openstack entity by ID.
+func (uc *UserCreate) SetOpenstackID(id int) *UserCreate {
+	uc.mutation.SetOpenstackID(id)
+	return uc
+}
+
+// SetNillableOpenstackID sets the "openstack" edge to the Openstack entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableOpenstackID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetOpenstackID(*id)
+	}
+	return uc
+}
+
+// SetOpenstack sets the "openstack" edge to the Openstack entity.
+func (uc *UserCreate) SetOpenstack(o *Openstack) *UserCreate {
+	return uc.SetOpenstackID(o.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -309,6 +329,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.OpenstackIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OpenstackTable,
+			Columns: []string{user.OpenstackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(openstack.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

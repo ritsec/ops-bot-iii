@@ -26,6 +26,8 @@ const (
 	EdgeShitposts = "shitposts"
 	// EdgeBirthday holds the string denoting the birthday edge name in mutations.
 	EdgeBirthday = "birthday"
+	// EdgeOpenstack holds the string denoting the openstack edge name in mutations.
+	EdgeOpenstack = "openstack"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// SigninsTable is the table that holds the signins relation/edge.
@@ -56,6 +58,13 @@ const (
 	BirthdayInverseTable = "birthdays"
 	// BirthdayColumn is the table column denoting the birthday relation/edge.
 	BirthdayColumn = "user_birthday"
+	// OpenstackTable is the table that holds the openstack relation/edge.
+	OpenstackTable = "openstacks"
+	// OpenstackInverseTable is the table name for the Openstack entity.
+	// It exists in this package in order to avoid circular dependency with the "openstack" package.
+	OpenstackInverseTable = "openstacks"
+	// OpenstackColumn is the table column denoting the openstack relation/edge.
+	OpenstackColumn = "user_openstack"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -160,6 +169,13 @@ func ByBirthdayField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newBirthdayStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByOpenstackField orders the results by openstack field.
+func ByOpenstackField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOpenstackStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newSigninsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -186,5 +202,12 @@ func newBirthdayStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BirthdayInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, BirthdayTable, BirthdayColumn),
+	)
+}
+func newOpenstackStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OpenstackInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, OpenstackTable, OpenstackColumn),
 	)
 }

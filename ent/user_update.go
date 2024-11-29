@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -144,6 +145,25 @@ func (uu *UserUpdate) SetBirthday(b *Birthday) *UserUpdate {
 	return uu.SetBirthdayID(b.ID)
 }
 
+// SetOpenstackID sets the "openstack" edge to the Openstack entity by ID.
+func (uu *UserUpdate) SetOpenstackID(id int) *UserUpdate {
+	uu.mutation.SetOpenstackID(id)
+	return uu
+}
+
+// SetNillableOpenstackID sets the "openstack" edge to the Openstack entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableOpenstackID(id *int) *UserUpdate {
+	if id != nil {
+		uu = uu.SetOpenstackID(*id)
+	}
+	return uu
+}
+
+// SetOpenstack sets the "openstack" edge to the Openstack entity.
+func (uu *UserUpdate) SetOpenstack(o *Openstack) *UserUpdate {
+	return uu.SetOpenstackID(o.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -215,6 +235,12 @@ func (uu *UserUpdate) RemoveShitposts(s ...*Shitpost) *UserUpdate {
 // ClearBirthday clears the "birthday" edge to the Birthday entity.
 func (uu *UserUpdate) ClearBirthday() *UserUpdate {
 	uu.mutation.ClearBirthday()
+	return uu
+}
+
+// ClearOpenstack clears the "openstack" edge to the Openstack entity.
+func (uu *UserUpdate) ClearOpenstack() *UserUpdate {
+	uu.mutation.ClearOpenstack()
 	return uu
 }
 
@@ -443,6 +469,35 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.OpenstackCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OpenstackTable,
+			Columns: []string{user.OpenstackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(openstack.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.OpenstackIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OpenstackTable,
+			Columns: []string{user.OpenstackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(openstack.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -576,6 +631,25 @@ func (uuo *UserUpdateOne) SetBirthday(b *Birthday) *UserUpdateOne {
 	return uuo.SetBirthdayID(b.ID)
 }
 
+// SetOpenstackID sets the "openstack" edge to the Openstack entity by ID.
+func (uuo *UserUpdateOne) SetOpenstackID(id int) *UserUpdateOne {
+	uuo.mutation.SetOpenstackID(id)
+	return uuo
+}
+
+// SetNillableOpenstackID sets the "openstack" edge to the Openstack entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableOpenstackID(id *int) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetOpenstackID(*id)
+	}
+	return uuo
+}
+
+// SetOpenstack sets the "openstack" edge to the Openstack entity.
+func (uuo *UserUpdateOne) SetOpenstack(o *Openstack) *UserUpdateOne {
+	return uuo.SetOpenstackID(o.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -647,6 +721,12 @@ func (uuo *UserUpdateOne) RemoveShitposts(s ...*Shitpost) *UserUpdateOne {
 // ClearBirthday clears the "birthday" edge to the Birthday entity.
 func (uuo *UserUpdateOne) ClearBirthday() *UserUpdateOne {
 	uuo.mutation.ClearBirthday()
+	return uuo
+}
+
+// ClearOpenstack clears the "openstack" edge to the Openstack entity.
+func (uuo *UserUpdateOne) ClearOpenstack() *UserUpdateOne {
+	uuo.mutation.ClearOpenstack()
 	return uuo
 }
 
@@ -898,6 +978,35 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(birthday.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.OpenstackCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OpenstackTable,
+			Columns: []string{user.OpenstackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(openstack.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.OpenstackIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OpenstackTable,
+			Columns: []string{user.OpenstackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(openstack.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
