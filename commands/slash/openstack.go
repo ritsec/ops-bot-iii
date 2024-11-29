@@ -148,7 +148,10 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 					}
 					// Check if the user has done the reset recently
 					if time.Now().In(tx).Sub(openstack_ent.Timestamp) >= -2*time.Hour && time.Now().In(tx).Sub(openstack_ent.Timestamp) <= 2*time.Hour {
-						helpers.UpdateMessage(s, i, "You have tried to reset too much in the past 2 hours, please wait before trying again!")
+						err = helpers.UpdateMessage(s, i, "You have tried to reset too much in the past 2 hours, please wait before trying again!")
+						if err != nil {
+							logging.Error(s, err.Error(), i.Member.User, span)
+						}
 						return
 					}
 
