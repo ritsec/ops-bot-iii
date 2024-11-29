@@ -3,6 +3,7 @@ package slash
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
@@ -134,6 +135,23 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 						return
 					}
 
+					// Get the user's openstack info
+					openstack_ent, err := data.Openstack.Get(i.Member.User.ID, span.Context())
+					if err != nil {
+						logging.Error(s, err.Error(), i.Member.User, span)
+						return
+					}
+					tx, err := time.LoadLocation("America/New_York")
+					if err != nil {
+						logging.Error(s, err.Error(), i.Member.User, span)
+						return
+					}
+					// Check if the user has done the reset recently
+					if time.Now().In(tx).Sub(openstack_ent.Timestamp) >= -2*time.Hour && time.Now().In(tx).Sub(openstack_ent.Timestamp) <= 2*time.Hour {
+						helpers.UpdateMessage(s, i, "You have tried to reset too much in the past 2 hours, please wait before trying again!")
+						return
+					}
+
 					// Checking if the user is DM'able
 					err = helpers.SendDirectMessage(s, i.Member.User.ID, "Checking to see if your DMs are open... your openstack account username and password will be sent here!", span.Context())
 					if err != nil {
@@ -167,6 +185,13 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 					err = helpers.UpdateMessage(s, i, "Sent the username and password to your DMs, check your DMs!")
 					if err != nil {
 						logging.Error(s, err.Error(), i.Member.User, span)
+					}
+
+					// Update the timestamp for the last reset for the user
+					_, err = data.Openstack.Update(i.Member.User.ID, span.Context())
+					if err != nil {
+						logging.Error(s, err.Error(), i.Member.User, span)
+						return
 					}
 				} else {
 					return
