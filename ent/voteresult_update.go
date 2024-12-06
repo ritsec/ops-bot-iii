@@ -33,15 +33,39 @@ func (vru *VoteResultUpdate) SetHTML(s string) *VoteResultUpdate {
 	return vru
 }
 
+// SetNillableHTML sets the "html" field if the given value is not nil.
+func (vru *VoteResultUpdate) SetNillableHTML(s *string) *VoteResultUpdate {
+	if s != nil {
+		vru.SetHTML(*s)
+	}
+	return vru
+}
+
 // SetPlain sets the "plain" field.
 func (vru *VoteResultUpdate) SetPlain(s string) *VoteResultUpdate {
 	vru.mutation.SetPlain(s)
 	return vru
 }
 
+// SetNillablePlain sets the "plain" field if the given value is not nil.
+func (vru *VoteResultUpdate) SetNillablePlain(s *string) *VoteResultUpdate {
+	if s != nil {
+		vru.SetPlain(*s)
+	}
+	return vru
+}
+
 // SetVoteID sets the "vote_id" field.
 func (vru *VoteResultUpdate) SetVoteID(s string) *VoteResultUpdate {
 	vru.mutation.SetVoteID(s)
+	return vru
+}
+
+// SetNillableVoteID sets the "vote_id" field if the given value is not nil.
+func (vru *VoteResultUpdate) SetNillableVoteID(s *string) *VoteResultUpdate {
+	if s != nil {
+		vru.SetVoteID(*s)
+	}
 	return vru
 }
 
@@ -52,7 +76,7 @@ func (vru *VoteResultUpdate) Mutation() *VoteResultMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (vru *VoteResultUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, VoteResultMutation](ctx, vru.sqlSave, vru.mutation, vru.hooks)
+	return withHooks(ctx, vru.sqlSave, vru.mutation, vru.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -134,15 +158,39 @@ func (vruo *VoteResultUpdateOne) SetHTML(s string) *VoteResultUpdateOne {
 	return vruo
 }
 
+// SetNillableHTML sets the "html" field if the given value is not nil.
+func (vruo *VoteResultUpdateOne) SetNillableHTML(s *string) *VoteResultUpdateOne {
+	if s != nil {
+		vruo.SetHTML(*s)
+	}
+	return vruo
+}
+
 // SetPlain sets the "plain" field.
 func (vruo *VoteResultUpdateOne) SetPlain(s string) *VoteResultUpdateOne {
 	vruo.mutation.SetPlain(s)
 	return vruo
 }
 
+// SetNillablePlain sets the "plain" field if the given value is not nil.
+func (vruo *VoteResultUpdateOne) SetNillablePlain(s *string) *VoteResultUpdateOne {
+	if s != nil {
+		vruo.SetPlain(*s)
+	}
+	return vruo
+}
+
 // SetVoteID sets the "vote_id" field.
 func (vruo *VoteResultUpdateOne) SetVoteID(s string) *VoteResultUpdateOne {
 	vruo.mutation.SetVoteID(s)
+	return vruo
+}
+
+// SetNillableVoteID sets the "vote_id" field if the given value is not nil.
+func (vruo *VoteResultUpdateOne) SetNillableVoteID(s *string) *VoteResultUpdateOne {
+	if s != nil {
+		vruo.SetVoteID(*s)
+	}
 	return vruo
 }
 
@@ -166,7 +214,7 @@ func (vruo *VoteResultUpdateOne) Select(field string, fields ...string) *VoteRes
 
 // Save executes the query and returns the updated VoteResult entity.
 func (vruo *VoteResultUpdateOne) Save(ctx context.Context) (*VoteResult, error) {
-	return withHooks[*VoteResult, VoteResultMutation](ctx, vruo.sqlSave, vruo.mutation, vruo.hooks)
+	return withHooks(ctx, vruo.sqlSave, vruo.mutation, vruo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
