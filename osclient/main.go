@@ -13,11 +13,14 @@ import (
 )
 
 var (
-	// networkClient is the global openstack identity client
+	// identityClient is the global openstack identity client
 	identityClient *gophercloud.ServiceClient
-	networkClient  *gophercloud.ServiceClient
-	storageClient  *gophercloud.ServiceClient
-	computeClient  *gophercloud.ServiceClient
+	// networkClient is the global openstack network client
+	networkClient *gophercloud.ServiceClient
+	// storageClient is the global openstack storage client
+	storageClient *gophercloud.ServiceClient
+	// computeClient is the global openstack compute client
+	computeClient *gophercloud.ServiceClient
 )
 
 // Init() will make the clients during the compile
