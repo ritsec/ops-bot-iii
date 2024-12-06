@@ -6,7 +6,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ritsec/ops-bot-iii/data"
-	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/ritsec/ops-bot-iii/mail"
 	"github.com/sirupsen/logrus"
@@ -26,19 +25,9 @@ func Verify() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			defer span.Finish()
 
 			logging.Debug(s, "Verify command received", i.Member.User, span)
-			err := helpers.InitialMessage(s, i, "Checking to see if you are verified...")
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				return
-			}
 
 			if data.User.IsVerified(i.Member.User.ID, span.Context()) {
 				logging.Debug(s, "User is already verified", i.Member.User, span)
-				err = helpers.UpdateMessage(s, i, "You are already verified.")
-				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-					return
-				}
 				return
 			}
 
@@ -62,31 +51,16 @@ func Verify() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				// check if userEmail is valid
 				if !validRITEmail(userEmail, span.Context()) {
 					logging.Debug(s, fmt.Sprintf("User has invalid RIT email: `%v`", userEmail), i.Member.User, span)
-					err = helpers.UpdateMessage(s, i, "Invalid RIT email.")
-					if err != nil {
-						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-						return
-					}
 					return
 				}
 
 				// check if email is already in use
 				if data.User.EmailExists(i.Member.User.ID, userEmail, span.Context()) {
 					logging.Debug(s, fmt.Sprintf("User has already used email: `%v`", userEmail), i.Member.User, span)
-					err = helpers.UpdateMessage(s, i, "Email already in use.")
-					if err != nil {
-						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-						return
-					}
 					return
 				}
 
 				// send userEmail
-				err = helpers.UpdateMessage(s, i, "Sending a verification email...")
-				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-					return
-				}
 				code, err := mail.SendVerificationEmail(userEmail, span.Context())
 				if err != nil {
 					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
@@ -146,11 +120,7 @@ func Verify() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 						return
 					}
 				} else {
-					err := helpers.UpdateMessage(s, i, "Verification canceled.")
-					if err != nil {
-						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-						return
-					}
+					return
 				}
 			}
 		}
