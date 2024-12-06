@@ -17,6 +17,90 @@ import (
 	OBIIIConfig "github.com/ritsec/ops-bot-iii/config"
 )
 
+// networkOpts is a struct for the quotas to be applied in network service
+type networkOpts struct {
+	FloatingIP        int
+	Network           int
+	Port              int
+	Router            int
+	Subnet            int
+	SecurityGroup     int
+	SecurityGroupRule int
+}
+
+func newNetworkOpts() networkOpts {
+	return networkOpts{
+		// FloatingIP specifies the number of floating IPs the user can allocate.
+		FloatingIP: 0,
+		// Network specifies the number of networks the user can create.
+		Network: 10,
+		// Port specifies the number of ports the user can create.
+		Port: 50,
+		// Router specifies the number of routers the user can create.
+		Router: 1,
+		// Subnet specifies the number of subnets the user can create.
+		Subnet: 20,
+		// SecurityGroup specifies the number of security groups the user can create.
+		SecurityGroup: 10,
+		// SecurityGroupRule specifies the number of security group rules the user can create.
+		SecurityGroupRule: -1,
+	}
+}
+
+// QuotaOpts defines the quota options for a compute resource in OpenStack.
+type quotaOpts struct {
+	InjectedFileContentBytes int
+	InjectedFilePathBytes    int
+	InjectedFiles            int
+	KeyPairs                 int
+	RAM                      int
+	Cores                    int
+	Instances                int
+	ServerGroups             int
+	ServerGroupMembers       int
+}
+
+func newQuotaOpts() quotaOpts {
+	return quotaOpts{
+		// InjectedFileContentBytes specifies the number of bytes allowed for injected file content.
+		InjectedFileContentBytes: 10240,
+		// InjectedFilePathBytes specifies the number of bytes allowed for the path of injected files.
+		InjectedFilePathBytes: 255,
+		// InjectedFiles specifies the number of injected files allowed.
+		InjectedFiles: 5,
+		// KeyPairs specifies the number of key pairs allowed.
+		KeyPairs: 10,
+		// RAM specifies the amount of RAM (in megabytes) allowed.
+		RAM: 51200,
+		// Cores specifies the number of CPU cores allowed.
+		Cores: 20,
+		// Instances specifies the number of instances allowed.
+		Instances: 10,
+		// ServerGroups specifies the number of server groups allowed.
+		ServerGroups: 10,
+		// ServerGroupMembers specifies the number of members allowed per server group.
+		ServerGroupMembers: 10,
+	}
+}
+
+// StorageOpts defines the quota options for block storage resources in OpenStack.
+type StorageOpts struct {
+	Volumes   int
+	Snapshots int
+	Gigabytes int
+}
+
+func newStorageOpts() StorageOpts {
+	return StorageOpts{
+		// Volumes specifies the number of volumes allowed.
+		Volumes: 10,
+		// Snapshots specifies the number of snapshots allowed.
+		Snapshots: 10,
+		// Gigabytes specifies the amount of storage (in gigabytes) allowed.
+		Gigabytes: 250,
+	}
+}
+
 // Returns the username portion of the email
 func extractUsername(email string) string {
 	parts := strings.Split(email, "@")
@@ -79,14 +163,15 @@ func Create(email string) (string, string, error) {
 		return "", "", err
 	}
 
+	defaultNetworkOpts := newNetworkOpts()
 	networkOpts := network.UpdateOpts{
-		FloatingIP:        gophercloud.IntToPointer(0),
-		Network:           gophercloud.IntToPointer(10),
-		Port:              gophercloud.IntToPointer(50),
-		Router:            gophercloud.IntToPointer(1),
-		Subnet:            gophercloud.IntToPointer(20),
-		SecurityGroup:     gophercloud.IntToPointer(10),
-		SecurityGroupRule: gophercloud.IntToPointer(-1),
+		FloatingIP:        gophercloud.IntToPointer(defaultNetworkOpts.FloatingIP),
+		Network:           gophercloud.IntToPointer(defaultNetworkOpts.Network),
+		Port:              gophercloud.IntToPointer(defaultNetworkOpts.Port),
+		Router:            gophercloud.IntToPointer(defaultNetworkOpts.Router),
+		Subnet:            gophercloud.IntToPointer(defaultNetworkOpts.Subnet),
+		SecurityGroup:     gophercloud.IntToPointer(defaultNetworkOpts.SecurityGroup),
+		SecurityGroupRule: gophercloud.IntToPointer(defaultNetworkOpts.SecurityGroupRule),
 	}
 
 	projectID := project.ID
@@ -95,16 +180,17 @@ func Create(email string) (string, string, error) {
 		return "", "", err
 	}
 
+	defaultQuotaOpts := newQuotaOpts()
 	quotaOpts := compute.UpdateOpts{
-		InjectedFileContentBytes: gophercloud.IntToPointer(10240),
-		InjectedFilePathBytes:    gophercloud.IntToPointer(255),
-		InjectedFiles:            gophercloud.IntToPointer(5),
-		KeyPairs:                 gophercloud.IntToPointer(10),
-		RAM:                      gophercloud.IntToPointer(51200),
-		Cores:                    gophercloud.IntToPointer(20),
-		Instances:                gophercloud.IntToPointer(10),
-		ServerGroups:             gophercloud.IntToPointer(10),
-		ServerGroupMembers:       gophercloud.IntToPointer(10),
+		InjectedFileContentBytes: gophercloud.IntToPointer(defaultQuotaOpts.InjectedFileContentBytes),
+		InjectedFilePathBytes:    gophercloud.IntToPointer(defaultQuotaOpts.InjectedFilePathBytes),
+		InjectedFiles:            gophercloud.IntToPointer(defaultQuotaOpts.InjectedFiles),
+		KeyPairs:                 gophercloud.IntToPointer(defaultQuotaOpts.KeyPairs),
+		RAM:                      gophercloud.IntToPointer(defaultQuotaOpts.RAM),
+		Cores:                    gophercloud.IntToPointer(defaultQuotaOpts.Cores),
+		Instances:                gophercloud.IntToPointer(defaultQuotaOpts.Instances),
+		ServerGroups:             gophercloud.IntToPointer(defaultQuotaOpts.ServerGroups),
+		ServerGroupMembers:       gophercloud.IntToPointer(defaultQuotaOpts.ServerGroupMembers),
 	}
 
 	_, err = compute.Update(ctx, computeClient, projectID, quotaOpts).Extract()
@@ -112,10 +198,11 @@ func Create(email string) (string, string, error) {
 		return "", "", err
 	}
 
+	defaultStorageOpts := newStorageOpts()
 	storageOpts := blockstorage.UpdateOpts{
-		Volumes:   gophercloud.IntToPointer(10),
-		Snapshots: gophercloud.IntToPointer(10),
-		Gigabytes: gophercloud.IntToPointer(250),
+		Volumes:   gophercloud.IntToPointer(defaultStorageOpts.Volumes),
+		Snapshots: gophercloud.IntToPointer(defaultStorageOpts.Snapshots),
+		Gigabytes: gophercloud.IntToPointer(defaultStorageOpts.Gigabytes),
 	}
 
 	_, err = blockstorage.Update(ctx, storageClient, projectID, storageOpts).Extract()
