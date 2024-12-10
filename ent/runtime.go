@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/schema"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -56,6 +57,12 @@ func init() {
 			return nil
 		}
 	}()
+	openstackFields := schema.Openstack{}.Fields()
+	_ = openstackFields
+	// openstackDescTimestamp is the schema descriptor for timestamp field.
+	openstackDescTimestamp := openstackFields[0].Descriptor()
+	// openstack.DefaultTimestamp holds the default value on creation for the timestamp field.
+	openstack.DefaultTimestamp = openstackDescTimestamp.Default.(func() time.Time)
 	shitpostFields := schema.Shitpost{}.Fields()
 	_ = shitpostFields
 	// shitpostDescChannelID is the schema descriptor for channel_id field.

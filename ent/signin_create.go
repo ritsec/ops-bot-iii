@@ -60,7 +60,7 @@ func (sc *SigninCreate) Mutation() *SigninMutation {
 // Save creates the Signin in the database.
 func (sc *SigninCreate) Save(ctx context.Context) (*Signin, error) {
 	sc.defaults()
-	return withHooks[*Signin, SigninMutation](ctx, sc.sqlSave, sc.mutation, sc.hooks)
+	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -106,7 +106,7 @@ func (sc *SigninCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Signin.type": %w`, err)}
 		}
 	}
-	if _, ok := sc.mutation.UserID(); !ok {
+	if len(sc.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Signin.user"`)}
 	}
 	return nil
@@ -166,11 +166,15 @@ func (sc *SigninCreate) createSpec() (*Signin, *sqlgraph.CreateSpec) {
 // SigninCreateBulk is the builder for creating many Signin entities in bulk.
 type SigninCreateBulk struct {
 	config
+	err      error
 	builders []*SigninCreate
 }
 
 // Save creates the Signin entities in the database.
 func (scb *SigninCreateBulk) Save(ctx context.Context) ([]*Signin, error) {
+	if scb.err != nil {
+		return nil, scb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(scb.builders))
 	nodes := make([]*Signin, len(scb.builders))
 	mutators := make([]Mutator, len(scb.builders))

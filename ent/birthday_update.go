@@ -35,6 +35,14 @@ func (bu *BirthdayUpdate) SetDay(i int) *BirthdayUpdate {
 	return bu
 }
 
+// SetNillableDay sets the "day" field if the given value is not nil.
+func (bu *BirthdayUpdate) SetNillableDay(i *int) *BirthdayUpdate {
+	if i != nil {
+		bu.SetDay(*i)
+	}
+	return bu
+}
+
 // AddDay adds i to the "day" field.
 func (bu *BirthdayUpdate) AddDay(i int) *BirthdayUpdate {
 	bu.mutation.AddDay(i)
@@ -45,6 +53,14 @@ func (bu *BirthdayUpdate) AddDay(i int) *BirthdayUpdate {
 func (bu *BirthdayUpdate) SetMonth(i int) *BirthdayUpdate {
 	bu.mutation.ResetMonth()
 	bu.mutation.SetMonth(i)
+	return bu
+}
+
+// SetNillableMonth sets the "month" field if the given value is not nil.
+func (bu *BirthdayUpdate) SetNillableMonth(i *int) *BirthdayUpdate {
+	if i != nil {
+		bu.SetMonth(*i)
+	}
 	return bu
 }
 
@@ -86,7 +102,7 @@ func (bu *BirthdayUpdate) ClearUser() *BirthdayUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (bu *BirthdayUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, BirthdayMutation](ctx, bu.sqlSave, bu.mutation, bu.hooks)
+	return withHooks(ctx, bu.sqlSave, bu.mutation, bu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -206,6 +222,14 @@ func (buo *BirthdayUpdateOne) SetDay(i int) *BirthdayUpdateOne {
 	return buo
 }
 
+// SetNillableDay sets the "day" field if the given value is not nil.
+func (buo *BirthdayUpdateOne) SetNillableDay(i *int) *BirthdayUpdateOne {
+	if i != nil {
+		buo.SetDay(*i)
+	}
+	return buo
+}
+
 // AddDay adds i to the "day" field.
 func (buo *BirthdayUpdateOne) AddDay(i int) *BirthdayUpdateOne {
 	buo.mutation.AddDay(i)
@@ -216,6 +240,14 @@ func (buo *BirthdayUpdateOne) AddDay(i int) *BirthdayUpdateOne {
 func (buo *BirthdayUpdateOne) SetMonth(i int) *BirthdayUpdateOne {
 	buo.mutation.ResetMonth()
 	buo.mutation.SetMonth(i)
+	return buo
+}
+
+// SetNillableMonth sets the "month" field if the given value is not nil.
+func (buo *BirthdayUpdateOne) SetNillableMonth(i *int) *BirthdayUpdateOne {
+	if i != nil {
+		buo.SetMonth(*i)
+	}
 	return buo
 }
 
@@ -270,7 +302,7 @@ func (buo *BirthdayUpdateOne) Select(field string, fields ...string) *BirthdayUp
 
 // Save executes the query and returns the updated Birthday entity.
 func (buo *BirthdayUpdateOne) Save(ctx context.Context) (*Birthday, error) {
-	return withHooks[*Birthday, BirthdayMutation](ctx, buo.sqlSave, buo.mutation, buo.hooks)
+	return withHooks(ctx, buo.sqlSave, buo.mutation, buo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
