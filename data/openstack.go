@@ -13,6 +13,44 @@ import (
 // Openstack is the interface for interacting with the openstack table
 type openstack_s struct{}
 
+// Exists checks if a timestamp exists for a user
+func (*openstack_s) Exists(user_id string, ctx ddtrace.SpanContext) (bool, error) {
+	span := tracer.StartSpan(
+		"data.Openstack:Exists",
+		tracer.ResourceName("Data.Openstack.Exists"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	return Client.Openstack.Query().
+		Where(
+			openstack.HasUserWith(
+				user.ID(user_id),
+			),
+		).
+		Exist(Ctx)
+}
+
+func (*openstack_s) Create(user_id string, ctx ddtrace.SpanContext) (*ent.Openstack, error) {
+	span := tracer.StartSpan(
+		"data.Openstack:Create",
+		tracer.ResourceName("Data.Openstack.Create"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	entUser, err := User.Get(user_id, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return Client.Openstack.Create().
+		SetUser(
+			entUser,
+		).
+		Save(Ctx)
+}
+
 // Get gets the timestamp for the last reset for Openstack account for a user
 func (*openstack_s) Get(user_id string, ctx ddtrace.SpanContext) (*ent.Openstack, error) {
 	span := tracer.StartSpan(

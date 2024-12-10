@@ -135,24 +135,41 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 						return
 					}
 
-					// Get the user's openstack info
-					openstack_ent, err := data.Openstack.Get(i.Member.User.ID, span.Context())
+					// Check to see if the user's reset timestamp exists
+					ts_exists, err := data.Openstack.Exists(i.Member.User.ID, span.Context())
 					if err != nil {
 						logging.Error(s, err.Error(), i.Member.User, span)
 						return
 					}
-					tx, err := time.LoadLocation("America/New_York")
-					if err != nil {
-						logging.Error(s, err.Error(), i.Member.User, span)
-						return
-					}
-					// Check if the user has done the reset recently
-					if time.Now().In(tx).Sub(openstack_ent.Timestamp) >= -2*time.Hour && time.Now().In(tx).Sub(openstack_ent.Timestamp) <= 2*time.Hour {
-						err = helpers.UpdateMessage(s, i, "You have tried to reset too much in the past 2 hours, please wait before trying again!")
+					if !ts_exists {
+						// Create the row for user's timestamp and don't check it
+						_, err = data.Openstack.Create(i.Member.User.ID, span.Context())
 						if err != nil {
 							logging.Error(s, err.Error(), i.Member.User, span)
+							return
 						}
-						return
+					} else {
+						// Check the user's timestamp if has done recently
+
+						// Get the user's openstacks info
+						openstack_ent, err := data.Openstack.Get(i.Member.User.ID, span.Context())
+						if err != nil {
+							logging.Error(s, err.Error(), i.Member.User, span)
+							return
+						}
+						tx, err := time.LoadLocation("America/New_York")
+						if err != nil {
+							logging.Error(s, err.Error(), i.Member.User, span)
+							return
+						}
+						// Check if the user has done the reset recently
+						if time.Now().In(tx).Sub(openstack_ent.Timestamp) >= -2*time.Hour && time.Now().In(tx).Sub(openstack_ent.Timestamp) <= 2*time.Hour {
+							err = helpers.UpdateMessage(s, i, "You have tried to reset too much in the past 2 hours, please wait before trying again!")
+							if err != nil {
+								logging.Error(s, err.Error(), i.Member.User, span)
+							}
+							return
+						}
 					}
 
 					// Checking if the user is DM'able
