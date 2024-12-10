@@ -487,7 +487,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseUpdateMessage,
 		Data: &discordgo.InteractionResponseData{
-			Content: "A verification code has been sent to \"" + userEmail + "\". This could take up to 15 minutes and could be in your spam. Please check your spam! **Do not close discord or this window will be closed**.",
+			Content: "A verification code has been sent to \"" + userEmail + "\". This email will take at least **12 minutes** to arrive and show up in the **spam** due to RIT's email filitering system. Please be patient and watch your spam box! **Do not close discord or this window will be closed**.",
 			Components: []discordgo.MessageComponent{
 				discordgo.ActionsRow{
 					Components: []discordgo.MessageComponent{
