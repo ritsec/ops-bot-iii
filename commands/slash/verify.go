@@ -31,11 +31,6 @@ func Verify() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 			logging.Debug(s, "Verify command received", i.Member.User, span)
 
-			if data.User.IsVerified(i.Member.User.ID, span.Context()) {
-				logging.Debug(s, "User is already verified", i.Member.User, span)
-				return
-			}
-
 			attempts, err := data.User.GetVerificationAttempts(i.Member.User.ID, span.Context())
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
