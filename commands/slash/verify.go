@@ -12,6 +12,11 @@ import (
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
+// The purpose of this command is for users who were manually verified through the /member command.
+// The issue is that they then would have no email in the database but they still need to set their email
+// if they want to use the openstack command to create their accounts.
+//
+// This is done by checking if their verification attempts is above 1, arbitrary locking out this command until they did /member command first.
 func Verify() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
 			Name:        "verify",
@@ -28,6 +33,17 @@ func Verify() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 			if data.User.IsVerified(i.Member.User.ID, span.Context()) {
 				logging.Debug(s, "User is already verified", i.Member.User, span)
+				return
+			}
+
+			attempts, err := data.User.GetVerificationAttempts(i.Member.User.ID, span.Context())
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+
+			if attempts == 0 {
+				logging.Debug(s, "User has not used /member yet", i.Member.User, span)
 				return
 			}
 
