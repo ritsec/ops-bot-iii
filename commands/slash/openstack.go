@@ -64,7 +64,7 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 				}
 				if email == "" {
 					logging.Debug(s, "User has no email", i.Member.User, span)
-					err = helpers.UpdateMessage(s, i, "You have no verified email. Run /member and verify your email and run this command again.")
+					err = helpers.UpdateMessage(s, i, "You have no verified email. Run /verify to add your email and run this command again.")
 					if err != nil {
 						logging.Error(s, err.Error(), i.Member.User, span)
 					}
