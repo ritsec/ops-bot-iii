@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -85,7 +86,7 @@ func (vq *VoteQuery) QueryUser() *UserQuery {
 // First returns the first Vote entity from the query.
 // Returns a *NotFoundError when no Vote was found.
 func (vq *VoteQuery) First(ctx context.Context) (*Vote, error) {
-	nodes, err := vq.Limit(1).All(setContextOp(ctx, vq.ctx, "First"))
+	nodes, err := vq.Limit(1).All(setContextOp(ctx, vq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func (vq *VoteQuery) FirstX(ctx context.Context) *Vote {
 // Returns a *NotFoundError when no Vote ID was found.
 func (vq *VoteQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vq.Limit(1).IDs(setContextOp(ctx, vq.ctx, "FirstID")); err != nil {
+	if ids, err = vq.Limit(1).IDs(setContextOp(ctx, vq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -131,7 +132,7 @@ func (vq *VoteQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one Vote entity is found.
 // Returns a *NotFoundError when no Vote entities are found.
 func (vq *VoteQuery) Only(ctx context.Context) (*Vote, error) {
-	nodes, err := vq.Limit(2).All(setContextOp(ctx, vq.ctx, "Only"))
+	nodes, err := vq.Limit(2).All(setContextOp(ctx, vq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +160,7 @@ func (vq *VoteQuery) OnlyX(ctx context.Context) *Vote {
 // Returns a *NotFoundError when no entities are found.
 func (vq *VoteQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = vq.Limit(2).IDs(setContextOp(ctx, vq.ctx, "OnlyID")); err != nil {
+	if ids, err = vq.Limit(2).IDs(setContextOp(ctx, vq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -184,7 +185,7 @@ func (vq *VoteQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of Votes.
 func (vq *VoteQuery) All(ctx context.Context) ([]*Vote, error) {
-	ctx = setContextOp(ctx, vq.ctx, "All")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryAll)
 	if err := vq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -206,7 +207,7 @@ func (vq *VoteQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if vq.ctx.Unique == nil && vq.path != nil {
 		vq.Unique(true)
 	}
-	ctx = setContextOp(ctx, vq.ctx, "IDs")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryIDs)
 	if err = vq.Select(vote.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -224,7 +225,7 @@ func (vq *VoteQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (vq *VoteQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, vq.ctx, "Count")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryCount)
 	if err := vq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -242,7 +243,7 @@ func (vq *VoteQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (vq *VoteQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, vq.ctx, "Exist")
+	ctx = setContextOp(ctx, vq.ctx, ent.OpQueryExist)
 	switch _, err := vq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -536,7 +537,7 @@ func (vgb *VoteGroupBy) Aggregate(fns ...AggregateFunc) *VoteGroupBy {
 
 // Scan applies the selector query and scans the result into the given value.
 func (vgb *VoteGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, vgb.build.ctx, ent.OpQueryGroupBy)
 	if err := vgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -584,7 +585,7 @@ func (vs *VoteSelect) Aggregate(fns ...AggregateFunc) *VoteSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (vs *VoteSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, vs.ctx, "Select")
+	ctx = setContextOp(ctx, vs.ctx, ent.OpQuerySelect)
 	if err := vs.prepareQuery(ctx); err != nil {
 		return err
 	}

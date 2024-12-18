@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Birthday is the client for interacting with the Birthday builders.
 	Birthday *BirthdayClient
+	// Openstack is the client for interacting with the Openstack builders.
+	Openstack *OpenstackClient
 	// Shitpost is the client for interacting with the Shitpost builders.
 	Shitpost *ShitpostClient
 	// Signin is the client for interacting with the Signin builders.
@@ -156,6 +158,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Birthday = NewBirthdayClient(tx.config)
+	tx.Openstack = NewOpenstackClient(tx.config)
 	tx.Shitpost = NewShitpostClient(tx.config)
 	tx.Signin = NewSigninClient(tx.config)
 	tx.User = NewUserClient(tx.config)

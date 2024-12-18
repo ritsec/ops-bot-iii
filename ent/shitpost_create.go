@@ -64,7 +64,7 @@ func (sc *ShitpostCreate) Mutation() *ShitpostMutation {
 
 // Save creates the Shitpost in the database.
 func (sc *ShitpostCreate) Save(ctx context.Context) (*Shitpost, error) {
-	return withHooks[*Shitpost, ShitpostMutation](ctx, sc.sqlSave, sc.mutation, sc.hooks)
+	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -173,11 +173,15 @@ func (sc *ShitpostCreate) createSpec() (*Shitpost, *sqlgraph.CreateSpec) {
 // ShitpostCreateBulk is the builder for creating many Shitpost entities in bulk.
 type ShitpostCreateBulk struct {
 	config
+	err      error
 	builders []*ShitpostCreate
 }
 
 // Save creates the Shitpost entities in the database.
 func (scb *ShitpostCreateBulk) Save(ctx context.Context) ([]*Shitpost, error) {
+	if scb.err != nil {
+		return nil, scb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(scb.builders))
 	nodes := make([]*Shitpost, len(scb.builders))
 	mutators := make([]Mutator, len(scb.builders))

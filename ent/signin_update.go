@@ -49,6 +49,14 @@ func (su *SigninUpdate) SetType(s signin.Type) *SigninUpdate {
 	return su
 }
 
+// SetNillableType sets the "type" field if the given value is not nil.
+func (su *SigninUpdate) SetNillableType(s *signin.Type) *SigninUpdate {
+	if s != nil {
+		su.SetType(*s)
+	}
+	return su
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (su *SigninUpdate) SetUserID(id string) *SigninUpdate {
 	su.mutation.SetUserID(id)
@@ -73,7 +81,7 @@ func (su *SigninUpdate) ClearUser() *SigninUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (su *SigninUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, SigninMutation](ctx, su.sqlSave, su.mutation, su.hooks)
+	return withHooks(ctx, su.sqlSave, su.mutation, su.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -105,7 +113,7 @@ func (su *SigninUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Signin.type": %w`, err)}
 		}
 	}
-	if _, ok := su.mutation.UserID(); su.mutation.UserCleared() && !ok {
+	if su.mutation.UserCleared() && len(su.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Signin.user"`)
 	}
 	return nil
@@ -198,6 +206,14 @@ func (suo *SigninUpdateOne) SetType(s signin.Type) *SigninUpdateOne {
 	return suo
 }
 
+// SetNillableType sets the "type" field if the given value is not nil.
+func (suo *SigninUpdateOne) SetNillableType(s *signin.Type) *SigninUpdateOne {
+	if s != nil {
+		suo.SetType(*s)
+	}
+	return suo
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (suo *SigninUpdateOne) SetUserID(id string) *SigninUpdateOne {
 	suo.mutation.SetUserID(id)
@@ -235,7 +251,7 @@ func (suo *SigninUpdateOne) Select(field string, fields ...string) *SigninUpdate
 
 // Save executes the query and returns the updated Signin entity.
 func (suo *SigninUpdateOne) Save(ctx context.Context) (*Signin, error) {
-	return withHooks[*Signin, SigninMutation](ctx, suo.sqlSave, suo.mutation, suo.hooks)
+	return withHooks(ctx, suo.sqlSave, suo.mutation, suo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -267,7 +283,7 @@ func (suo *SigninUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Signin.type": %w`, err)}
 		}
 	}
-	if _, ok := suo.mutation.UserID(); suo.mutation.UserCleared() && !ok {
+	if suo.mutation.UserCleared() && len(suo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Signin.user"`)
 	}
 	return nil

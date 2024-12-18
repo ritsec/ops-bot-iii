@@ -34,10 +34,26 @@ func (vu *VoteUpdate) SetSelection(s string) *VoteUpdate {
 	return vu
 }
 
+// SetNillableSelection sets the "selection" field if the given value is not nil.
+func (vu *VoteUpdate) SetNillableSelection(s *string) *VoteUpdate {
+	if s != nil {
+		vu.SetSelection(*s)
+	}
+	return vu
+}
+
 // SetRank sets the "rank" field.
 func (vu *VoteUpdate) SetRank(i int) *VoteUpdate {
 	vu.mutation.ResetRank()
 	vu.mutation.SetRank(i)
+	return vu
+}
+
+// SetNillableRank sets the "rank" field if the given value is not nil.
+func (vu *VoteUpdate) SetNillableRank(i *int) *VoteUpdate {
+	if i != nil {
+		vu.SetRank(*i)
+	}
 	return vu
 }
 
@@ -50,6 +66,14 @@ func (vu *VoteUpdate) AddRank(i int) *VoteUpdate {
 // SetVoteID sets the "vote_id" field.
 func (vu *VoteUpdate) SetVoteID(s string) *VoteUpdate {
 	vu.mutation.SetVoteID(s)
+	return vu
+}
+
+// SetNillableVoteID sets the "vote_id" field if the given value is not nil.
+func (vu *VoteUpdate) SetNillableVoteID(s *string) *VoteUpdate {
+	if s != nil {
+		vu.SetVoteID(*s)
+	}
 	return vu
 }
 
@@ -77,7 +101,7 @@ func (vu *VoteUpdate) ClearUser() *VoteUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (vu *VoteUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks[int, VoteMutation](ctx, vu.sqlSave, vu.mutation, vu.hooks)
+	return withHooks(ctx, vu.sqlSave, vu.mutation, vu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -119,7 +143,7 @@ func (vu *VoteUpdate) check() error {
 			return &ValidationError{Name: "vote_id", err: fmt.Errorf(`ent: validator failed for field "Vote.vote_id": %w`, err)}
 		}
 	}
-	if _, ok := vu.mutation.UserID(); vu.mutation.UserCleared() && !ok {
+	if vu.mutation.UserCleared() && len(vu.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Vote.user"`)
 	}
 	return nil
@@ -204,10 +228,26 @@ func (vuo *VoteUpdateOne) SetSelection(s string) *VoteUpdateOne {
 	return vuo
 }
 
+// SetNillableSelection sets the "selection" field if the given value is not nil.
+func (vuo *VoteUpdateOne) SetNillableSelection(s *string) *VoteUpdateOne {
+	if s != nil {
+		vuo.SetSelection(*s)
+	}
+	return vuo
+}
+
 // SetRank sets the "rank" field.
 func (vuo *VoteUpdateOne) SetRank(i int) *VoteUpdateOne {
 	vuo.mutation.ResetRank()
 	vuo.mutation.SetRank(i)
+	return vuo
+}
+
+// SetNillableRank sets the "rank" field if the given value is not nil.
+func (vuo *VoteUpdateOne) SetNillableRank(i *int) *VoteUpdateOne {
+	if i != nil {
+		vuo.SetRank(*i)
+	}
 	return vuo
 }
 
@@ -220,6 +260,14 @@ func (vuo *VoteUpdateOne) AddRank(i int) *VoteUpdateOne {
 // SetVoteID sets the "vote_id" field.
 func (vuo *VoteUpdateOne) SetVoteID(s string) *VoteUpdateOne {
 	vuo.mutation.SetVoteID(s)
+	return vuo
+}
+
+// SetNillableVoteID sets the "vote_id" field if the given value is not nil.
+func (vuo *VoteUpdateOne) SetNillableVoteID(s *string) *VoteUpdateOne {
+	if s != nil {
+		vuo.SetVoteID(*s)
+	}
 	return vuo
 }
 
@@ -260,7 +308,7 @@ func (vuo *VoteUpdateOne) Select(field string, fields ...string) *VoteUpdateOne 
 
 // Save executes the query and returns the updated Vote entity.
 func (vuo *VoteUpdateOne) Save(ctx context.Context) (*Vote, error) {
-	return withHooks[*Vote, VoteMutation](ctx, vuo.sqlSave, vuo.mutation, vuo.hooks)
+	return withHooks(ctx, vuo.sqlSave, vuo.mutation, vuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -302,7 +350,7 @@ func (vuo *VoteUpdateOne) check() error {
 			return &ValidationError{Name: "vote_id", err: fmt.Errorf(`ent: validator failed for field "Vote.vote_id": %w`, err)}
 		}
 	}
-	if _, ok := vuo.mutation.UserID(); vuo.mutation.UserCleared() && !ok {
+	if vuo.mutation.UserCleared() && len(vuo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Vote.user"`)
 	}
 	return nil

@@ -58,7 +58,7 @@ func (bc *BirthdayCreate) Mutation() *BirthdayMutation {
 
 // Save creates the Birthday in the database.
 func (bc *BirthdayCreate) Save(ctx context.Context) (*Birthday, error) {
-	return withHooks[*Birthday, BirthdayMutation](ctx, bc.sqlSave, bc.mutation, bc.hooks)
+	return withHooks(ctx, bc.sqlSave, bc.mutation, bc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -158,11 +158,15 @@ func (bc *BirthdayCreate) createSpec() (*Birthday, *sqlgraph.CreateSpec) {
 // BirthdayCreateBulk is the builder for creating many Birthday entities in bulk.
 type BirthdayCreateBulk struct {
 	config
+	err      error
 	builders []*BirthdayCreate
 }
 
 // Save creates the Birthday entities in the database.
 func (bcb *BirthdayCreateBulk) Save(ctx context.Context) ([]*Birthday, error) {
+	if bcb.err != nil {
+		return nil, bcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(bcb.builders))
 	nodes := make([]*Birthday, len(bcb.builders))
 	mutators := make([]Mutator, len(bcb.builders))

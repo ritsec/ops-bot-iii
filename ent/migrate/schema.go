@@ -29,6 +29,26 @@ var (
 			},
 		},
 	}
+	// OpenstacksColumns holds the columns for the "openstacks" table.
+	OpenstacksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "user_openstack", Type: field.TypeString, Unique: true, Nullable: true},
+	}
+	// OpenstacksTable holds the schema information for the "openstacks" table.
+	OpenstacksTable = &schema.Table{
+		Name:       "openstacks",
+		Columns:    OpenstacksColumns,
+		PrimaryKey: []*schema.Column{OpenstacksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "openstacks_users_openstack",
+				Columns:    []*schema.Column{OpenstacksColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// ShitpostsColumns holds the columns for the "shitposts" table.
 	ShitpostsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
@@ -122,6 +142,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		BirthdaysTable,
+		OpenstacksTable,
 		ShitpostsTable,
 		SigninsTable,
 		UsersTable,
@@ -132,6 +153,7 @@ var (
 
 func init() {
 	BirthdaysTable.ForeignKeys[0].RefTable = UsersTable
+	OpenstacksTable.ForeignKeys[0].RefTable = UsersTable
 	ShitpostsTable.ForeignKeys[0].RefTable = UsersTable
 	SigninsTable.ForeignKeys[0].RefTable = UsersTable
 	VotesTable.ForeignKeys[0].RefTable = UsersTable
