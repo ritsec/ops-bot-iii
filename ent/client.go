@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/ritsec/ops-bot-iii/ent/migrate"
 
@@ -15,6 +16,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
@@ -29,6 +31,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Birthday is the client for interacting with the Birthday builders.
 	Birthday *BirthdayClient
+	// Openstack is the client for interacting with the Openstack builders.
+	Openstack *OpenstackClient
 	// Shitpost is the client for interacting with the Shitpost builders.
 	Shitpost *ShitpostClient
 	// Signin is the client for interacting with the Signin builders.
@@ -43,9 +47,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
-	cfg.options(opts...)
-	client := &Client{config: cfg}
+	client := &Client{config: newConfig(opts...)}
 	client.init()
 	return client
 }
@@ -53,6 +55,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Birthday = NewBirthdayClient(c.config)
+	c.Openstack = NewOpenstackClient(c.config)
 	c.Shitpost = NewShitpostClient(c.config)
 	c.Signin = NewSigninClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -77,6 +80,13 @@ type (
 	// Option function to configure the client.
 	Option func(*config)
 )
+
+// newConfig creates a new config for the client.
+func newConfig(opts ...Option) config {
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
+	cfg.options(opts...)
+	return cfg
+}
 
 // options applies the options on the config object.
 func (c *config) options(opts ...Option) {
@@ -125,11 +135,14 @@ func Open(driverName, dataSourceName string, options ...Option) (*Client, error)
 	}
 }
 
+// ErrTxStarted is returned when trying to start a new transaction from a transactional client.
+var ErrTxStarted = errors.New("ent: cannot start a transaction within a transaction")
+
 // Tx returns a new transactional client. The provided context
 // is used until the transaction is committed or rolled back.
 func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	if _, ok := c.driver.(*txDriver); ok {
-		return nil, errors.New("ent: cannot start a transaction within a transaction")
+		return nil, ErrTxStarted
 	}
 	tx, err := newTx(ctx, c.driver)
 	if err != nil {
@@ -141,6 +154,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:        ctx,
 		config:     cfg,
 		Birthday:   NewBirthdayClient(cfg),
+		Openstack:  NewOpenstackClient(cfg),
 		Shitpost:   NewShitpostClient(cfg),
 		Signin:     NewSigninClient(cfg),
 		User:       NewUserClient(cfg),
@@ -166,6 +180,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:        ctx,
 		config:     cfg,
 		Birthday:   NewBirthdayClient(cfg),
+		Openstack:  NewOpenstackClient(cfg),
 		Shitpost:   NewShitpostClient(cfg),
 		Signin:     NewSigninClient(cfg),
 		User:       NewUserClient(cfg),
@@ -200,7 +215,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Birthday, c.Shitpost, c.Signin, c.User, c.Vote, c.VoteResult,
+		c.Birthday, c.Openstack, c.Shitpost, c.Signin, c.User, c.Vote, c.VoteResult,
 	} {
 		n.Use(hooks...)
 	}
@@ -210,7 +225,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Birthday, c.Shitpost, c.Signin, c.User, c.Vote, c.VoteResult,
+		c.Birthday, c.Openstack, c.Shitpost, c.Signin, c.User, c.Vote, c.VoteResult,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -221,6 +236,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *BirthdayMutation:
 		return c.Birthday.mutate(ctx, m)
+	case *OpenstackMutation:
+		return c.Openstack.mutate(ctx, m)
 	case *ShitpostMutation:
 		return c.Shitpost.mutate(ctx, m)
 	case *SigninMutation:
@@ -266,6 +283,21 @@ func (c *BirthdayClient) Create() *BirthdayCreate {
 
 // CreateBulk returns a builder for creating a bulk of Birthday entities.
 func (c *BirthdayClient) CreateBulk(builders ...*BirthdayCreate) *BirthdayCreateBulk {
+	return &BirthdayCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BirthdayClient) MapCreateBulk(slice any, setFunc func(*BirthdayCreate, int)) *BirthdayCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BirthdayCreateBulk{err: fmt.Errorf("calling to BirthdayClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BirthdayCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &BirthdayCreateBulk{config: c.config, builders: builders}
 }
 
@@ -370,6 +402,155 @@ func (c *BirthdayClient) mutate(ctx context.Context, m *BirthdayMutation) (Value
 	}
 }
 
+// OpenstackClient is a client for the Openstack schema.
+type OpenstackClient struct {
+	config
+}
+
+// NewOpenstackClient returns a client for the Openstack from the given config.
+func NewOpenstackClient(c config) *OpenstackClient {
+	return &OpenstackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `openstack.Hooks(f(g(h())))`.
+func (c *OpenstackClient) Use(hooks ...Hook) {
+	c.hooks.Openstack = append(c.hooks.Openstack, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `openstack.Intercept(f(g(h())))`.
+func (c *OpenstackClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Openstack = append(c.inters.Openstack, interceptors...)
+}
+
+// Create returns a builder for creating a Openstack entity.
+func (c *OpenstackClient) Create() *OpenstackCreate {
+	mutation := newOpenstackMutation(c.config, OpCreate)
+	return &OpenstackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Openstack entities.
+func (c *OpenstackClient) CreateBulk(builders ...*OpenstackCreate) *OpenstackCreateBulk {
+	return &OpenstackCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OpenstackClient) MapCreateBulk(slice any, setFunc func(*OpenstackCreate, int)) *OpenstackCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OpenstackCreateBulk{err: fmt.Errorf("calling to OpenstackClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OpenstackCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OpenstackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Openstack.
+func (c *OpenstackClient) Update() *OpenstackUpdate {
+	mutation := newOpenstackMutation(c.config, OpUpdate)
+	return &OpenstackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OpenstackClient) UpdateOne(o *Openstack) *OpenstackUpdateOne {
+	mutation := newOpenstackMutation(c.config, OpUpdateOne, withOpenstack(o))
+	return &OpenstackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OpenstackClient) UpdateOneID(id int) *OpenstackUpdateOne {
+	mutation := newOpenstackMutation(c.config, OpUpdateOne, withOpenstackID(id))
+	return &OpenstackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Openstack.
+func (c *OpenstackClient) Delete() *OpenstackDelete {
+	mutation := newOpenstackMutation(c.config, OpDelete)
+	return &OpenstackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OpenstackClient) DeleteOne(o *Openstack) *OpenstackDeleteOne {
+	return c.DeleteOneID(o.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OpenstackClient) DeleteOneID(id int) *OpenstackDeleteOne {
+	builder := c.Delete().Where(openstack.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OpenstackDeleteOne{builder}
+}
+
+// Query returns a query builder for Openstack.
+func (c *OpenstackClient) Query() *OpenstackQuery {
+	return &OpenstackQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOpenstack},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Openstack entity by its id.
+func (c *OpenstackClient) Get(ctx context.Context, id int) (*Openstack, error) {
+	return c.Query().Where(openstack.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OpenstackClient) GetX(ctx context.Context, id int) *Openstack {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Openstack.
+func (c *OpenstackClient) QueryUser(o *Openstack) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(openstack.Table, openstack.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, openstack.UserTable, openstack.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OpenstackClient) Hooks() []Hook {
+	return c.hooks.Openstack
+}
+
+// Interceptors returns the client interceptors.
+func (c *OpenstackClient) Interceptors() []Interceptor {
+	return c.inters.Openstack
+}
+
+func (c *OpenstackClient) mutate(ctx context.Context, m *OpenstackMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OpenstackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OpenstackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OpenstackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OpenstackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Openstack mutation op: %q", m.Op())
+	}
+}
+
 // ShitpostClient is a client for the Shitpost schema.
 type ShitpostClient struct {
 	config
@@ -400,6 +581,21 @@ func (c *ShitpostClient) Create() *ShitpostCreate {
 
 // CreateBulk returns a builder for creating a bulk of Shitpost entities.
 func (c *ShitpostClient) CreateBulk(builders ...*ShitpostCreate) *ShitpostCreateBulk {
+	return &ShitpostCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ShitpostClient) MapCreateBulk(slice any, setFunc func(*ShitpostCreate, int)) *ShitpostCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ShitpostCreateBulk{err: fmt.Errorf("calling to ShitpostClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ShitpostCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &ShitpostCreateBulk{config: c.config, builders: builders}
 }
 
@@ -537,6 +733,21 @@ func (c *SigninClient) CreateBulk(builders ...*SigninCreate) *SigninCreateBulk {
 	return &SigninCreateBulk{config: c.config, builders: builders}
 }
 
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SigninClient) MapCreateBulk(slice any, setFunc func(*SigninCreate, int)) *SigninCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SigninCreateBulk{err: fmt.Errorf("calling to SigninClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SigninCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SigninCreateBulk{config: c.config, builders: builders}
+}
+
 // Update returns an update builder for Signin.
 func (c *SigninClient) Update() *SigninUpdate {
 	mutation := newSigninMutation(c.config, OpUpdate)
@@ -671,6 +882,21 @@ func (c *UserClient) CreateBulk(builders ...*UserCreate) *UserCreateBulk {
 	return &UserCreateBulk{config: c.config, builders: builders}
 }
 
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserClient) MapCreateBulk(slice any, setFunc func(*UserCreate, int)) *UserCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserCreateBulk{err: fmt.Errorf("calling to UserClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserCreateBulk{config: c.config, builders: builders}
+}
+
 // Update returns an update builder for User.
 func (c *UserClient) Update() *UserUpdate {
 	mutation := newUserMutation(c.config, OpUpdate)
@@ -795,6 +1021,22 @@ func (c *UserClient) QueryBirthday(u *User) *BirthdayQuery {
 	return query
 }
 
+// QueryOpenstack queries the openstack edge of a User.
+func (c *UserClient) QueryOpenstack(u *User) *OpenstackQuery {
+	query := (&OpenstackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(openstack.Table, openstack.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.OpenstackTable, user.OpenstackColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -850,6 +1092,21 @@ func (c *VoteClient) Create() *VoteCreate {
 
 // CreateBulk returns a builder for creating a bulk of Vote entities.
 func (c *VoteClient) CreateBulk(builders ...*VoteCreate) *VoteCreateBulk {
+	return &VoteCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoteClient) MapCreateBulk(slice any, setFunc func(*VoteCreate, int)) *VoteCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoteCreateBulk{err: fmt.Errorf("calling to VoteClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoteCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
 	return &VoteCreateBulk{config: c.config, builders: builders}
 }
 
@@ -987,6 +1244,21 @@ func (c *VoteResultClient) CreateBulk(builders ...*VoteResultCreate) *VoteResult
 	return &VoteResultCreateBulk{config: c.config, builders: builders}
 }
 
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VoteResultClient) MapCreateBulk(slice any, setFunc func(*VoteResultCreate, int)) *VoteResultCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VoteResultCreateBulk{err: fmt.Errorf("calling to VoteResultClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VoteResultCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VoteResultCreateBulk{config: c.config, builders: builders}
+}
+
 // Update returns an update builder for VoteResult.
 func (c *VoteResultClient) Update() *VoteResultUpdate {
 	mutation := newVoteResultMutation(c.config, OpUpdate)
@@ -1075,9 +1347,9 @@ func (c *VoteResultClient) mutate(ctx context.Context, m *VoteResultMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Birthday, Shitpost, Signin, User, Vote, VoteResult []ent.Hook
+		Birthday, Openstack, Shitpost, Signin, User, Vote, VoteResult []ent.Hook
 	}
 	inters struct {
-		Birthday, Shitpost, Signin, User, Vote, VoteResult []ent.Interceptor
+		Birthday, Openstack, Shitpost, Signin, User, Vote, VoteResult []ent.Interceptor
 	}
 )

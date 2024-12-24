@@ -72,7 +72,7 @@ func (*user_s) SetEmail(id string, email string, ctx ddtrace.SpanContext) (*ent.
 		Save(Ctx)
 }
 
-// SetEmail sets the email for a user
+// IncrementVerificationAttempts increments the verification attempts after user tries to verify
 func (*user_s) IncrementVerificationAttempts(id string, ctx ddtrace.SpanContext) (*ent.User, error) {
 	span := tracer.StartSpan(
 		"data.user:IncrementVerificationAttempts",
@@ -91,7 +91,7 @@ func (*user_s) IncrementVerificationAttempts(id string, ctx ddtrace.SpanContext)
 		Save(Ctx)
 }
 
-// SetEmail sets the email for a user
+// MarkVerified marks the user verified
 func (*user_s) MarkVerified(id string, ctx ddtrace.SpanContext) (*ent.User, error) {
 	span := tracer.StartSpan(
 		"data.user:MarkVerified",
@@ -110,7 +110,7 @@ func (*user_s) MarkVerified(id string, ctx ddtrace.SpanContext) (*ent.User, erro
 		Save(Ctx)
 }
 
-// SetEmail sets the email for a user
+// IsVerified checks to see if the user is verified
 func (*user_s) IsVerified(id string, ctx ddtrace.SpanContext) bool {
 	span := tracer.StartSpan(
 		"data.user:IsVerified",
@@ -127,7 +127,7 @@ func (*user_s) IsVerified(id string, ctx ddtrace.SpanContext) bool {
 	return entUser.Verified
 }
 
-// SetEmail sets the email for a user
+// EmailExists checks to see if the email exists for the user
 func (*user_s) EmailExists(id string, email string, ctx ddtrace.SpanContext) bool {
 	span := tracer.StartSpan(
 		"data.user:EmailExists",
@@ -151,7 +151,7 @@ func (*user_s) EmailExists(id string, email string, ctx ddtrace.SpanContext) boo
 	return exists
 }
 
-// SetEmail sets the email for a user
+// GetVerificationAttempts returns the amount of verification attempts the user has
 func (*user_s) GetVerificationAttempts(id string, ctx ddtrace.SpanContext) (int, error) {
 	span := tracer.StartSpan(
 		"data.user:GetVerificationAttempts",
@@ -166,4 +166,20 @@ func (*user_s) GetVerificationAttempts(id string, ctx ddtrace.SpanContext) (int,
 	}
 
 	return int(entUser.VerificationAttempts), nil
+}
+
+func (*user_s) GetEmail(id string, ctx ddtrace.SpanContext) (string, error) {
+	span := tracer.StartSpan(
+		"data.user:GetEmail",
+		tracer.ResourceName("Data.User.GetEmail"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	entUser, err := User.Get(id, span.Context())
+	if err != nil {
+		return "", err
+	}
+
+	return entUser.Email, nil
 }

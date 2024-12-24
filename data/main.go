@@ -33,6 +33,9 @@ var (
 
 	// Birthday is the struct reference birthday
 	Birthday *birthday_s = &birthday_s{}
+
+	// Openstack is the struct reference openstack
+	Openstack *openstack_s = &openstack_s{}
 )
 
 func init() {

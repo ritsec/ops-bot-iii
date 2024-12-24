@@ -43,5 +43,8 @@ func (User) Edges() []ent.Edge {
 		edge.To("birthday", Birthday.Type).
 			Unique().
 			Comment("Birthdays of the user"),
+		edge.To("openstack", Openstack.Type).
+			Unique().
+			Comment("Openstacks Info of the user"),
 	}
 }

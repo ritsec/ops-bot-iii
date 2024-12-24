@@ -56,7 +56,7 @@ func (vc *VoteCreate) Mutation() *VoteMutation {
 
 // Save creates the Vote in the database.
 func (vc *VoteCreate) Save(ctx context.Context) (*Vote, error) {
-	return withHooks[*Vote, VoteMutation](ctx, vc.sqlSave, vc.mutation, vc.hooks)
+	return withHooks(ctx, vc.sqlSave, vc.mutation, vc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -107,7 +107,7 @@ func (vc *VoteCreate) check() error {
 			return &ValidationError{Name: "vote_id", err: fmt.Errorf(`ent: validator failed for field "Vote.vote_id": %w`, err)}
 		}
 	}
-	if _, ok := vc.mutation.UserID(); !ok {
+	if len(vc.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "Vote.user"`)}
 	}
 	return nil
@@ -171,11 +171,15 @@ func (vc *VoteCreate) createSpec() (*Vote, *sqlgraph.CreateSpec) {
 // VoteCreateBulk is the builder for creating many Vote entities in bulk.
 type VoteCreateBulk struct {
 	config
+	err      error
 	builders []*VoteCreate
 }
 
 // Save creates the Vote entities in the database.
 func (vcb *VoteCreateBulk) Save(ctx context.Context) ([]*Vote, error) {
+	if vcb.err != nil {
+		return nil, vcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(vcb.builders))
 	nodes := make([]*Vote, len(vcb.builders))
 	mutators := make([]Mutator, len(vcb.builders))

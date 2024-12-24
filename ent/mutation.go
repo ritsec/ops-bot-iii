@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/predicate"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
@@ -30,6 +31,7 @@ const (
 
 	// Node types.
 	TypeBirthday   = "Birthday"
+	TypeOpenstack  = "Openstack"
 	TypeShitpost   = "Shitpost"
 	TypeSignin     = "Signin"
 	TypeUser       = "User"
@@ -551,6 +553,399 @@ func (m *BirthdayMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Birthday edge %s", name)
+}
+
+// OpenstackMutation represents an operation that mutates the Openstack nodes in the graph.
+type OpenstackMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *int
+	timestamp     *time.Time
+	clearedFields map[string]struct{}
+	user          *string
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*Openstack, error)
+	predicates    []predicate.Openstack
+}
+
+var _ ent.Mutation = (*OpenstackMutation)(nil)
+
+// openstackOption allows management of the mutation configuration using functional options.
+type openstackOption func(*OpenstackMutation)
+
+// newOpenstackMutation creates new mutation for the Openstack entity.
+func newOpenstackMutation(c config, op Op, opts ...openstackOption) *OpenstackMutation {
+	m := &OpenstackMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOpenstack,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOpenstackID sets the ID field of the mutation.
+func withOpenstackID(id int) openstackOption {
+	return func(m *OpenstackMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Openstack
+		)
+		m.oldValue = func(ctx context.Context) (*Openstack, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Openstack.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOpenstack sets the old Openstack of the mutation.
+func withOpenstack(node *Openstack) openstackOption {
+	return func(m *OpenstackMutation) {
+		m.oldValue = func(context.Context) (*Openstack, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OpenstackMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OpenstackMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OpenstackMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OpenstackMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Openstack.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *OpenstackMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *OpenstackMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the Openstack entity.
+// If the Openstack object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OpenstackMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *OpenstackMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
+// SetUserID sets the "user" edge to the User entity by id.
+func (m *OpenstackMutation) SetUserID(id string) {
+	m.user = &id
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *OpenstackMutation) ClearUser() {
+	m.cleareduser = true
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *OpenstackMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserID returns the "user" edge ID in the mutation.
+func (m *OpenstackMutation) UserID() (id string, exists bool) {
+	if m.user != nil {
+		return *m.user, true
+	}
+	return
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *OpenstackMutation) UserIDs() (ids []string) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *OpenstackMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the OpenstackMutation builder.
+func (m *OpenstackMutation) Where(ps ...predicate.Openstack) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OpenstackMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OpenstackMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Openstack, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OpenstackMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OpenstackMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Openstack).
+func (m *OpenstackMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OpenstackMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.timestamp != nil {
+		fields = append(fields, openstack.FieldTimestamp)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OpenstackMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case openstack.FieldTimestamp:
+		return m.Timestamp()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OpenstackMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case openstack.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	}
+	return nil, fmt.Errorf("unknown Openstack field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OpenstackMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case openstack.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Openstack field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OpenstackMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OpenstackMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OpenstackMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Openstack numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OpenstackMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OpenstackMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OpenstackMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Openstack nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OpenstackMutation) ResetField(name string) error {
+	switch name {
+	case openstack.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	}
+	return fmt.Errorf("unknown Openstack field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OpenstackMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.user != nil {
+		edges = append(edges, openstack.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OpenstackMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case openstack.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OpenstackMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OpenstackMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OpenstackMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.cleareduser {
+		edges = append(edges, openstack.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OpenstackMutation) EdgeCleared(name string) bool {
+	switch name {
+	case openstack.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OpenstackMutation) ClearEdge(name string) error {
+	switch name {
+	case openstack.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Openstack unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OpenstackMutation) ResetEdge(name string) error {
+	switch name {
+	case openstack.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown Openstack edge %s", name)
 }
 
 // ShitpostMutation represents an operation that mutates the Shitpost nodes in the graph.
@@ -1511,6 +1906,8 @@ type UserMutation struct {
 	clearedshitposts         bool
 	birthday                 *int
 	clearedbirthday          bool
+	openstack                *int
+	clearedopenstack         bool
 	done                     bool
 	oldValue                 func(context.Context) (*User, error)
 	predicates               []predicate.User
@@ -1949,6 +2346,45 @@ func (m *UserMutation) ResetBirthday() {
 	m.clearedbirthday = false
 }
 
+// SetOpenstackID sets the "openstack" edge to the Openstack entity by id.
+func (m *UserMutation) SetOpenstackID(id int) {
+	m.openstack = &id
+}
+
+// ClearOpenstack clears the "openstack" edge to the Openstack entity.
+func (m *UserMutation) ClearOpenstack() {
+	m.clearedopenstack = true
+}
+
+// OpenstackCleared reports if the "openstack" edge to the Openstack entity was cleared.
+func (m *UserMutation) OpenstackCleared() bool {
+	return m.clearedopenstack
+}
+
+// OpenstackID returns the "openstack" edge ID in the mutation.
+func (m *UserMutation) OpenstackID() (id int, exists bool) {
+	if m.openstack != nil {
+		return *m.openstack, true
+	}
+	return
+}
+
+// OpenstackIDs returns the "openstack" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OpenstackID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) OpenstackIDs() (ids []int) {
+	if id := m.openstack; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetOpenstack resets all changes to the "openstack" edge.
+func (m *UserMutation) ResetOpenstack() {
+	m.openstack = nil
+	m.clearedopenstack = false
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -2131,7 +2567,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.signins != nil {
 		edges = append(edges, user.EdgeSignins)
 	}
@@ -2143,6 +2579,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.birthday != nil {
 		edges = append(edges, user.EdgeBirthday)
+	}
+	if m.openstack != nil {
+		edges = append(edges, user.EdgeOpenstack)
 	}
 	return edges
 }
@@ -2173,13 +2612,17 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		if id := m.birthday; id != nil {
 			return []ent.Value{*id}
 		}
+	case user.EdgeOpenstack:
+		if id := m.openstack; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedsignins != nil {
 		edges = append(edges, user.EdgeSignins)
 	}
@@ -2220,7 +2663,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedsignins {
 		edges = append(edges, user.EdgeSignins)
 	}
@@ -2232,6 +2675,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedbirthday {
 		edges = append(edges, user.EdgeBirthday)
+	}
+	if m.clearedopenstack {
+		edges = append(edges, user.EdgeOpenstack)
 	}
 	return edges
 }
@@ -2248,6 +2694,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedshitposts
 	case user.EdgeBirthday:
 		return m.clearedbirthday
+	case user.EdgeOpenstack:
+		return m.clearedopenstack
 	}
 	return false
 }
@@ -2258,6 +2706,9 @@ func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
 	case user.EdgeBirthday:
 		m.ClearBirthday()
+		return nil
+	case user.EdgeOpenstack:
+		m.ClearOpenstack()
 		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
@@ -2278,6 +2729,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeBirthday:
 		m.ResetBirthday()
+		return nil
+	case user.EdgeOpenstack:
+		m.ResetOpenstack()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

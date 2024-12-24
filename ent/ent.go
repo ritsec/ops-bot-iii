@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
@@ -74,11 +75,12 @@ var (
 	columnCheck sql.ColumnCheck
 )
 
-// columnChecker checks if the column exists in the given table.
+// checkColumn checks if the column exists in the given table.
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			birthday.Table:   birthday.ValidColumn,
+			openstack.Table:  openstack.ValidColumn,
 			shitpost.Table:   shitpost.ValidColumn,
 			signin.Table:     signin.ValidColumn,
 			user.Table:       user.ValidColumn,

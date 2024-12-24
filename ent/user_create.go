@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ritsec/ops-bot-iii/ent/birthday"
+	"github.com/ritsec/ops-bot-iii/ent/openstack"
 	"github.com/ritsec/ops-bot-iii/ent/shitpost"
 	"github.com/ritsec/ops-bot-iii/ent/signin"
 	"github.com/ritsec/ops-bot-iii/ent/user"
@@ -135,6 +136,25 @@ func (uc *UserCreate) SetBirthday(b *Birthday) *UserCreate {
 	return uc.SetBirthdayID(b.ID)
 }
 
+// SetOpenstackID sets the "openstack" edge to the Openstack entity by ID.
+func (uc *UserCreate) SetOpenstackID(id int) *UserCreate {
+	uc.mutation.SetOpenstackID(id)
+	return uc
+}
+
+// SetNillableOpenstackID sets the "openstack" edge to the Openstack entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableOpenstackID(id *int) *UserCreate {
+	if id != nil {
+		uc = uc.SetOpenstackID(*id)
+	}
+	return uc
+}
+
+// SetOpenstack sets the "openstack" edge to the Openstack entity.
+func (uc *UserCreate) SetOpenstack(o *Openstack) *UserCreate {
+	return uc.SetOpenstackID(o.ID)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -143,7 +163,7 @@ func (uc *UserCreate) Mutation() *UserMutation {
 // Save creates the User in the database.
 func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 	uc.defaults()
-	return withHooks[*User, UserMutation](ctx, uc.sqlSave, uc.mutation, uc.hooks)
+	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -316,17 +336,37 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := uc.mutation.OpenstackIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OpenstackTable,
+			Columns: []string{user.OpenstackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(openstack.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
 // UserCreateBulk is the builder for creating many User entities in bulk.
 type UserCreateBulk struct {
 	config
+	err      error
 	builders []*UserCreate
 }
 
 // Save creates the User entities in the database.
 func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
+	if ucb.err != nil {
+		return nil, ucb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(ucb.builders))
 	nodes := make([]*User, len(ucb.builders))
 	mutators := make([]Mutator, len(ucb.builders))
