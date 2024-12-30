@@ -3,6 +3,7 @@ package osclient
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/gophercloud/gophercloud/v2"
 	"github.com/gophercloud/gophercloud/v2/openstack"
@@ -21,10 +22,17 @@ var (
 	storageClient *gophercloud.ServiceClient
 	// computeClient is the global openstack compute client
 	computeClient *gophercloud.ServiceClient
+
+	// tokenExpiry is the expiry time of the token
+	tokenExpiry time.Time
 )
 
-// Init() will make the clients during the compile
+// Init() will call setUpClients() to make the clients during the compile
 func init() {
+	setUpClients()
+}
+
+func setUpClients() {
 	// Checks to see if the config has the Openstack enabled option enabled
 	if OBIIIConfig.Openstack.Enabled {
 		ctx := context.Background()
@@ -62,5 +70,13 @@ func init() {
 		networkClient = _networkClient
 		storageClient = _storageClient
 		computeClient = _computeClient
+
+		tokenExpiry = time.Now().Add(time.Hour) // assuming 1-hour token validity
+	}
+}
+
+func refreshClientsIfNeeded() {
+	if time.Now().After(tokenExpiry) {
+		setUpClients()
 	}
 }
