@@ -71,6 +71,8 @@ func Openstack() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *d
 					return
 				}
 
+				osclient.RefreshClientsIfNeeded()
+
 				// Check if user exists on Openstack already
 				exists, err := osclient.CheckUserExists(email)
 				if err != nil {

@@ -18,7 +18,7 @@ import (
 )
 
 // networkOpts is a struct for the quotas to be applied in network service
-type networkOpts struct {
+type NetworkOpts struct {
 	FloatingIP        int
 	Network           int
 	Port              int
@@ -28,8 +28,8 @@ type networkOpts struct {
 	SecurityGroupRule int
 }
 
-func newNetworkOpts() networkOpts {
-	return networkOpts{
+func NewNetworkOpts() NetworkOpts {
+	return NetworkOpts{
 		// FloatingIP specifies the number of floating IPs the user can allocate.
 		FloatingIP: 0,
 		// Network specifies the number of networks the user can create.
@@ -48,7 +48,7 @@ func newNetworkOpts() networkOpts {
 }
 
 // QuotaOpts defines the quota options for a compute resource in OpenStack.
-type quotaOpts struct {
+type QuotaOpts struct {
 	InjectedFileContentBytes int
 	InjectedFilePathBytes    int
 	InjectedFiles            int
@@ -60,8 +60,8 @@ type quotaOpts struct {
 	ServerGroupMembers       int
 }
 
-func newQuotaOpts() quotaOpts {
-	return quotaOpts{
+func NewQuotaOpts() QuotaOpts {
+	return QuotaOpts{
 		// InjectedFileContentBytes specifies the number of bytes allowed for injected file content.
 		InjectedFileContentBytes: 10240,
 		// InjectedFilePathBytes specifies the number of bytes allowed for the path of injected files.
@@ -90,7 +90,7 @@ type StorageOpts struct {
 	Gigabytes int
 }
 
-func newStorageOpts() StorageOpts {
+func NewStorageOpts() StorageOpts {
 	return StorageOpts{
 		// Volumes specifies the number of volumes allowed.
 		Volumes: 10,
@@ -163,7 +163,7 @@ func Create(email string) (string, string, error) {
 		return "", "", err
 	}
 
-	defaultNetworkOpts := newNetworkOpts()
+	defaultNetworkOpts := NewNetworkOpts()
 	networkOpts := network.UpdateOpts{
 		FloatingIP:        gophercloud.IntToPointer(defaultNetworkOpts.FloatingIP),
 		Network:           gophercloud.IntToPointer(defaultNetworkOpts.Network),
@@ -180,7 +180,7 @@ func Create(email string) (string, string, error) {
 		return "", "", err
 	}
 
-	defaultQuotaOpts := newQuotaOpts()
+	defaultQuotaOpts := NewQuotaOpts()
 	quotaOpts := compute.UpdateOpts{
 		InjectedFileContentBytes: gophercloud.IntToPointer(defaultQuotaOpts.InjectedFileContentBytes),
 		InjectedFilePathBytes:    gophercloud.IntToPointer(defaultQuotaOpts.InjectedFilePathBytes),
@@ -198,7 +198,7 @@ func Create(email string) (string, string, error) {
 		return "", "", err
 	}
 
-	defaultStorageOpts := newStorageOpts()
+	defaultStorageOpts := NewStorageOpts()
 	storageOpts := blockstorage.UpdateOpts{
 		Volumes:   gophercloud.IntToPointer(defaultStorageOpts.Volumes),
 		Snapshots: gophercloud.IntToPointer(defaultStorageOpts.Snapshots),
