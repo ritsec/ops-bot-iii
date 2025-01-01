@@ -24,7 +24,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
           PRERELEASE: false
-          INITIAL_VERSION: 3.20.0
+          INITIAL_VERSION: 1.0.0
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2.0.0
