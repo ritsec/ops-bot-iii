@@ -75,7 +75,9 @@ func setUpClients() {
 	}
 }
 
-func refreshClientsIfNeeded() {
+// RefreshClientsIfNeeded() will check if the token has expired and refresh the clients
+// To be used before making any openstack API calls
+func RefreshClientsIfNeeded() {
 	if time.Now().After(tokenExpiry) {
 		setUpClients()
 	}
