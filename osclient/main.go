@@ -71,7 +71,7 @@ func setUpClients() {
 		storageClient = _storageClient
 		computeClient = _computeClient
 
-		tokenExpiry = time.Now().Add(24 * time.Hour) // 24-hour token validity
+		tokenExpiry = time.Now().Add(20 * time.Hour) // Refresh token after 20 hours to give some buffer for 24-hour token validity
 	}
 }
 
