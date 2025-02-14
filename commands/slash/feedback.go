@@ -29,7 +29,7 @@ func Feedback() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 			)
 			defer span.Finish()
 
-			logging.Debug(s, "Feedback command received", i.Member.User, span)
+			logging.Debug(s, "Feedback command received", nil, span)
 
 			feedbackSlug := uuid.New().String()
 
@@ -96,10 +96,10 @@ func Feedback() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			logging.Debug(s, "Feedback command responded", i.Member.User, span)
+			logging.Debug(s, "Feedback command responded", nil, span)
 
 			<-closeChan
 
-			logging.Debug(s, "Feedback command closed", i.Member.User, span)
+			logging.Debug(s, "Feedback command closed", nil, span)
 		}
 }
