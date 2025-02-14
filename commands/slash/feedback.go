@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ritsec/ops-bot-iii/commands/slash/permission"
 	"github.com/ritsec/ops-bot-iii/config"
+	"github.com/ritsec/ops-bot-iii/helpers"
 	"github.com/ritsec/ops-bot-iii/logging"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
@@ -54,7 +55,26 @@ func Feedback() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 					},
 				})
 				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span_feedbackSlug, logrus.Fields{"error": err})
+					// Let the eboard know that this failed while keeping the user anon
+					logging.Error(s, err.Error(), nil, span_feedbackSlug, logrus.Fields{"error": err})
+
+					err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content: "Unable to send the feedback. Error reported without revealing your name.",
+							Flags:   discordgo.MessageFlagsEphemeral,
+						},
+					})
+
+					if err != nil {
+						logging.Error(s, err.Error(), nil, span, logrus.Fields{"error": err})
+						err = helpers.SendDirectMessage(s, i.Member.User.ID, "Unable to send the feedback. Error reported without revealing your name.", span.Context())
+
+						// dawg everything failed, might as well have eboard contact the user
+						if err != nil {
+							logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+						}
+					}
 				}
 
 				_, err = s.ChannelMessageSendComplex(FeedbackChannelID,
@@ -66,7 +86,26 @@ func Feedback() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 					},
 				)
 				if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span_feedbackSlug, logrus.Fields{"error": err})
+					// Let the eboard know that this failed while keeping the user anon
+					logging.Error(s, err.Error(), nil, span_feedbackSlug, logrus.Fields{"error": err})
+
+					err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+						Type: discordgo.InteractionResponseChannelMessageWithSource,
+						Data: &discordgo.InteractionResponseData{
+							Content: "Unable to send the feedback. Error reported without revealing your name.",
+							Flags:   discordgo.MessageFlagsEphemeral,
+						},
+					})
+
+					if err != nil {
+						logging.Error(s, err.Error(), nil, span, logrus.Fields{"error": err})
+						err = helpers.SendDirectMessage(s, i.Member.User.ID, "Unable to send the feedback. Error reported without revealing your name.", span.Context())
+
+						// dawg everything failed, might as well have eboard contact the user
+						if err != nil {
+							logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+						}
+					}
 				}
 
 				closeChan <- true
@@ -93,9 +132,27 @@ func Feedback() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *di
 				},
 			})
 			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-			}
+				// Let the eboard know that this failed while keeping the user anon
+				logging.Error(s, err.Error(), nil, span, logrus.Fields{"error": err})
 
+				err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Unable to send the feedback. Error reported without revealing your name.",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+
+				if err != nil {
+					logging.Error(s, err.Error(), nil, span, logrus.Fields{"error": err})
+					err = helpers.SendDirectMessage(s, i.Member.User.ID, "Unable to send the feedback. Error reported without revealing your name.", span.Context())
+
+					// dawg everything failed, might as well have eboard contact the user
+					if err != nil {
+						logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+					}
+				}
+			}
 			logging.Debug(s, "Feedback command responded", nil, span)
 
 			<-closeChan
