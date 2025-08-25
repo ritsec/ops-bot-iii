@@ -32,6 +32,8 @@ func (Signin) Fields() []ent.Field {
 				"Wireless",
 				"IR",
 				"WiCyS",
+				"Zero To Hero",
+				"OT Security",
 				"Ops",
 				"Ops IG",
 				"Vulnerability Research",
