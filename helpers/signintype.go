@@ -2,7 +2,7 @@ package helpers
 
 import "github.com/ritsec/ops-bot-iii/ent/signin"
 
-//Converts signin type string to signin type
+// Converts signin type string to signin type
 func StringToType(signinString string) signin.Type {
 	var entSigninType signin.Type
 	switch signinString {
@@ -34,6 +34,10 @@ func StringToType(signinString string) signin.Type {
 		entSigninType = signin.TypeVulnerabilityResearch
 	case "Mentorship":
 		entSigninType = signin.TypeMentorship
+	case "Zero To Hero":
+		entSigninType = signin.TypeZeroToHero
+	case "OT Security":
+		entSigninType = signin.TypeOTSecurity
 	case "Other":
 		entSigninType = signin.TypeOther
 	case "All":
@@ -42,12 +46,14 @@ func StringToType(signinString string) signin.Type {
 	return entSigninType
 }
 
-//Return array of all signin types (update return array length)
-func SigninTypeArray() [15]string {
+// Return array of all signin types (update return array length)
+func SigninTypeArray() [17]string {
 	return [...]string{
 		"General Meeting",
 		"Contagion",
 		"IR",
+		"Zero To Hero",
+		"OT Security",
 		"Ops",
 		"Ops IG",
 		"Red Team",
@@ -61,5 +67,5 @@ func SigninTypeArray() [15]string {
 		"Mentorship",
 		"Other",
 	}
-	
+
 }

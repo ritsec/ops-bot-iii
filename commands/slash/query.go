@@ -44,6 +44,14 @@ func Query() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disco
 							Value: "IR",
 						},
 						{
+							Name:  "Zero To Hero",
+							Value: "Zero To Hero",
+						},
+						{
+							Name:  "OT Security",
+							Value: "OT Security",
+						},
+						{
 							Name:  "Ops",
 							Value: "Ops",
 						},
