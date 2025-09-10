@@ -10,6 +10,10 @@ func StringToType(signinString string) signin.Type {
 		entSigninType = signin.TypeGeneralMeeting
 	case "Contagion":
 		entSigninType = signin.TypeContagion
+	case "CCDC":
+		entSigninType = signin.TypeCCDC
+	case "CCDC Tryouts":
+		entSigninType = signin.TypeCCDCTryouts
 	case "IR":
 		entSigninType = signin.TypeIR
 	case "Ops":
