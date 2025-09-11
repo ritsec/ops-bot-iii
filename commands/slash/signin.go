@@ -40,6 +40,14 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 							Value: "Contagion",
 						},
 						{
+							Name:  "CCDC",
+							Value: "CCDC",
+						},
+						{
+							Name:  "CCDC Tryouts",
+							Value: "CCDC Tryouts",
+						},
+						{
 							Name:  "IR",
 							Value: "IR",
 						},

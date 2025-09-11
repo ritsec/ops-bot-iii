@@ -28,6 +28,8 @@ func (Signin) Fields() []ent.Field {
 				"Reversing",
 				"RVAPT",
 				"Contagion",
+				"CCDC",
+				"CCDC Tryouts",
 				"Physical",
 				"Wireless",
 				"IR",
