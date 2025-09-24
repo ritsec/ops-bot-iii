@@ -75,23 +75,31 @@ func GoodFood(s *discordgo.Session, quit chan interface{}) error {
 		}
 	}
 
+	makePing := func(time string, location string) {
+		must(c.AddFunc(time, func() { sendGoodFoodPing(s, location, span.Context()) }))
+	}
+
+	skipPing := func(time string) {
+		must(c.AddFunc(time, func() {}))
+	}
+
 	// 11:00 AM
-	must(c.AddFunc("0 0 11 * * MON", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))            // Monday
-	must(c.AddFunc("0 0 11 * * TUE", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) }))      // Tuesday
-	must(c.AddFunc("0 0 11 * * WED", func() { sendGoodFoodPing(s, "Brick City Cafe", span.Context()) })) // Wednesday
-	must(c.AddFunc("0 0 11 * * THU", func() {}))                                                         // Thursday
-	must(c.AddFunc("0 0 11 * * FRI", func() { sendGoodFoodPing(s, "Brick City Cafe", span.Context()) })) // Friday
-	must(c.AddFunc("0 0 11 * * SAT", func() {}))                                                         // Saturday
-	must(c.AddFunc("0 0 11 * * SUN", func() {}))                                                         // Sunday
+	makePing("0 0 11 * * MON", "RITZ")            // Monday
+	makePing("0 0 11 * * TUE", "Crossroads")      // Tuesday
+	makePing("0 0 11 * * WED", "Brick City Cafe") // Wednesday
+	skipPing("0 0 11 * * THU")                    // Thursday
+	skipPing("0 0 11 * * FRI")                    // Friday
+	skipPing("0 0 11 * * SAT")                    // Saturday
+	skipPing("0 0 11 * * SUN")                    // Sunday
 
 	// 4:00 PM
-	must(c.AddFunc("0 0 16 * * MON", func() {}))                                                    // Monday
-	must(c.AddFunc("0 0 16 * * TUE", func() {}))                                                    // Tuesday
-	must(c.AddFunc("0 0 16 * * WED", func() { sendGoodFoodPing(s, "RITZ", span.Context()) }))       // Wednesday
-	must(c.AddFunc("0 0 16 * * THU", func() { sendGoodFoodPing(s, "Crossroads", span.Context()) })) // Thursday
-	must(c.AddFunc("0 0 16 * * FRI", func() {}))                                                    // Friday
-	must(c.AddFunc("0 0 16 * * SAT", func() {}))                                                    // Saturday
-	must(c.AddFunc("0 0 16 * * SUN", func() {}))                                                    // Sunday
+	skipPing("0 0 16 * * MON")               // Monday
+	skipPing("0 0 16 * * TUE")               // Tuesday
+	makePing("0 0 16 * * WED", "RITZ")       // Wednesday
+	makePing("0 0 16 * * THU", "Crossroads") // Thursday
+	skipPing("0 0 16 * * FRI")               // Friday
+	skipPing("0 0 16 * * SAT")               // Saturday
+	skipPing("0 0 16 * * SUN")               // Sunday
 
 	c.Start()
 	<-quit
