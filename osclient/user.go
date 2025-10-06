@@ -154,7 +154,7 @@ func Create(email string) (string, string, error) {
 	// Create Project
 	createOpts := projects.CreateOpts{
 		DomainID: "default",
-		Enabled:  gophercloud.Enabled,
+		Enabled:  gophercloud.Disabled,
 		Name:     username,
 	}
 
