@@ -208,7 +208,8 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
-						Flags: discordgo.MessageFlagsEphemeral,
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "Signing in...",
 					},
 				})
 				if err != nil {
