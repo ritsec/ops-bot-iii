@@ -261,12 +261,21 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf("Signin Message Created, it will close in %d hours!\n%s", delay, signinMessage(i.Member.User.ID, entSigninType, span.Context())),
+					Content: "Creating signin and signing in for you...",
 					Flags:   discordgo.MessageFlagsEphemeral,
 				},
 			})
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
+
+			followupMessage := fmt.Sprintf("Signin Message Created, it will close in %d hours!\n%s", delay, signinMessage(i.Member.User.ID, entSigninType, span.Context()))
+			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+				Content: &followupMessage,
+			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
 			}
 
 			// Wait for sign-in to close
