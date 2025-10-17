@@ -219,6 +219,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 				_, err = s.FollowupMessageCreate(j.Interaction, true, &discordgo.WebhookParams{
 					Content: signinMessage(j.Member.User.ID, entSigninType, span_signinSlug.Context()),
+					Flags:   discordgo.MessageFlagsEphemeral,
 				})
 				if err != nil {
 					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
