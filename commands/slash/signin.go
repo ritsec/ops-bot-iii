@@ -178,7 +178,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				)
 				defer span.Finish()
 
-				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Signing in for you...",
