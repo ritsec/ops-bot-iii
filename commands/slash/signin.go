@@ -132,6 +132,18 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 			entSigninType := helpers.StringToType(signinType)
 
+			// Notify sign-in creator that sign-in message was created
+			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Creating signin and signing in for you...",
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
+
 			// Check if sign-in creator has already signed in
 			recentSignin, err := data.Signin.RecentSignin(i.Member.User.ID, entSigninType, span.Context())
 			if err != nil {
@@ -166,6 +178,17 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				)
 				defer span.Finish()
 
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Content: "Signing in for you...",
+						Flags:   discordgo.MessageFlagsEphemeral,
+					},
+				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
+
 				// Check if user signed in recently
 				recentSignin, err := data.Signin.RecentSignin(j.Member.User.ID, entSigninType, span.Context())
 				if err != nil {
@@ -175,13 +198,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 				if recentSignin {
 					// User has already signed in, notify and exit
-					err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
-						Type: discordgo.InteractionResponseChannelMessageWithSource,
-						Data: &discordgo.InteractionResponseData{
-							Content: "You have already signed in for **" + signinType + "**!",
-							Flags:   discordgo.MessageFlagsEphemeral,
-						},
-					})
+					err = helpers.IntRespondEdit(s, j, "You have already signed in for **"+signinType+"**!")
 					if err != nil {
 						logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					}
@@ -205,22 +222,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				}
 
 				// Notify user that they have signed in
-				err = s.InteractionRespond(j.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Flags:   discordgo.MessageFlagsEphemeral,
-						Content: "Signing in...",
-					},
-				})
-				if err != nil {
-					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
-					return
-				}
-
-				followupMessage := signinMessage(j.Member.User.ID, entSigninType, span_signinSlug.Context())
-				_, err = s.InteractionResponseEdit(j.Interaction, &discordgo.WebhookEdit{
-					Content: &followupMessage,
-				})
+				err = helpers.IntRespondEdit(s, j, signinMessage(j.Member.User.ID, entSigninType, span_signinSlug.Context()))
 				if err != nil {
 					logging.Error(s, err.Error(), j.Member.User, span_signinSlug, logrus.Fields{"error": err})
 					return
@@ -257,22 +259,7 @@ func Signin() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 			}
 
-			// Notify sign-in creator that sign-in message was created
-			err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: "Creating signin and signing in for you...",
-					Flags:   discordgo.MessageFlagsEphemeral,
-				},
-			})
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-			}
-
-			followupMessage := fmt.Sprintf("Signin Message Created, it will close in %d hours!\n%s", delay, signinMessage(i.Member.User.ID, entSigninType, span.Context()))
-			_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
-				Content: &followupMessage,
-			})
+			err = helpers.IntRespondEdit(s, i, fmt.Sprintf("Signin Message Created, it will close in %d hours!\n%s", delay, signinMessage(i.Member.User.ID, entSigninType, span.Context())))
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				return
