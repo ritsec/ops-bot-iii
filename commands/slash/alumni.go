@@ -44,8 +44,8 @@ func Alumni() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				},
 			)
 			if err != nil {
-					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
-				}
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+			}
 
 			approveSlug := uuid.New().String()
 			denySlug := uuid.New().String()
@@ -53,7 +53,7 @@ func Alumni() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 
 			author := &discordgo.MessageEmbedAuthor{
 				Name: i.Member.User.Username,
-				IconURL: i.Member.User.Avatar,
+				IconURL: i.Member.User.AvatarURL(""),
 			}
 
 			//Send approval request message in e-board request channel
@@ -80,6 +80,11 @@ func Alumni() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					Author: author,
 				},
 			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span)
+			} else {
+				logging.Debug(s, "Alumni request sent", i.Member.User, span)
+			}
 
 			//Approve button handler
 			(*ComponentHandlers)[approveSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -133,11 +138,5 @@ func Alumni() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				})
 			}
 			defer delete(*ComponentHandlers, denySlug)
-
-			if err != nil {
-				logging.Error(s, err.Error(), i.Member.User, span)
-			} else {
-				logging.Debug(s, "Alumni request sent", i.Member.User, span)
-			}
 		}
 }
