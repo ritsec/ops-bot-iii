@@ -38,6 +38,8 @@ commands:
         url: 
     feedback:
         channel_id: 
+    alumni-request:
+        channel_id:
     kudos:
         channel_id: 
         approval_channel_id: 
