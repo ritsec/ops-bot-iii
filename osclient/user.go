@@ -37,7 +37,7 @@ func NewNetworkOpts() NetworkOpts {
 		// Port specifies the number of ports the user can create.
 		Port: 50,
 		// Router specifies the number of routers the user can create.
-		Router: 1,
+		Router: 0,
 		// Subnet specifies the number of subnets the user can create.
 		Subnet: 20,
 		// SecurityGroup specifies the number of security groups the user can create.
@@ -67,15 +67,15 @@ func NewQuotaOpts() QuotaOpts {
 		// InjectedFilePathBytes specifies the number of bytes allowed for the path of injected files.
 		InjectedFilePathBytes: 255,
 		// InjectedFiles specifies the number of injected files allowed.
-		InjectedFiles: 5,
+		InjectedFiles: 10,
 		// KeyPairs specifies the number of key pairs allowed.
 		KeyPairs: 10,
 		// RAM specifies the amount of RAM (in megabytes) allowed.
-		RAM: 51200,
+		RAM: 24576,
 		// Cores specifies the number of CPU cores allowed.
 		Cores: 20,
 		// Instances specifies the number of instances allowed.
-		Instances: 10,
+		Instances: -1,
 		// ServerGroups specifies the number of server groups allowed.
 		ServerGroups: 10,
 		// ServerGroupMembers specifies the number of members allowed per server group.
@@ -93,7 +93,7 @@ type StorageOpts struct {
 func NewStorageOpts() StorageOpts {
 	return StorageOpts{
 		// Volumes specifies the number of volumes allowed.
-		Volumes: 10,
+		Volumes: -1,
 		// Snapshots specifies the number of snapshots allowed.
 		Snapshots: 10,
 		// Gigabytes specifies the amount of storage (in gigabytes) allowed.
@@ -216,7 +216,7 @@ func Create(email string) (string, string, error) {
 		DefaultProjectID: projectID,
 		Description:      "",
 		DomainID:         "default",
-		Enabled:          gophercloud.Disabled,
+		Enabled:          gophercloud.Enabled,
 		Password:         password,
 		Extra: map[string]any{
 			"email": email,
