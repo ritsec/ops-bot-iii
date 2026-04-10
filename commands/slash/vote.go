@@ -366,17 +366,35 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 	copy(options, rawOptions)
 
 	selectionChan := make(chan string)
-	defer close(selectionChan)
-
 	interactionCreateChan := make(chan *discordgo.InteractionCreate)
-	defer close(interactionCreateChan)
+	done := make(chan struct{})
 
 	messageSlug := uuid.New().String()
 
 	(*ComponentHandlers)[messageSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		selectionChan <- i.MessageComponentData().Values[0]
-		interactionCreateChan <- i
+		select {
+		case <-done:
+			// voteGetVote has already returned; discard this late interaction
+			return
+		default:
+		}
+		select {
+		case selectionChan <- i.MessageComponentData().Values[0]:
+		case <-done:
+			return
+		}
+		select {
+		case interactionCreateChan <- i:
+		case <-done:
+		}
 	}
+
+	defer func() {
+		close(done)
+		delete(*ComponentHandlers, messageSlug)
+		close(selectionChan)
+		close(interactionCreateChan)
+	}()
 
 	emojis := []string{
 		"🟥",
