@@ -392,8 +392,12 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 	defer func() {
 		close(done)
 		delete(*ComponentHandlers, messageSlug)
-		close(selectionChan)
-		close(interactionCreateChan)
+		// Do NOT close selectionChan / interactionCreateChan here.
+		// A handler goroutine that slipped past the done-check could still
+		// be at its send-select when we close those channels; Go's select
+		// is non-deterministic, so it might choose the send arm on a
+		// closed channel and panic. Leaving them unclosed is safe — they
+		// are GC'd once done is closed and the handler is removed.
 	}()
 
 	emojis := []string{
