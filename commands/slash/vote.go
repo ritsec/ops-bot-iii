@@ -366,17 +366,39 @@ func voteGetVote(s *discordgo.Session, i *discordgo.InteractionCreate, rawOption
 	copy(options, rawOptions)
 
 	selectionChan := make(chan string)
-	defer close(selectionChan)
-
 	interactionCreateChan := make(chan *discordgo.InteractionCreate)
-	defer close(interactionCreateChan)
+	done := make(chan struct{})
 
 	messageSlug := uuid.New().String()
 
 	(*ComponentHandlers)[messageSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		selectionChan <- i.MessageComponentData().Values[0]
-		interactionCreateChan <- i
+		select {
+		case <-done:
+			// voteGetVote has already returned; discard this late interaction
+			return
+		default:
+		}
+		select {
+		case selectionChan <- i.MessageComponentData().Values[0]:
+		case <-done:
+			return
+		}
+		select {
+		case interactionCreateChan <- i:
+		case <-done:
+		}
 	}
+
+	defer func() {
+		close(done)
+		delete(*ComponentHandlers, messageSlug)
+		// Do NOT close selectionChan / interactionCreateChan here.
+		// A handler goroutine that slipped past the done-check could still
+		// be at its send-select when we close those channels; Go's select
+		// is non-deterministic, so it might choose the send arm on a
+		// closed channel and panic. Leaving them unclosed is safe — they
+		// are GC'd once done is closed and the handler is removed.
+	}()
 
 	emojis := []string{
 		"🟥",
