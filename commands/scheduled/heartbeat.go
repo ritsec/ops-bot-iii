@@ -1,6 +1,7 @@
 package scheduled
 
 import (
+	"io"
 	"net/http"
 	"time"
 
@@ -28,10 +29,12 @@ func Heartbeat(s *discordgo.Session, quit chan interface{}) error {
 				tracer.ResourceName("Scheduled.Heartbeat"),
 			)
 
-			_, err := http.Get(heartbeatURL)
+			resp, err := http.Get(heartbeatURL)
 			if err != nil {
 				logging.Error(s, err.Error(), nil, span)
 			} else {
+				_, _ = io.Copy(io.Discard, resp.Body)
+				resp.Body.Close()
 				logging.DebugLow(s, "Heartbeat sent", nil, span)
 			}
 
