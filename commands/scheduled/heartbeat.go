@@ -33,9 +33,19 @@ func Heartbeat(s *discordgo.Session, quit chan interface{}) error {
 			if err != nil {
 				logging.Error(s, err.Error(), nil, span)
 			} else {
-				_, _ = io.Copy(io.Discard, resp.Body)
-				resp.Body.Close()
-				logging.DebugLow(s, "Heartbeat sent", nil, span)
+				// Drain body to allow connection reuse.
+				_, copyErr := io.Copy(io.Discard, resp.Body)
+				closeErr := resp.Body.Close()
+
+				if copyErr != nil {
+					logging.Error(s, copyErr.Error(), nil, span)
+				} else if closeErr != nil {
+					logging.Error(s, closeErr.Error(), nil, span)
+				} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+					logging.Error(s, "Heartbeat returned non-2xx status: "+resp.Status, nil, span)
+				} else {
+					logging.DebugLow(s, "Heartbeat sent", nil, span)
+				}
 			}
 
 			span.Finish()
