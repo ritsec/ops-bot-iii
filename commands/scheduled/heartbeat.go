@@ -29,7 +29,7 @@ func Heartbeat(s *discordgo.Session, quit chan interface{}) error {
 				tracer.ResourceName("Scheduled.Heartbeat"),
 			)
 
-			resp, err := http.Get(heartbeatURL)
+			resp, err := (&http.Client{Timeout: 5 * time.Second}).Get(heartbeatURL)
 			if err != nil {
 				logging.Error(s, err.Error(), nil, span)
 			} else {
