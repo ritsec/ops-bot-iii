@@ -62,6 +62,16 @@ func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 					return
 				}
 				logging.Debug(s, "User is already verified", i.Member.User, span)
+				err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Flags:   discordgo.MessageFlagsEphemeral,
+						Content: "You are already a member!",
+					},
+				})
+				if err != nil {
+					logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				}
 				return
 			}
 

@@ -1,6 +1,7 @@
 package scheduled
 
 import (
+	"io"
 	"net/http"
 	"time"
 
@@ -28,11 +29,23 @@ func Heartbeat(s *discordgo.Session, quit chan interface{}) error {
 				tracer.ResourceName("Scheduled.Heartbeat"),
 			)
 
-			_, err := http.Get(heartbeatURL)
+			resp, err := (&http.Client{Timeout: 5 * time.Second}).Get(heartbeatURL)
 			if err != nil {
 				logging.Error(s, err.Error(), nil, span)
 			} else {
-				logging.DebugLow(s, "Heartbeat sent", nil, span)
+				// Drain body to allow connection reuse.
+				_, copyErr := io.Copy(io.Discard, resp.Body)
+				closeErr := resp.Body.Close()
+
+				if copyErr != nil {
+					logging.Error(s, copyErr.Error(), nil, span)
+				} else if closeErr != nil {
+					logging.Error(s, closeErr.Error(), nil, span)
+				} else if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+					logging.Error(s, "Heartbeat returned non-2xx status: "+resp.Status, nil, span)
+				} else {
+					logging.DebugLow(s, "Heartbeat sent", nil, span)
+				}
 			}
 
 			span.Finish()
