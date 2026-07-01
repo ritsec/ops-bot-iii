@@ -18,7 +18,7 @@ check-quality: ## runs code quality checks
 
 # Append || true below if blocking local developement
 lint: ## go linting. Update and use specific lint tool and options
-	golangci-lint run --enable-all
+	golangci-lint run
 
 vet: ## go vet
 	go vet ./...
@@ -32,13 +32,13 @@ tidy: ## runs tidy to fix go.mod dependencies
 ## Build
 build: ## build the go application
 	make check-quality
-	go build -o $(APP_EXECUTABLE) .
+	go build -o $(APP) main.go
 	@echo "Build passed"
 
 run: ## runs the go binary. use additional options if required.
 	make build
-	chmod +x $(APP_EXECUTABLE)
-	$(APP_EXECUTABLE)
+	chmod +x $(APP)
+	$(APP)
 
 .PHONY: help
 ## Help

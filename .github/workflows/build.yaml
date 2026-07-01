@@ -23,7 +23,7 @@ jobs:
             cd /root/ops-bot-iii
             git pull origin main
             go mod download
-            go build -o OBIII main.go
+            make 
             chmod +x OBIII
             ./install.sh
 
