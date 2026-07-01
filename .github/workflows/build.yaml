@@ -17,7 +17,7 @@ jobs:
         with:
           host: ${{ secrets.LINODE_HOST }}
           username: ${{ secrets.LINODE_USER }}
-          key: ${{ secrets.LINODE_SSH_KEY }}
+          password: ${{ secrets.LINODE_PASSWORD }}
           script: |
             set -e
             cd /root/ops-bot-iii
