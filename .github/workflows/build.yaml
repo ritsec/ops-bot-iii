@@ -1,0 +1,31 @@
+name: Linode Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull and build on Linode
+        uses: appleboy/ssh-action@v0.18
+        with:
+          host: ${{ secrets.LINODE_HOST }}
+          username: ${{ secrets.LINODE_USER }}
+          key: ${{ secrets.LINODE_SSH_KEY }}
+          script: |
+            set -e
+            cd /root/ops-bot-iii
+            git pull origin main
+            go mod download
+            go build -o OBIII main.go
+            chmod +x OBIII
+            ./install.sh
+
+                
+  
