@@ -97,7 +97,7 @@ func GoodFood(s *discordgo.Session, quit chan interface{}) error {
 	skipPing("0 0 16 * * TUE")               // Tuesday
 	makePing("0 0 16 * * WED", "RITZ")       // Wednesday
 	makePing("0 0 16 * * THU", "Crossroads") // Thursday
-	skipPing("0 0 16 * * FRI")               // Friday
+	makePing("0 0 16 * * FRI", "RITZ")       // Friday
 	skipPing("0 0 16 * * SAT")               // Saturday
 	skipPing("0 0 16 * * SUN")               // Sunday
 
