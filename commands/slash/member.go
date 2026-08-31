@@ -523,7 +523,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: fmt.Sprintf("You can only request manual verification once every 10 minutes. Please wait **%d** %s and try again.", remaining, units),
+					Content: fmt.Sprintf("You can only request manual verification after 10 minutes. Please wait **%d** %s and try again.", remaining, units),
 				},
 			})
 			if err != nil {
