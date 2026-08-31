@@ -41,13 +41,13 @@ var (
 	alumniRole string = config.GetString("commands.member.alumni_role_id")
 )
 
-// notReceivedCooldown tracks the last time a user was allowed to click
-// "I did not recieve an email" in the /member flow, per user ID. A user may
-// only take that action once every ten minutes; the "I recieved the code"
-// path is never gated.
+// notReceivedCooldown tracks the last time a verification email was sent in
+// the /member flow, per user ID. Once the email goes out, a user must wait
+// ten minutes before declaring they did not recieve the code; the "I recieved
+// the code" path is never gated.
 var notReceivedCooldown = struct {
 	sync.Mutex
-	m map[string]time.Time // user ID -> last allowed not-received action
+	m map[string]time.Time // user ID -> time the verification email was sent
 }{m: make(map[string]time.Time)}
 
 func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
@@ -483,6 +483,13 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	)
 	defer span.Finish()
 
+	// Anchor the cooldown now, at the moment the code email was sent: from
+	// here the user must wait ten minutes before declaring the code never
+	// arrived, and every new email send restarts that window.
+	notReceivedCooldown.Lock()
+	notReceivedCooldown.m[i.Member.User.ID] = time.Now()
+	notReceivedCooldown.Unlock()
+
 	interactionCreateChan := make(chan *discordgo.InteractionCreate)
 	defer close(interactionCreateChan)
 
@@ -499,22 +506,18 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	defer delete(*ComponentHandlers, recievedSlug)
 
 	(*ComponentHandlers)[unrecievedSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		// Users may only request manual verification once every ten minutes.
+		// The cooldown was anchored when the verification email was sent; refuse
+		// until the ten-minute delivery window has passed.
 		notReceivedCooldown.Lock()
 		last, ok := notReceivedCooldown.m[i.Member.User.ID]
-		blocked := ok && time.Now().Before(last.Add(10 * time.Minute))
-		if !blocked {
-			// Record the cooldown only on an allowed action so a refused
-			// click does not extend the user's own wait window.
-			notReceivedCooldown.m[i.Member.User.ID] = time.Now()
-		}
+		blocked := ok && time.Now().Before(last.Add(10*time.Minute))
+		notReceivedCooldown.Unlock()
 		if blocked {
-			remaining := int(last.Add(10 * time.Minute).Sub(time.Now()).Seconds())/60 + 1
+			remaining := int(last.Add(10*time.Minute).Sub(time.Now()).Seconds())/60 + 1
 			units := "minutes"
 			if remaining == 1 {
 				units = "minute"
 			}
-			notReceivedCooldown.Unlock()
 			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
@@ -530,7 +533,6 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 			// the function continues waiting for the user to click a button.
 			return
 		}
-		notReceivedCooldown.Unlock()
 		recievedChan <- false
 		interactionCreateChan <- i
 	}
