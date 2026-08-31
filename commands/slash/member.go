@@ -513,7 +513,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 		blocked := ok && time.Now().Before(last.Add(10*time.Minute))
 		notReceivedCooldown.Unlock()
 		if blocked {
-			remaining := int(last.Add(10*time.Minute).Sub(time.Now()).Seconds())/60 + 1
+			remaining := int(time.Until(last.Add(10*time.Minute)).Seconds())/60 + 1
 			units := "minutes"
 			if remaining == 1 {
 				units = "minute"
