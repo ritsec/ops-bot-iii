@@ -50,6 +50,7 @@ var notReceivedCooldown = struct {
 	m map[string]time.Time // user ID -> time the verification email was sent
 }{m: make(map[string]time.Time)}
 
+// Member is the handler for the /member command
 func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
 			Name:        "member",
