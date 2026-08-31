@@ -506,7 +506,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 		if !blocked {
 			// Record the cooldown only on an allowed action so a refused
 			// click does not extend the user's own wait window.
-			notReceivedCooldown.m[i.User.ID] = time.Now()
+			notReceivedCooldown.m[i.Member.User.ID] = time.Now()
 		}
 		if blocked {
 			remaining := int(last.Add(10 * time.Minute).Sub(time.Now()).Seconds())/60 + 1
