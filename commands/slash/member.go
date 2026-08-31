@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
@@ -39,7 +41,15 @@ var (
 	alumniRole string = config.GetString("commands.member.alumni_role_id")
 )
 
-// Member is the member command
+// notReceivedCooldown tracks the last time a user was allowed to click
+// "I did not recieve an email" in the /member flow, per user ID. A user may
+// only take that action once every ten minutes; the "I recieved the code"
+// path is never gated.
+var notReceivedCooldown = struct {
+	sync.Mutex
+	m map[string]time.Time // user ID -> last allowed not-received action
+}{m: make(map[string]time.Time)}
+
 func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
 			Name:        "member",
@@ -489,6 +499,38 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	defer delete(*ComponentHandlers, recievedSlug)
 
 	(*ComponentHandlers)[unrecievedSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		// Users may only request manual verification once every ten minutes.
+		notReceivedCooldown.Lock()
+		last, ok := notReceivedCooldown.m[i.User.ID]
+		blocked := ok && time.Now().Before(last.Add(10 * time.Minute))
+		if !blocked {
+			// Record the cooldown only on an allowed action so a refused
+			// click does not extend the user's own wait window.
+			notReceivedCooldown.m[i.User.ID] = time.Now()
+		}
+		if blocked {
+			remaining := int(last.Add(10 * time.Minute).Sub(time.Now()).Seconds())/60 + 1
+			units := "minutes"
+			if remaining == 1 {
+				units = "minute"
+			}
+			notReceivedCooldown.Unlock()
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: fmt.Sprintf("You can only request manual verification once every 10 minutes. Please wait **%d** %s and try again.", remaining, units),
+				},
+			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.User, span, logrus.Fields{"error": err})
+				return
+			}
+			// Do not push to the channels; the prompt above stays open and
+			// the function continues waiting for the user to click a button.
+			return
+		}
+		notReceivedCooldown.Unlock()
 		recievedChan <- false
 		interactionCreateChan <- i
 	}
