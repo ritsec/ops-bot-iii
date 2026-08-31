@@ -501,7 +501,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	(*ComponentHandlers)[unrecievedSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		// Users may only request manual verification once every ten minutes.
 		notReceivedCooldown.Lock()
-		last, ok := notReceivedCooldown.m[i.User.ID]
+		last, ok := notReceivedCooldown.m[i.Member.User.ID]
 		blocked := ok && time.Now().Before(last.Add(10 * time.Minute))
 		if !blocked {
 			// Record the cooldown only on an allowed action so a refused
@@ -523,7 +523,7 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 				},
 			})
 			if err != nil {
-				logging.Error(s, err.Error(), i.User, span, logrus.Fields{"error": err})
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
 				return
 			}
 			// Do not push to the channels; the prompt above stays open and
