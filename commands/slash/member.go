@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/google/uuid"
@@ -39,7 +41,16 @@ var (
 	alumniRole string = config.GetString("commands.member.alumni_role_id")
 )
 
-// Member is the member command
+// notReceivedCooldown tracks the last time a verification email was sent in
+// the /member flow, per user ID. Once the email goes out, a user must wait
+// ten minutes before declaring they did not recieve the code; the "I recieved
+// the code" path is never gated.
+var notReceivedCooldown = struct {
+	sync.Mutex
+	m map[string]time.Time // user ID -> time the verification email was sent
+}{m: make(map[string]time.Time)}
+
+// Member is the handler for the /member command
 func Member() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *discordgo.InteractionCreate)) {
 	return &discordgo.ApplicationCommand{
 			Name:        "member",
@@ -473,6 +484,13 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	)
 	defer span.Finish()
 
+	// Anchor the cooldown now, at the moment the code email was sent: from
+	// here the user must wait ten minutes before declaring the code never
+	// arrived, and every new email send restarts that window.
+	notReceivedCooldown.Lock()
+	notReceivedCooldown.m[i.Member.User.ID] = time.Now()
+	notReceivedCooldown.Unlock()
+
 	interactionCreateChan := make(chan *discordgo.InteractionCreate)
 	defer close(interactionCreateChan)
 
@@ -489,6 +507,33 @@ func recievedEmail(s *discordgo.Session, i *discordgo.InteractionCreate, userEma
 	defer delete(*ComponentHandlers, recievedSlug)
 
 	(*ComponentHandlers)[unrecievedSlug] = func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		// The cooldown was anchored when the verification email was sent; refuse
+		// until the ten-minute delivery window has passed.
+		notReceivedCooldown.Lock()
+		last, ok := notReceivedCooldown.m[i.Member.User.ID]
+		blocked := ok && time.Now().Before(last.Add(10*time.Minute))
+		notReceivedCooldown.Unlock()
+		if blocked {
+			remaining := int(time.Until(last.Add(10*time.Minute)).Seconds())/60 + 1
+			units := "minutes"
+			if remaining == 1 {
+				units = "minute"
+			}
+			err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: fmt.Sprintf("You can only request manual verification after 10 minutes. Please wait **%d** %s and try again.", remaining, units),
+				},
+			})
+			if err != nil {
+				logging.Error(s, err.Error(), i.Member.User, span, logrus.Fields{"error": err})
+				return
+			}
+			// Do not push to the channels; the prompt above stays open and
+			// the function continues waiting for the user to click a button.
+			return
+		}
 		recievedChan <- false
 		interactionCreateChan <- i
 	}
