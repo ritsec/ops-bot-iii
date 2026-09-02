@@ -58,6 +58,7 @@ func populateHandlers(ctx ddtrace.SpanContext) {
 	Handlers["messageDelete"] = handlers.MessageDelete
 	Handlers["messageEdit"] = handlers.MessageEdit
 	Handlers["scoreboard"] = handlers.Scoreboard
+	Handlers["memberNudge"] = handlers.MemberNudge
 }
 
 // populateScheduledEvents populates the ScheduledEvents map with all of the scheduled events
