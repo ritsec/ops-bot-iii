@@ -54,9 +54,9 @@ var nudges = struct {
 	m map[string]*nudgeState
 }{m: make(map[string]*nudgeState)}
 
-// nudgeClear removes the user's nudge state and lifts any active Discord
-// timeout; lifting is best-effort so a missing MODERATE_MEMBERS permission
-// does not break the nagging flow
+// nudgeClear removes the user's nudge state and lifts any Discord timeout this
+// handler previously applied (when the guild ID is known). Lifting is
+// best-effort so missing MODERATE_MEMBERS permission does not break the flow.
 func nudgeClear(s *discordgo.Session, userID string, user *discordgo.User, span ddtrace.Span) {
 	nudges.Lock()
 	st, ok := nudges.m[userID]
@@ -153,16 +153,17 @@ func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	channel, err := s.Channel(m.ChannelID)
-	if err != nil {
-		return
-	}
-
 	span := tracer.StartSpan(
 		"commands.handlers.memberNudge:MemberNudge",
 		tracer.ResourceName("Handlers.MemberNudge"),
 	)
 	defer span.Finish()
+
+	channel, err := s.Channel(m.ChannelID)
+	if err != nil {
+		logging.Error(s, err.Error(), m.Author, span, logrus.Fields{"error": err})
+		return
+	}
 
 	// never nudge in bot-help; a post there ends the nagging and lifts any
 	// active timeout
@@ -171,16 +172,16 @@ func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	// verified via an assignable role or the data layer: stop nagging
+	if nudgeVerified(m) || data.User.IsVerified(m.Author.ID, span.Context()) {
+		nudgeClear(s, m.Author.ID, m.Author, span)
+		return
+	}
+
 	// in-memory backoff gate first; also the fallback throttle when the
 	// Discord-native timeout below cannot be applied
 	due, timeout := nudgeDue(m.Author.ID, m.GuildID)
 	if !due {
-		return
-	}
-
-	// verified via an assignable role or the data layer: stop nagging
-	if nudgeVerified(m) || data.User.IsVerified(m.Author.ID, span.Context()) {
-		nudgeClear(s, m.Author.ID, m.Author, span)
 		return
 	}
 
@@ -202,6 +203,10 @@ func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// delete the reply and the triggering message one minute after the nudge;
 	// the goroutine outlives the request span, so it runs under its own child
+	channelID := m.ChannelID
+	replyID := message.ID
+	triggerID := m.ID
+	author := m.Author
 	go func(spanCtx ddtrace.SpanContext) {
 		delSpan := tracer.StartSpan(
 			"commands.handlers.memberNudge:MemberNudge.delete",
@@ -211,11 +216,11 @@ func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 		defer delSpan.Finish()
 
 		time.Sleep(nudgeDeletionDelay)
-		if delErr := s.ChannelMessageDelete(m.ChannelID, message.ID); delErr != nil {
-			logging.Error(s, delErr.Error(), m.Author, delSpan, logrus.Fields{"error": delErr})
+		if delErr := s.ChannelMessageDelete(channelID, replyID); delErr != nil {
+			logging.Error(s, delErr.Error(), author, delSpan, logrus.Fields{"error": delErr})
 		}
-		if delErr := s.ChannelMessageDelete(m.ChannelID, m.ID); delErr != nil {
-			logging.Error(s, delErr.Error(), m.Author, delSpan, logrus.Fields{"error": delErr})
+		if delErr := s.ChannelMessageDelete(channelID, triggerID); delErr != nil {
+			logging.Error(s, delErr.Error(), author, delSpan, logrus.Fields{"error": delErr})
 		}
 	}(span.Context())
 }
