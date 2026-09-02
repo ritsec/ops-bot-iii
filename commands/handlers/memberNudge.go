@@ -40,10 +40,12 @@ var (
 	nudgeDeletionDelay = 1 * time.Minute
 )
 
-// nudgeState tracks the exponential-backoff position for one user
+// nudgeState tracks the per-user backoff position and the guild where the
+// last timeout was applied
 type nudgeState struct {
 	lastNudge time.Time
 	backoff   time.Duration
+	guildID   string
 }
 
 // nudges tracks per-user nudge backoff state, keyed by user ID
@@ -52,15 +54,34 @@ var nudges = struct {
 	m map[string]*nudgeState
 }{m: make(map[string]*nudgeState)}
 
-func nudgeClear(userID string) {
+// nudgeClear removes the user's nudge state and lifts any active Discord
+// timeout; lifting is best-effort so a missing MODERATE_MEMBERS permission
+// does not break the nagging flow
+func nudgeClear(s *discordgo.Session, userID string, user *discordgo.User, span ddtrace.Span) {
 	nudges.Lock()
+	st, ok := nudges.m[userID]
 	delete(nudges.m, userID)
+	guildID := ""
+	if ok {
+		guildID = st.guildID
+	}
 	nudges.Unlock()
+
+	if guildID == "" {
+		return
+	}
+
+	if err := s.GuildMemberTimeout(guildID, userID, nil); err != nil {
+		logging.Error(s, "Failed to clear guild member timeout", user, span, logrus.Fields{"error": err})
+	} else {
+		logging.Debug(s, "Cleared guild member timeout", user, span)
+	}
 }
 
 // nudgeDue reports whether the user may be nudged now and records the nudge
-// with the next backoff step if so
-func nudgeDue(userID string) bool {
+// with the next backoff step if so; the returned duration is the Discord
+// member timeout to apply for this nudge
+func nudgeDue(userID, guildID string) (bool, time.Duration) {
 	nudges.Lock()
 	defer nudges.Unlock()
 
@@ -71,12 +92,13 @@ func nudgeDue(userID string) bool {
 		nudges.m[userID] = &nudgeState{
 			lastNudge: now,
 			backoff:   nudgeBackoffBase,
+			guildID:   guildID,
 		}
-		return true
+		return true, nudgeBackoffBase
 	}
 
 	if time.Since(st.lastNudge) < st.backoff {
-		return false
+		return false, 0
 	}
 
 	next := st.backoff * 2
@@ -85,7 +107,8 @@ func nudgeDue(userID string) bool {
 	}
 	st.lastNudge = now
 	st.backoff = next
-	return true
+	st.guildID = guildID
+	return true, next
 }
 
 // nudgeVerified reports whether the user holds any assignable member role
@@ -108,11 +131,15 @@ func nudgeVerified(m *discordgo.MessageCreate) bool {
 
 // MemberNudge nudges unverified users to run /member. It is a MessageCreate
 // handler: when a non-bot user who has no assignable member role posts in any
-// channel other than bot-help, it replies publicly with a pointer to /member.
-// Successive nudges back off exponentially (30s, 1m, 2m, ... capped at 30m).
-// One minute after each nudge, both the bot's reply and the triggering user
+// channel other than bot-help, it replies publicly with a pointer to /member
+// and times the user out (communication_disabled_until) for the current
+// backoff step, which doubles with every nudge (30s, 1m, 2m, ... capped at
+// 30m), so the user cannot post again until the silence has lifted. One
+// minute after each nudge, both the bot's reply and the triggering user
 // message are deleted. Nagging stops once the user is verified or posts in
-// bot-help.
+// bot-help, which also clears any active timeout. Applying the timeout
+// requires MODERATE_MEMBERS permission; when it fails, the in-memory backoff
+// gate continues to throttle re-nudges as a fallback.
 func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
@@ -131,26 +158,29 @@ func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// never nudge in bot-help; a post there ends the nagging
-	if strings.EqualFold(channel.Name, nudgeHelpChannel) {
-		nudgeClear(m.Author.ID)
-		return
-	}
-	// cheap in-memory gate first: skip the data-layer lookup entirely while a
-	// prior nudge is still within its backoff window
-	if !nudgeDue(m.Author.ID) {
-		return
-	}
-
 	span := tracer.StartSpan(
 		"commands.handlers.memberNudge:MemberNudge",
 		tracer.ResourceName("Handlers.MemberNudge"),
 	)
 	defer span.Finish()
 
+	// never nudge in bot-help; a post there ends the nagging and lifts any
+	// active timeout
+	if strings.EqualFold(channel.Name, nudgeHelpChannel) {
+		nudgeClear(s, m.Author.ID, m.Author, span)
+		return
+	}
+
+	// in-memory backoff gate first; also the fallback throttle when the
+	// Discord-native timeout below cannot be applied
+	due, timeout := nudgeDue(m.Author.ID, m.GuildID)
+	if !due {
+		return
+	}
+
 	// verified via an assignable role or the data layer: stop nagging
 	if nudgeVerified(m) || data.User.IsVerified(m.Author.ID, span.Context()) {
-		nudgeClear(m.Author.ID)
+		nudgeClear(s, m.Author.ID, m.Author, span)
 		return
 	}
 
@@ -161,6 +191,14 @@ func MemberNudge(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	logging.Debug(s, "Nudged unverified user to /member", m.Author, span)
+
+	// silence the user for the current backoff step so they cannot post (and
+	// re-trigger the nudge) until the window has elapsed; a failure here is
+	// non-fatal — the in-memory gate above keeps throttling
+	until := time.Now().Add(timeout)
+	if timeoutErr := s.GuildMemberTimeout(m.GuildID, m.Author.ID, &until); timeoutErr != nil {
+		logging.Error(s, "Failed to apply guild member timeout", m.Author, span, logrus.Fields{"error": timeoutErr})
+	}
 
 	// delete the reply and the triggering message one minute after the nudge;
 	// the goroutine outlives the request span, so it runs under its own child
