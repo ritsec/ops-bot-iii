@@ -71,15 +71,29 @@ func Import() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				message = fmt.Sprintf("Parsed %d CSV rows (including the header, if present).", len(rows))
 			}
 
-			var message2 strings.Builder
-			for _, value := range rows[0] {
-				message2.WriteString(value + " ")
-			}
-			logging.Debug(s, message2.String(), i.Member.User, span)
-
 			if err := helpers.IntRespondEdit(s, i, message); err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
 			}
+
+			// Aggregate emails
+			emails := []string{}
+			for _, row := range rows {
+				emails = append(emails, row[2])
+			}
+
+			// Use string builder to apppend to one string
+			var message2 strings.Builder
+			for _, value := range emails {
+				message2.WriteString(value + " ")
+			}
+
+			logging.Debug(s, message2.String(), i.Member.User, span)
+
+			//list := strings.Join(rows[0], ", ")
+			//addressList, err := mail.ParseAddressList(list)
+			//if err != nil {
+			//	return
+			//}
 		}
 }
 
