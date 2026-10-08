@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -69,6 +70,12 @@ func Import() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 			} else {
 				message = fmt.Sprintf("Parsed %d CSV rows (including the header, if present).", len(rows))
 			}
+
+			var message2 strings.Builder
+			for _, value := range rows[0] {
+				message2.WriteString(value + " ")
+			}
+			logging.Debug(s, message2.String(), i.Member.User, span)
 
 			if err := helpers.IntRespondEdit(s, i, message); err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
