@@ -88,8 +88,10 @@ func Import() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				logging.Error(s, "Could not parse emails: "+strings.Join(unparsedEmails, ", "), i.Member.User, span)
 			}
 
-			logging.Debug(s, "Parsed emails: "+strconv.Itoa(len(parsedEmails)), i.Member.User, span)
-
+			message = fmt.Sprintf("Parsed " + strconv.Itoa(len(parsedEmails)) + " emails.")
+			if err := helpers.IntRespondEdit(s, i, message); err != nil {
+				return
+			}
 		}
 }
 
