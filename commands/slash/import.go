@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -62,7 +63,7 @@ func Import() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				}
 			}
 
-			rows, err := Parse_csv(attachment)
+			rows, err := parseCsv(attachment)
 			var message string
 			if err != nil {
 				logging.Error(s, err.Error(), i.Member.User, span)
@@ -81,25 +82,34 @@ func Import() (*discordgo.ApplicationCommand, func(s *discordgo.Session, i *disc
 				emails = append(emails, row[2])
 			}
 
-			// Use string builder to apppend to one string
-			var message2 strings.Builder
-			for _, value := range emails {
-				message2.WriteString(value + " ")
+			parsedEmails, unparsedEmails := parseEmails(emails)
+
+			if unparsedEmails != nil {
+				logging.Error(s, "Could not parse emails: "+strings.Join(unparsedEmails, ", "), i.Member.User, span)
 			}
 
-			logging.Debug(s, message2.String(), i.Member.User, span)
+			logging.Debug(s, "Parsed emails: "+strconv.Itoa(len(parsedEmails)), i.Member.User, span)
 
-			//list := strings.Join(rows[0], ", ")
-			//addressList, err := mail.ParseAddressList(list)
-			//if err != nil {
-			//	return
-			//}
 		}
 }
 
-// Parse_csv downloads an attachment and reads its CSV records, preserving
+func parseEmails(emails []string) ([]string, []string) {
+	unresolvedEmails := []string{}
+	for _, email := range emails {
+		if strings.HasSuffix(email, "@g.rit.edu") {
+			strings.Replace(email, "@g.rit.edu", "@rit.edu", 1)
+		} else if !strings.HasSuffix(email, "@rit.edu") {
+			unresolvedEmails = append(unresolvedEmails, email)
+			emails = helpers.Remove(emails, email)
+		}
+	}
+
+	return emails, unresolvedEmails
+}
+
+// parseCsv downloads an attachment and reads its CSV records, preserving
 // the first row so the caller can decide whether it contains column headers.
-func Parse_csv(file *discordgo.MessageAttachment) ([][]string, error) {
+func parseCsv(file *discordgo.MessageAttachment) ([][]string, error) {
 	if file == nil || file.URL == "" {
 		return nil, fmt.Errorf("missing CSV attachment")
 	}
