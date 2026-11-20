@@ -43,6 +43,10 @@ commands:
             app_key: 
             site: 
             hostname: 
+        # agentless OTLP metric export for liveness/absence monitors (DRAFT until bot emits metrics)
+        # endpoint derived from datadog.site; auth via datadog.api_key; env/service tags via resource_attributes_as_tags header.
+        otlp:
+            interval: 60s   # export cadence ~ down-window detection (~30-60s), NOT per-tick (keeps cost low)
     feedback:
         channel_id: 
     kudos:

@@ -30,10 +30,12 @@ var (
 
 // Heartbeat is a scheduled task that sends a heartbeat to the configured push-based life check
 func Heartbeat(s *discordgo.Session, quit chan interface{}) error {
+	InitBotOTLP()
 	ticker := time.NewTicker(10 * time.Second)
 	for {
 		select {
 		case <-quit:
+			ShutdownBotOTLP()
 			return nil
 		case <-ticker.C:
 			span := tracer.StartSpan(
@@ -45,6 +47,7 @@ func Heartbeat(s *discordgo.Session, quit chan interface{}) error {
 				logging.Error(s, err.Error(), nil, span)
 			} else {
 				logging.DebugLow(s, "Heartbeat sent", nil, span)
+				RecordBotLiveness()
 			}
 
 			span.Finish()
