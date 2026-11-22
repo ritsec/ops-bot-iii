@@ -1,6 +1,9 @@
 package helpers
 
-import "github.com/ritsec/ops-bot-iii/ent/signin"
+import (
+	"github.com/bwmarrin/discordgo"
+	"github.com/ritsec/ops-bot-iii/ent/signin"
+)
 
 // Converts signin type string to signin type
 func StringToType(signinString string) signin.Type {
@@ -51,10 +54,12 @@ func StringToType(signinString string) signin.Type {
 }
 
 // Return array of all signin types (update return array length)
-func SigninTypeArray() [17]string {
+func SigninTypeArray() [19]string {
 	return [...]string{
 		"General Meeting",
 		"Contagion",
+		"CCDC",
+		"CCDC Tryouts",
 		"IR",
 		"Zero To Hero",
 		"OT Security",
@@ -72,4 +77,13 @@ func SigninTypeArray() [17]string {
 		"Other",
 	}
 
+}
+
+// SigninTypeChoices returns the dropdown choices for all signin types, derived from SigninTypeArray().
+func SigninTypeChoices() []*discordgo.ApplicationCommandOptionChoice {
+	choices := make([]*discordgo.ApplicationCommandOptionChoice, 0, len(SigninTypeArray()))
+	for _, t := range SigninTypeArray() {
+		choices = append(choices, &discordgo.ApplicationCommandOptionChoice{Name: t, Value: t})
+	}
+	return choices
 }

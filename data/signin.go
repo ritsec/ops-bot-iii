@@ -200,3 +200,51 @@ func (s *signin_s) DQuery(date time.Time, signinType signin.Type, ctx ddtrace.Sp
 
 	return pairList, nil
 }
+
+// HasSigninOnDate reports whether userID has at least one signin of signinType whose timestamp falls on the same calendar day (UTC) as date. The day boundaries MUST be identical to DQuery's (read it first and mirror exactly).
+func (*signin_s) HasSigninOnDate(userID string, signinType signin.Type, date time.Time, ctx ddtrace.SpanContext) (bool, error) {
+	span := tracer.StartSpan(
+		"data.signin:HasSigninOnDate",
+		tracer.ResourceName("Data.Signin.HasSigninOnDate"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	startOfDay := date.Truncate(24 * time.Hour)
+	endOfDay := startOfDay.Add(24 * time.Hour).Add(-time.Second)
+
+	exists, err := Client.Signin.Query().
+		Where(
+			signin.HasUserWith(user.IDEQ(userID)),
+			signin.TypeEQ(signinType),
+			signin.TimestampGTE(startOfDay),
+			signin.TimestampLTE(endOfDay),
+		).
+		Exist(Ctx)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
+// CreateWithTimestamp creates a signin for userID of signinType with an explicit timestamp (used by the retroactive import command).
+func (*signin_s) CreateWithTimestamp(userID string, signinType signin.Type, timestamp time.Time, ctx ddtrace.SpanContext) (*ent.Signin, error) {
+	span := tracer.StartSpan(
+		"data.signin:CreateWithTimestamp",
+		tracer.ResourceName("Data.Signin.CreateWithTimestamp"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	entUser, err := User.Get(userID, span.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	return Client.Signin.Create().
+		SetUser(entUser).
+		SetType(signinType).
+		SetTimestamp(timestamp).
+		Save(Ctx)
+}
