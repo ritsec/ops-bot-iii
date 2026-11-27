@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ritsec/ops-bot-iii/ent"
@@ -182,4 +183,82 @@ func (*user_s) GetEmail(id string, ctx ddtrace.SpanContext) (string, error) {
 	}
 
 	return entUser.Email, nil
+}
+
+// FindByEmail finds the user whose email matches email. Matching order:
+//  1. exact case-insensitive match after normalizing a "@g.rit.edu" domain in the input to "@rit.edu";
+//  2. local-part match: the lowercased part before the first "@" with one leading "g." prefix removed, compared against the same normalization of every stored non-empty user email.
+//
+// Returns (nil, nil) when no user matches. Returns an error when multiple users share the matching normalized local part and no exact match exists (ambiguous).
+func (*user_s) FindByEmail(email string, ctx ddtrace.SpanContext) (*ent.User, error) {
+	span := tracer.StartSpan(
+		"data.user:FindByEmail",
+		tracer.ResourceName("Data.User.FindByEmail"),
+		tracer.ChildOf(ctx),
+	)
+	defer span.Finish()
+
+	normalizedEmail := normalizeRITEmail(email)
+
+	entUsers, err := Client.User.Query().
+		Where(user.EmailEqualFold(normalizedEmail)).
+		All(Ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(entUsers) > 0 {
+		return entUsers[0], nil
+	}
+
+	entAllUsers, err := Client.User.Query().
+		Where(user.EmailNEQ("")).
+		All(Ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var matches []*ent.User
+
+	for _, entUser := range entAllUsers {
+		if emailLocalPart(entUser.Email) == emailLocalPart(normalizedEmail) {
+			matches = append(matches, entUser)
+		}
+	}
+
+	switch len(matches) {
+	case 0:
+		return nil, nil
+	case 1:
+		return matches[0], nil
+	default:
+		return nil, fmt.Errorf("ambiguous email match for %q", email)
+	}
+}
+
+// normalizeRITEmail normalizes an email address for RIT identity lookups. It
+// lowercases the input and rewrites a "@g.rit.edu" domain to "@rit.edu".
+func normalizeRITEmail(email string) string {
+	normalized := strings.ToLower(email)
+	if at := strings.LastIndex(normalized, "@"); at != -1 {
+		if domain := normalized[at+1:]; domain == "g.rit.edu" {
+			normalized = normalized[:at+1] + "rit.edu"
+		}
+	}
+	return normalized
+}
+
+// emailLocalPart returns the lowercased local part of the email (the substring
+// before the first "@", or the whole string if no "@" is present) with a single
+// leading "g." prefix removed.
+func emailLocalPart(email string) string {
+	local := email
+	if at := strings.Index(email, "@"); at != -1 {
+		local = email[:at]
+	}
+	local = strings.ToLower(local)
+	if strings.HasPrefix(local, "g.") {
+		local = local[len("g."):]
+	}
+	return local
 }
